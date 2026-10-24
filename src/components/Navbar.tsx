@@ -1,0 +1,216 @@
+import React, { useRef } from 'react';
+import {
+  Flame,
+  Dumbbell,
+  TrendingUp,
+  Sliders,
+  Sparkles,
+  BookOpen,
+  Download,
+  Upload,
+  Play,
+  RotateCcw
+} from 'lucide-react';
+import { AppTab } from '../types';
+import { exportBackupData, importBackupData, resetAllData } from '../storage/storage';
+
+interface NavbarProps {
+  currentTab: AppTab;
+  onSelectTab: (tab: AppTab) => void;
+  activeWorkoutDayName?: string | null;
+  onDataChanged?: () => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({
+  currentTab,
+  onSelectTab,
+  activeWorkoutDayName,
+  onDataChanged
+}) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExportBackup = () => {
+    const jsonStr = exportBackupData();
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gymscience_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      if (content) {
+        const success = importBackupData(content);
+        if (success) {
+          alert('¡Datos importados con éxito! 🎉');
+          onDataChanged?.();
+        } else {
+          alert('Error: El archivo de backup no es válido.');
+        }
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleResetData = () => {
+    if (confirm('¿Estás seguro de que deseas restablecer todos los datos a los valores predeterminados? Se perderán las sesiones registradas.')) {
+      resetAllData();
+      alert('Datos restablecidos a los valores iniciales.');
+      window.location.reload();
+    }
+  };
+
+  const navItems = [
+    { id: 'dashboard' as AppTab, label: 'Inicio', icon: Flame },
+    { id: 'active-workout' as AppTab, label: 'Entrenar', icon: Play, badge: activeWorkoutDayName },
+    { id: 'routines' as AppTab, label: 'Rutinas', icon: Dumbbell },
+    { id: 'progress' as AppTab, label: 'Progreso', icon: TrendingUp },
+    { id: 'ai-wizard' as AppTab, label: 'IA Coach', icon: Sparkles, highlight: true },
+    { id: 'equipment' as AppTab, label: 'Equipamiento', icon: Sliders },
+    { id: 'guide' as AppTab, label: 'Ciencia', icon: BookOpen },
+  ];
+
+  return (
+    <>
+      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div
+              className="flex items-center space-x-3 cursor-pointer group"
+              onClick={() => onSelectTab('dashboard')}
+            >
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-emerald-400 p-0.5 shadow-lg shadow-sky-500/20 group-hover:scale-105 transition-transform">
+                <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                  <Flame className="w-5 h-5 text-sky-400" />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <span className="font-extrabold text-lg text-white tracking-tight">GymScience</span>
+                  <span className="bg-sky-500/10 text-sky-400 border border-sky-500/30 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                    Web
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 -mt-1 hidden sm:block">Entrenamiento Basado en Evidencia</p>
+              </div>
+            </div>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = currentTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onSelectTab(item.id)}
+                    className={`relative flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30 shadow-sm'
+                        : item.highlight
+                        ? 'text-amber-300 hover:bg-amber-500/10 hover:text-amber-200'
+                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-sky-400' : item.highlight ? 'text-amber-400' : 'text-slate-400'}`} />
+                    <span>{item.label}</span>
+                    {item.badge && (
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Quick Actions (Backup / Restore) */}
+            <div className="flex items-center space-x-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                className="hidden"
+                onChange={handleFileSelected}
+              />
+              
+              <button
+                onClick={handleExportBackup}
+                title="Descargar copia de seguridad JSON"
+                className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-transparent hover:border-slate-700 transition"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={handleImportClick}
+                title="Restaurar copia de seguridad JSON"
+                className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-transparent hover:border-slate-700 transition"
+              >
+                <Upload className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={handleResetData}
+                title="Restablecer datos de fábrica"
+                className="p-2 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition hidden sm:block"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 pb-safe">
+        <div className="grid grid-cols-5 h-16">
+          {[
+            { id: 'dashboard' as AppTab, label: 'Inicio', icon: Flame },
+            { id: 'active-workout' as AppTab, label: 'Entrenar', icon: Play, isPrimary: true },
+            { id: 'routines' as AppTab, label: 'Rutinas', icon: Dumbbell },
+            { id: 'progress' as AppTab, label: 'Progreso', icon: TrendingUp },
+            { id: 'ai-wizard' as AppTab, label: 'IA', icon: Sparkles },
+          ].map((item) => {
+            const Icon = item.icon;
+            const isActive = currentTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => onSelectTab(item.id)}
+                className={`flex flex-col items-center justify-center relative transition-colors ${
+                  isActive ? 'text-sky-400' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {item.isPrimary ? (
+                  <div className={`w-10 h-10 -mt-4 rounded-xl flex items-center justify-center shadow-lg transition-transform ${
+                    isActive
+                      ? 'bg-gradient-to-tr from-sky-500 to-emerald-400 text-slate-950 scale-105 shadow-sky-500/30'
+                      : 'bg-slate-800 text-slate-200 border border-slate-700'
+                  }`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                ) : (
+                  <Icon className="w-5 h-5 mb-1" />
+                )}
+                <span className="text-[10px] font-medium tracking-tight">{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </>
+  );
+};
