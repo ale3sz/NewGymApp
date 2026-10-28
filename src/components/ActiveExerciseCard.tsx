@@ -9,7 +9,8 @@ import {
   CheckCircle2,
   Activity,
   Flame,
-  Dumbbell
+  Dumbbell,
+  Play
 } from 'lucide-react';
 import {
   Exercise,
@@ -37,6 +38,7 @@ interface ActiveExerciseCardProps {
   onAddSet: () => void;
   onDeleteSet: (setIndex: number) => void;
   onOpenSubstitute: () => void;
+  onOpenTechnique?: () => void;
   onAutoFill: (rec: RecommendationResult) => void;
   isActiveFocus?: boolean;
 }
@@ -54,6 +56,7 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
   onAddSet,
   onDeleteSet,
   onOpenSubstitute,
+  onOpenTechnique,
   onAutoFill,
   isActiveFocus = false,
 }) => {
@@ -123,16 +126,30 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
             </div>
           </div>
 
-          {/* Biomechanical Substitute Action */}
-          <button
-            type="button"
-            onClick={onOpenSubstitute}
-            className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 border border-zinc-700 text-zinc-300 hover:text-white text-xs font-bold transition-all shrink-0 self-start sm:self-auto touch-manipulation"
-            title="Sustituir por una alternativa biomecánica equivalente"
-          >
-            <RefreshCw className="w-3.5 h-3.5 text-red-400" />
-            <span>Sustituir</span>
-          </button>
+          {/* Actions: Técnica & Sustituir */}
+          <div className="flex items-center space-x-2 shrink-0 self-start sm:self-auto">
+            {onOpenTechnique && (
+              <button
+                type="button"
+                onClick={onOpenTechnique}
+                className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 active:scale-95 border border-sky-500/30 text-sky-400 hover:text-sky-300 text-xs font-bold transition-all touch-manipulation"
+                title="Ver demostración visual y técnica de ejecución"
+              >
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>Ver Técnica</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={onOpenSubstitute}
+              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 border border-zinc-700 text-zinc-300 hover:text-white text-xs font-bold transition-all touch-manipulation"
+              title="Sustituir por una alternativa biomecánica equivalente"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Sustituir</span>
+            </button>
+          </div>
         </div>
       </div>
 

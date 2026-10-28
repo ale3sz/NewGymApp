@@ -21,7 +21,7 @@ const MAPPING_RULES = [
   { id: 'fondos_paralelas', search: ['chest dip'], fallback: '0251' },
 
   // ESPALDA
-  { id: 'jalon_pecho_barra', search: ['cable lat pulldown full range of motion'], fallback: '2330' },
+  { id: 'jalon_pecho_barra', search: ['cable pulldown (pro lat bar)', 'cable bar lateral pulldown'], fallback: '0197' },
   { id: 'remo_barra', search: ['barbell bent over row'], fallback: '0027' },
   { id: 'remo_mancuernas', search: ['dumbbell bent over row'], fallback: '0293' },
   { id: 'remo_unilateral_mancuerna', search: ['dumbbell one arm bent-over row'], fallback: '0292' },

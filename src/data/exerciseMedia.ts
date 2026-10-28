@@ -167,20 +167,19 @@ export const EXERCISE_MEDIA_MAP: Record<string, ExerciseMediaGuide> = {
   },
   "jalon_pecho_barra": {
     "internalId": "jalon_pecho_barra",
-    "datasetId": "2330",
-    "matchedName": "cable lat pulldown full range of motion",
+    "datasetId": "0197",
+    "matchedName": "cable pulldown (pro lat bar)",
     "targetMuscle": "lats",
     "secondaryMuscles": [
       "biceps",
-      "rhomboids",
-      "rear deltoids"
+      "forearms"
     ],
     "equipment": "cable",
     "previewUrl": "/exercises/previews/jalon_pecho_barra.jpg",
-    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/2330-LEprlgG.gif",
-    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2330-LEprlgG.gif",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/0197-qdRxqCj.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0197-qdRxqCj.gif",
     "instructionsEs": [
-      "Siéntate en la máquina de jalón al pecho con las rodillas colocadas debajo de las almohadillas. Sujeta la barra del cable con un agarre prono, un poco más separado que el ancho de los hombros. Inclínate ligeramente hacia atrás y mantén el pecho elevado, conservando un ligero arco en la zona lumbar. Jala la barra hacia la parte superior del pecho, apretando los omóplatos entre sí. Haz una pausa por un momento en la parte baja del movimiento y luego suelta lentamente la barra de vuelta a la posición inicial. Repite el número de repeticiones deseado."
+      "Ajusta la altura del asiento para que tus muslos queden paralelos al suelo y tus pies queden apoyados planos en el suelo. Sujeta la barra de jalón con un agarre prono, un poco más separado que el ancho de los hombros. Siéntate e inclínate ligeramente hacia atrás, manteniendo el pecho elevado y la espalda recta. Jala la barra hacia el pecho, apretando los omóplatos entre sí. Haz una pausa por un momento en la parte baja del movimiento y luego suelta lentamente la barra de vuelta a la posición inicial. Repite el número de repeticiones deseado."
     ]
   },
   "remo_barra": {

@@ -48,6 +48,7 @@ import { RestTimer } from '../components/RestTimer';
 import { ExerciseSubstituteModal } from '../components/ExerciseSubstituteModal';
 import { ActiveExerciseCard } from '../components/ActiveExerciseCard';
 import { WorkoutSummaryModal, WorkoutSummaryData } from '../components/WorkoutSummaryModal';
+import { ExerciseTechniqueModal } from '../components/ExerciseTechniqueModal';
 
 interface ActiveWorkoutPageProps {
   routine: Routine | null;
@@ -88,6 +89,9 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   // Substitute Modal State
   const [substituteModalOpen, setSubstituteModalOpen] = useState<boolean>(false);
   const [exerciseToSubstitute, setExerciseToSubstitute] = useState<Exercise | null>(null);
+
+  // Technique / Video Demo Modal State
+  const [techniqueExercise, setTechniqueExercise] = useState<Exercise | null>(null);
 
   // Victory / Completion Modal
   const [showCompletionModal, setShowCompletionModal] = useState<boolean>(false);
@@ -627,6 +631,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
                 onAddSet={() => handleAddSet(exercise, index)}
                 onDeleteSet={(sIdx) => handleDeleteSet(exercise.id, sIdx)}
                 onOpenSubstitute={() => handleOpenSubstitute(exercise)}
+                onOpenTechnique={() => setTechniqueExercise(exercise)}
                 onAutoFill={(r) => handleAutoFill(exercise.id, r)}
                 isActiveFocus={isActive}
               />
@@ -695,6 +700,13 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
           setShowCompletionModal(false);
           onFinishWorkout();
         }}
+      />
+
+      {/* 8. Exercise Technique & Biomechanical Demo Modal */}
+      <ExerciseTechniqueModal
+        exercise={techniqueExercise}
+        isOpen={!!techniqueExercise}
+        onClose={() => setTechniqueExercise(null)}
       />
     </div>
   );
