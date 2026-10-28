@@ -1,0 +1,19 @@
+{
+  "name": "GymScience - Entrenamiento Basado en Evidencia",
+  "short_name": "GymScience",
+  "description": "Tu app de entrenamiento inteligente, sobrecarga progresiva y gestión de rutinas.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "./brand/logo.jpg",
+      "sizes": "192x192 512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

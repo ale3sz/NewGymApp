@@ -30,6 +30,7 @@ import {
 } from '../engine/aiRoutineGenerator';
 import { getRoutines, saveRoutines, setActiveRoutineId } from '../storage/storage';
 import { AppTab } from '../types';
+import { aiCoachImg } from '../constants/brandAssets';
 
 const ALL_WEEK_DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
@@ -157,7 +158,7 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl flex items-center justify-between">
         <div className="flex items-center space-x-3.5">
           <div className="w-12 h-12 rounded-2xl overflow-hidden border border-amber-500/30 shrink-0 shadow-lg shadow-amber-500/10">
-            <img src="/brand/ai-coach.jpg" alt="AI Coach" className="w-full h-full object-cover" />
+            <img src={aiCoachImg} alt="AI Coach" className="w-full h-full object-cover" />
           </div>
           <div>
             <h1 className="text-xl font-black text-white">Generador IA de Rutinas Científicas</h1>

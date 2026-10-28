@@ -9,23 +9,27 @@ import {
   Download,
   Upload,
   Play,
-  RotateCcw
+  RotateCcw,
+  Smartphone
 } from 'lucide-react';
 import { AppTab } from '../types';
 import { exportBackupData, importBackupData, resetAllData } from '../storage/storage';
+import { logoImg } from '../constants/brandAssets';
 
 interface NavbarProps {
   currentTab: AppTab;
   onSelectTab: (tab: AppTab) => void;
   activeWorkoutDayName?: string | null;
   onDataChanged?: () => void;
+  onOpenInstallModal?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   currentTab,
   onSelectTab,
   activeWorkoutDayName,
-  onDataChanged
+  onDataChanged,
+  onOpenInstallModal
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -94,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => onSelectTab('dashboard')}
             >
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 to-rose-500 p-0.5 shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform overflow-hidden">
-                <img src="/brand/logo.jpg" alt="GymScience Logo" className="w-full h-full object-cover rounded-[10px]" />
+                <img src={logoImg} alt="GymScience Logo" className="w-full h-full object-cover rounded-[10px]" />
               </div>
               <div>
                 <div className="flex items-center space-x-2">
@@ -134,8 +138,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               })}
             </nav>
 
-            {/* Quick Actions (Backup / Restore) */}
+            {/* Quick Actions (Install PWA / Backup / Restore) */}
             <div className="flex items-center space-x-2">
+              {/* Botón Descargar App como Acceso Directo */}
+              {onOpenInstallModal && (
+                <button
+                  onClick={onOpenInstallModal}
+                  title="Descargar como App / Acceso directo a tu pantalla"
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-md shadow-red-600/25 transition transform active:scale-95"
+                >
+                  <Smartphone className="w-4 h-4" />
+                  <span>Descargar App</span>
+                </button>
+              )}
+
               <input
                 ref={fileInputRef}
                 type="file"

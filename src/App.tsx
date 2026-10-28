@@ -8,6 +8,7 @@ import {
 import { getSmartWorkoutRecommendation } from './engine/smartScheduleEngine';
 import { Navbar } from './components/Navbar';
 import { EvidenceGuideModal } from './components/EvidenceGuideModal';
+import { InstallAppModal } from './components/InstallAppModal';
 import { DashboardPage } from './pages/DashboardPage';
 import { ActiveWorkoutPage } from './pages/ActiveWorkoutPage';
 import { RoutinesPage } from './pages/RoutinesPage';
@@ -34,6 +35,7 @@ export const App: React.FC = () => {
 
   // Guide Modal
   const [guideModalOpen, setGuideModalOpen] = useState<boolean>(false);
+  const [installModalOpen, setInstallModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     refreshData();
@@ -99,6 +101,7 @@ export const App: React.FC = () => {
         onSelectTab={handleSelectTab}
         activeWorkoutDayName={currentTab === 'active-workout' ? 'Activo' : null}
         onDataChanged={refreshData}
+        onOpenInstallModal={() => setInstallModalOpen(true)}
       />
 
       {/* Main Body */}
@@ -116,6 +119,7 @@ export const App: React.FC = () => {
               }
             }}
             onStartDayWorkout={handleStartDayWorkout}
+            onOpenInstallModal={() => setInstallModalOpen(true)}
           />
         )}
 
@@ -157,6 +161,12 @@ export const App: React.FC = () => {
       <EvidenceGuideModal
         isOpen={guideModalOpen}
         onClose={() => setGuideModalOpen(false)}
+      />
+
+      {/* PWA / App Shortcut Install Modal */}
+      <InstallAppModal
+        isOpen={installModalOpen}
+        onClose={() => setInstallModalOpen(false)}
       />
     </div>
   );

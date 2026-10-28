@@ -38,6 +38,7 @@ import { prescribeExerciseParameters } from '../engine/trainerEngine';
 import { analyzeExerciseStagnation } from '../engine/stagnationEngine';
 import { estimateAutoregulated1RM, calculateEffectiveReps } from '../utils/formulas';
 import { evaluateNextSetObjective } from '../engine/intraWorkoutCoach';
+import { getWorkoutDayBadge } from '../constants/brandAssets';
 import {
   recordObservedFatigue,
   getPrescribedOptimalRest,
@@ -509,11 +510,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-start space-x-3.5">
           {(() => {
-            const lower = workoutDay.name.toLowerCase();
-            const badge = lower.includes('push') || lower.includes('empuje') ? '/brand/push.jpg'
-              : lower.includes('pull') || lower.includes('tracci') || lower.includes('espalda') ? '/brand/pull.jpg'
-              : lower.includes('leg') || lower.includes('pierna') ? '/brand/legs.jpg'
-              : null;
+            const badge = getWorkoutDayBadge(workoutDay.name);
             return badge ? (
               <img src={badge} alt={workoutDay.name} className="w-14 h-14 rounded-2xl object-cover border border-red-500/30 shadow-lg shadow-red-500/10 shrink-0 hidden sm:block" />
             ) : null;

@@ -14,13 +14,15 @@ import {
   Layers,
   Award,
   Activity,
-  Download
+  Download,
+  Smartphone
 } from 'lucide-react';
 import { Routine, CompletedDayLog, ScheduleRecommendation, AppTab } from '../types';
 import { getCurrentWeekDays } from '../engine/smartScheduleEngine';
 import { evaluateSystemicFatigue } from '../engine/deloadDetector';
 import { getAllWorkoutLogs } from '../storage/storage';
 import { downloadRoutineAsText } from '../utils/routineExport';
+import { aiCoachImg, getWorkoutDayBadge } from '../constants/brandAssets';
 
 interface DashboardPageProps {
   activeRoutine: Routine | null;
@@ -28,6 +30,7 @@ interface DashboardPageProps {
   recommendation: ScheduleRecommendation | null;
   onNavigate: (tab: AppTab, params?: { dayId?: string; routineId?: string }) => void;
   onStartDayWorkout: (routineId: string, dayId: string) => void;
+  onOpenInstallModal?: () => void;
 }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({
@@ -35,7 +38,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   completedLogs,
   recommendation,
   onNavigate,
-  onStartDayWorkout
+  onStartDayWorkout,
+  onOpenInstallModal
 }) => {
   const weekDays = getCurrentWeekDays();
   const allWorkoutLogs = getAllWorkoutLogs();
@@ -77,6 +81,28 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Banner de instalación PWA / Acceso directo a tu celular */}
+      {onOpenInstallModal && (
+        <div className="bg-gradient-to-r from-zinc-900 via-zinc-900 to-red-950/30 border border-red-500/30 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-red-600/15 border border-red-500/30 flex items-center justify-center text-red-400 shrink-0 shadow-md">
+              <Smartphone className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="text-sm font-extrabold text-white">Descargar GymScience en tu Celular</h4>
+              <p className="text-xs text-zinc-400 mt-0.5">Agrega el acceso directo para abrirla en pantalla completa como una app nativa.</p>
+            </div>
+          </div>
+          <button
+            onClick={onOpenInstallModal}
+            className="flex items-center justify-center space-x-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs shadow-lg shadow-red-600/30 transition self-start sm:self-auto shrink-0 transform active:scale-95"
+          >
+            <Smartphone className="w-4 h-4" />
+            <span>Descargar como App</span>
+          </button>
+        </div>
+      )}
 
       {/* Monitor Fisiológico del Atleta (Dr. Marcus Vance) */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-xl">
@@ -214,7 +240,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start space-x-4 max-w-xl">
               <div className="w-14 h-14 rounded-2xl overflow-hidden border border-red-500/30 shadow-lg shadow-red-500/10 shrink-0 hidden sm:block">
-                <img src="/brand/ai-coach.jpg" alt="AI Coach" className="w-full h-full object-cover" />
+                <img src={aiCoachImg} alt="AI Coach" className="w-full h-full object-cover" />
               </div>
               <div className="space-y-1.5">
                 <div className="inline-flex items-center space-x-1.5 text-xs font-bold text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/20">
@@ -300,11 +326,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         {activeRoutine && activeRoutine.days && activeRoutine.days.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {activeRoutine.days.map((day, idx) => {
-              const lower = day.name.toLowerCase();
-              const badgeImg = lower.includes('push') || lower.includes('empuje') ? '/brand/push.jpg'
-                : lower.includes('pull') || lower.includes('tracci') || lower.includes('espalda') ? '/brand/pull.jpg'
-                : lower.includes('leg') || lower.includes('pierna') ? '/brand/legs.jpg'
-                : null;
+              const badgeImg = getWorkoutDayBadge(day.name);
 
               return (
                 <div

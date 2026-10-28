@@ -27,6 +27,7 @@ import {
 import { prescribeExerciseParameters } from '../engine/trainerEngine';
 import { WeeklyVolumeModal } from '../components/WeeklyVolumeModal';
 import { downloadRoutineAsText } from '../utils/routineExport';
+import { getWorkoutDayBadge } from '../constants/brandAssets';
 
 interface RoutinesPageProps {
   onStartDayWorkout: (routineId: string, dayId: string) => void;
@@ -415,11 +416,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
           {/* Days Tabs */}
           <div className="flex items-center space-x-2 overflow-x-auto pb-2">
             {(editingRoutine.days || []).map((day) => {
-              const lower = day.name.toLowerCase();
-              const badge = lower.includes('push') || lower.includes('empuje') ? '/brand/push.jpg'
-                : lower.includes('pull') || lower.includes('tracci') || lower.includes('espalda') ? '/brand/pull.jpg'
-                : lower.includes('leg') || lower.includes('pierna') ? '/brand/legs.jpg'
-                : null;
+              const badge = getWorkoutDayBadge(day.name);
 
               return (
                 <button
