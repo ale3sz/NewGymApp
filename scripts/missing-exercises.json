@@ -1,0 +1,1274 @@
+[
+  {
+    "id": "press_plano_smith",
+    "name": "Press plano en Smith",
+    "primaryMuscle": "pecho",
+    "category": "smith"
+  },
+  {
+    "id": "press_plano_maquina",
+    "name": "Press plano en mquina",
+    "primaryMuscle": "pecho",
+    "category": "maquina"
+  },
+  {
+    "id": "press_plano_poleas",
+    "name": "Press plano en poleas",
+    "primaryMuscle": "pecho",
+    "category": "polea"
+  },
+  {
+    "id": "press_plano_bandas",
+    "name": "Press plano con bandas",
+    "primaryMuscle": "pecho",
+    "category": "banda"
+  },
+  {
+    "id": "press_plano_unilateral_polea",
+    "name": "Press plano unilateral en polea",
+    "primaryMuscle": "pecho",
+    "category": "polea"
+  },
+  {
+    "id": "press_inclinado_smith",
+    "name": "Press inclinado en Smith",
+    "primaryMuscle": "pecho",
+    "category": "smith"
+  },
+  {
+    "id": "press_inclinado_maquina",
+    "name": "Press inclinado en mquina",
+    "primaryMuscle": "pecho",
+    "category": "maquina"
+  },
+  {
+    "id": "press_inclinado_poleas",
+    "name": "Press inclinado en poleas",
+    "primaryMuscle": "pecho",
+    "category": "polea"
+  },
+  {
+    "id": "press_inclinado_bandas",
+    "name": "Press inclinado con bandas",
+    "primaryMuscle": "pecho",
+    "category": "banda"
+  },
+  {
+    "id": "press_declinado_mancuernas",
+    "name": "Press declinado con mancuernas",
+    "primaryMuscle": "pecho",
+    "category": "mancuerna"
+  },
+  {
+    "id": "press_declinado_smith",
+    "name": "Press declinado en Smith",
+    "primaryMuscle": "pecho",
+    "category": "smith"
+  },
+  {
+    "id": "press_declinado_maquina",
+    "name": "Press declinado en mquina",
+    "primaryMuscle": "pecho",
+    "category": "maquina"
+  },
+  {
+    "id": "press_declinado_poleas",
+    "name": "Press declinado en poleas",
+    "primaryMuscle": "pecho",
+    "category": "polea"
+  },
+  {
+    "id": "aperturas_bandas",
+    "name": "Aperturas con bandas",
+    "primaryMuscle": "pecho",
+    "category": "banda"
+  },
+  {
+    "id": "aperturas_unilaterales_polea",
+    "name": "Aperturas unilaterales en polea",
+    "primaryMuscle": "pecho",
+    "category": "polea"
+  },
+  {
+    "id": "fondos_asistidos",
+    "name": "Fondos asistidos",
+    "primaryMuscle": "pecho",
+    "category": "maquina"
+  },
+  {
+    "id": "fondos_lastrados",
+    "name": "Fondos lastrados",
+    "primaryMuscle": "pecho",
+    "category": "corporal"
+  },
+  {
+    "id": "fondos_maquina",
+    "name": "Fondos en mquina",
+    "primaryMuscle": "pecho",
+    "category": "maquina"
+  },
+  {
+    "id": "jalon_agarre_neutro",
+    "name": "Jaln al pecho con agarre neutro",
+    "primaryMuscle": "espalda",
+    "category": "polea"
+  },
+  {
+    "id": "jalon_cuerda",
+    "name": "Jaln al pecho con cuerda",
+    "primaryMuscle": "espalda",
+    "category": "polea"
+  },
+  {
+    "id": "jalon_unilateral_polea",
+    "name": "Jaln unilateral en polea",
+    "primaryMuscle": "espalda",
+    "category": "polea"
+  },
+  {
+    "id": "jalon_maquina",
+    "name": "Jaln en mquina",
+    "primaryMuscle": "espalda",
+    "category": "maquina"
+  },
+  {
+    "id": "dominadas_asistidas",
+    "name": "Dominadas asistidas",
+    "primaryMuscle": "espalda",
+    "category": "maquina"
+  },
+  {
+    "id": "dominadas_lastradas",
+    "name": "Dominadas lastradas",
+    "primaryMuscle": "espalda",
+    "category": "corporal"
+  },
+  {
+    "id": "dominadas_banda",
+    "name": "Dominadas con banda",
+    "primaryMuscle": "espalda",
+    "category": "banda"
+  },
+  {
+    "id": "remo_maquina",
+    "name": "Remo en mquina",
+    "primaryMuscle": "espalda",
+    "category": "maquina"
+  },
+  {
+    "id": "remo_smith",
+    "name": "Remo en Smith",
+    "primaryMuscle": "espalda",
+    "category": "smith"
+  },
+  {
+    "id": "remo_bandas",
+    "name": "Remo con bandas",
+    "primaryMuscle": "espalda",
+    "category": "banda"
+  },
+  {
+    "id": "remo_unilateral_polea",
+    "name": "Remo unilateral en polea",
+    "primaryMuscle": "espalda",
+    "category": "polea"
+  },
+  {
+    "id": "remo_unilateral_maquina",
+    "name": "Remo unilateral en mquina",
+    "primaryMuscle": "espalda",
+    "category": "maquina"
+  },
+  {
+    "id": "remo_pecho_apoyado_mancuernas",
+    "name": "Remo pecho apoyado con mancuernas",
+    "primaryMuscle": "espalda",
+    "category": "mancuerna"
+  },
+  {
+    "id": "remo_pecho_apoyado_barra",
+    "name": "Remo pecho apoyado con barra",
+    "primaryMuscle": "espalda",
+    "category": "barra"
+  },
+  {
+    "id": "remo_pecho_apoyado_maquina",
+    "name": "Remo pecho apoyado en mquina",
+    "primaryMuscle": "espalda",
+    "category": "maquina"
+  },
+  {
+    "id": "remo_pecho_apoyado_polea",
+    "name": "Remo pecho apoyado en polea",
+    "primaryMuscle": "espalda",
+    "category": "polea"
+  },
+  {
+    "id": "remo_t_discos",
+    "name": "Remo T-bar con discos",
+    "primaryMuscle": "espalda",
+    "category": "barra"
+  },
+  {
+    "id": "remo_t_maquina",
+    "name": "Remo T-bar en mquina",
+    "primaryMuscle": "espalda",
+    "category": "maquina"
+  },
+  {
+    "id": "remo_t_barra",
+    "name": "Remo T-bar con barra",
+    "primaryMuscle": "espalda",
+    "category": "barra"
+  },
+  {
+    "id": "pullover_polea",
+    "name": "Pullover en polea",
+    "primaryMuscle": "espalda",
+    "category": "polea"
+  },
+  {
+    "id": "pullover_cuerda",
+    "name": "Pullover con cuerda en polea",
+    "primaryMuscle": "espalda",
+    "category": "polea"
+  },
+  {
+    "id": "pullover_barra",
+    "name": "Pullover con barra",
+    "primaryMuscle": "espalda",
+    "category": "barra"
+  },
+  {
+    "id": "pullover_maquina",
+    "name": "Pullover en mquina",
+    "primaryMuscle": "espalda",
+    "category": "maquina"
+  },
+  {
+    "id": "pullover_banda",
+    "name": "Pullover con banda",
+    "primaryMuscle": "espalda",
+    "category": "banda"
+  },
+  {
+    "id": "sentadilla_smith",
+    "name": "Sentadilla en Smith",
+    "primaryMuscle": "cuadriceps",
+    "category": "smith"
+  },
+  {
+    "id": "sentadilla_maquina",
+    "name": "Sentadilla en mquina",
+    "primaryMuscle": "cuadriceps",
+    "category": "maquina"
+  },
+  {
+    "id": "hack_squat",
+    "name": "Hack squat",
+    "primaryMuscle": "cuadriceps",
+    "category": "maquina"
+  },
+  {
+    "id": "belt_squat",
+    "name": "Belt squat",
+    "primaryMuscle": "cuadriceps",
+    "category": "maquina"
+  },
+  {
+    "id": "sentadilla_kettlebell",
+    "name": "Sentadilla con kettlebell",
+    "primaryMuscle": "cuadriceps",
+    "category": "kettlebell"
+  },
+  {
+    "id": "sentadilla_banda",
+    "name": "Sentadilla con banda",
+    "primaryMuscle": "cuadriceps",
+    "category": "banda"
+  },
+  {
+    "id": "prensa_horizontal",
+    "name": "Prensa horizontal",
+    "primaryMuscle": "cuadriceps",
+    "category": "maquina"
+  },
+  {
+    "id": "prensa_vertical",
+    "name": "Prensa vertical",
+    "primaryMuscle": "cuadriceps",
+    "category": "maquina"
+  },
+  {
+    "id": "prensa_unilateral",
+    "name": "Prensa unilateral",
+    "primaryMuscle": "cuadriceps",
+    "category": "maquina"
+  },
+  {
+    "id": "prensa_maquina",
+    "name": "Prensa en mquina",
+    "primaryMuscle": "cuadriceps",
+    "category": "maquina"
+  },
+  {
+    "id": "extension_unilateral_maquina",
+    "name": "Extensin unilateral en mquina",
+    "primaryMuscle": "cuadriceps",
+    "category": "maquina"
+  },
+  {
+    "id": "extension_banda",
+    "name": "Extensin con banda",
+    "primaryMuscle": "cuadriceps",
+    "category": "banda"
+  },
+  {
+    "id": "extension_polea",
+    "name": "Extensin en polea",
+    "primaryMuscle": "cuadriceps",
+    "category": "polea"
+  },
+  {
+    "id": "zancadas_barra",
+    "name": "Zancadas con barra",
+    "primaryMuscle": "cuadriceps",
+    "category": "barra"
+  },
+  {
+    "id": "zancadas_mancuernas",
+    "name": "Zancadas con mancuernas",
+    "primaryMuscle": "cuadriceps",
+    "category": "mancuerna"
+  },
+  {
+    "id": "zancadas_smith",
+    "name": "Zancadas en Smith",
+    "primaryMuscle": "cuadriceps",
+    "category": "smith"
+  },
+  {
+    "id": "zancadas_kettlebell",
+    "name": "Zancadas con kettlebell",
+    "primaryMuscle": "cuadriceps",
+    "category": "kettlebell"
+  },
+  {
+    "id": "zancadas_peso_corporal",
+    "name": "Zancadas con peso corporal",
+    "primaryMuscle": "cuadriceps",
+    "category": "corporal"
+  },
+  {
+    "id": "zancadas_bandas",
+    "name": "Zancadas con bandas",
+    "primaryMuscle": "cuadriceps",
+    "category": "banda"
+  },
+  {
+    "id": "walking_lunges",
+    "name": "Walking lunges (Zancadas caminando)",
+    "primaryMuscle": "cuadriceps",
+    "category": "mancuerna"
+  },
+  {
+    "id": "reverse_lunges",
+    "name": "Reverse lunges (Zancadas inversas)",
+    "primaryMuscle": "cuadriceps",
+    "category": "mancuerna"
+  },
+  {
+    "id": "bulgara_mancuernas",
+    "name": "Sentadilla blgara con mancuernas",
+    "primaryMuscle": "cuadriceps",
+    "category": "mancuerna"
+  },
+  {
+    "id": "bulgara_barra",
+    "name": "Sentadilla blgara con barra",
+    "primaryMuscle": "cuadriceps",
+    "category": "barra"
+  },
+  {
+    "id": "bulgara_smith",
+    "name": "Sentadilla blgara en Smith",
+    "primaryMuscle": "cuadriceps",
+    "category": "smith"
+  },
+  {
+    "id": "bulgara_kettlebell",
+    "name": "Sentadilla blgara con kettlebell",
+    "primaryMuscle": "cuadriceps",
+    "category": "kettlebell"
+  },
+  {
+    "id": "bulgara_peso_corporal",
+    "name": "Sentadilla blgara con peso corporal",
+    "primaryMuscle": "cuadriceps",
+    "category": "corporal"
+  },
+  {
+    "id": "bulgara_bandas",
+    "name": "Sentadilla blgara con bandas",
+    "primaryMuscle": "cuadriceps",
+    "category": "banda"
+  },
+  {
+    "id": "step_up_mancuernas",
+    "name": "Step-up con mancuernas",
+    "primaryMuscle": "cuadriceps",
+    "category": "mancuerna"
+  },
+  {
+    "id": "step_up_barra",
+    "name": "Step-up con barra",
+    "primaryMuscle": "cuadriceps",
+    "category": "barra"
+  },
+  {
+    "id": "step_up_smith",
+    "name": "Step-up en Smith",
+    "primaryMuscle": "cuadriceps",
+    "category": "smith"
+  },
+  {
+    "id": "step_up_kettlebell",
+    "name": "Step-up con kettlebell",
+    "primaryMuscle": "cuadriceps",
+    "category": "kettlebell"
+  },
+  {
+    "id": "step_up_peso_corporal",
+    "name": "Step-up con peso corporal",
+    "primaryMuscle": "cuadriceps",
+    "category": "corporal"
+  },
+  {
+    "id": "hip_thrust_mancuernas",
+    "name": "Hip thrust con mancuernas",
+    "primaryMuscle": "gluteos",
+    "category": "mancuerna"
+  },
+  {
+    "id": "hip_thrust_smith",
+    "name": "Hip thrust en Smith",
+    "primaryMuscle": "gluteos",
+    "category": "smith"
+  },
+  {
+    "id": "hip_thrust_maquina",
+    "name": "Hip thrust en mquina",
+    "primaryMuscle": "gluteos",
+    "category": "maquina"
+  },
+  {
+    "id": "hip_thrust_banda",
+    "name": "Hip thrust con banda",
+    "primaryMuscle": "gluteos",
+    "category": "banda"
+  },
+  {
+    "id": "hip_thrust_unilateral",
+    "name": "Hip thrust unilateral",
+    "primaryMuscle": "gluteos",
+    "category": "corporal"
+  },
+  {
+    "id": "glute_bridge_barra",
+    "name": "Glute bridge con barra",
+    "primaryMuscle": "gluteos",
+    "category": "barra"
+  },
+  {
+    "id": "glute_bridge_mancuerna",
+    "name": "Glute bridge con mancuerna",
+    "primaryMuscle": "gluteos",
+    "category": "mancuerna"
+  },
+  {
+    "id": "patada_polea",
+    "name": "Patada de glteo en polea",
+    "primaryMuscle": "gluteos",
+    "category": "polea"
+  },
+  {
+    "id": "patada_banda",
+    "name": "Patada de glteo con banda",
+    "primaryMuscle": "gluteos",
+    "category": "banda"
+  },
+  {
+    "id": "patada_maquina",
+    "name": "Patada de glteo en mquina",
+    "primaryMuscle": "gluteos",
+    "category": "maquina"
+  },
+  {
+    "id": "patada_peso_corporal",
+    "name": "Patada de glteo con peso corporal",
+    "primaryMuscle": "gluteos",
+    "category": "corporal"
+  },
+  {
+    "id": "abduccion_maquina",
+    "name": "Abduccin de cadera en mquina",
+    "primaryMuscle": "gluteos",
+    "category": "maquina"
+  },
+  {
+    "id": "abduccion_polea",
+    "name": "Abduccin de cadera en polea",
+    "primaryMuscle": "gluteos",
+    "category": "polea"
+  },
+  {
+    "id": "abduccion_banda",
+    "name": "Abduccin de cadera con banda",
+    "primaryMuscle": "gluteos",
+    "category": "banda"
+  },
+  {
+    "id": "abduccion_mancuerna",
+    "name": "Abduccin de cadera con mancuerna",
+    "primaryMuscle": "gluteos",
+    "category": "mancuerna"
+  },
+  {
+    "id": "abduccion_peso_corporal",
+    "name": "Abduccin de cadera peso corporal",
+    "primaryMuscle": "gluteos",
+    "category": "corporal"
+  },
+  {
+    "id": "rdl_smith",
+    "name": "Peso muerto rumano en Smith",
+    "primaryMuscle": "femorales",
+    "category": "smith"
+  },
+  {
+    "id": "rdl_kettlebell",
+    "name": "Peso muerto rumano con kettlebell",
+    "primaryMuscle": "femorales",
+    "category": "kettlebell"
+  },
+  {
+    "id": "rdl_polea",
+    "name": "Peso muerto rumano en polea",
+    "primaryMuscle": "femorales",
+    "category": "polea"
+  },
+  {
+    "id": "rdl_bandas",
+    "name": "Peso muerto rumano con bandas",
+    "primaryMuscle": "femorales",
+    "category": "banda"
+  },
+  {
+    "id": "rdl_unilateral_mancuerna",
+    "name": "RDL unilateral con mancuerna",
+    "primaryMuscle": "femorales",
+    "category": "mancuerna"
+  },
+  {
+    "id": "rdl_unilateral_barra",
+    "name": "RDL unilateral con barra",
+    "primaryMuscle": "femorales",
+    "category": "barra"
+  },
+  {
+    "id": "pm_convencional_barra",
+    "name": "Peso muerto convencional con barra",
+    "primaryMuscle": "femorales",
+    "category": "barra"
+  },
+  {
+    "id": "pm_sumo_barra",
+    "name": "Peso muerto sumo con barra",
+    "primaryMuscle": "femorales",
+    "category": "barra"
+  },
+  {
+    "id": "pm_mancuernas",
+    "name": "Peso muerto con mancuernas",
+    "primaryMuscle": "femorales",
+    "category": "mancuerna"
+  },
+  {
+    "id": "pm_kettlebell",
+    "name": "Peso muerto con kettlebell",
+    "primaryMuscle": "femorales",
+    "category": "kettlebell"
+  },
+  {
+    "id": "pm_trap_bar",
+    "name": "Peso muerto con barra Trap",
+    "primaryMuscle": "femorales",
+    "category": "barra"
+  },
+  {
+    "id": "pm_smith",
+    "name": "Peso muerto en Smith",
+    "primaryMuscle": "femorales",
+    "category": "smith"
+  },
+  {
+    "id": "pm_polea",
+    "name": "Peso muerto en polea",
+    "primaryMuscle": "femorales",
+    "category": "polea"
+  },
+  {
+    "id": "curl_femoral_unilateral",
+    "name": "Curl femoral unilateral",
+    "primaryMuscle": "femorales",
+    "category": "maquina"
+  },
+  {
+    "id": "curl_femoral_fitball",
+    "name": "Curl femoral con fitball",
+    "primaryMuscle": "femorales",
+    "category": "corporal"
+  },
+  {
+    "id": "curl_femoral_banda",
+    "name": "Curl femoral con banda",
+    "primaryMuscle": "femorales",
+    "category": "banda"
+  },
+  {
+    "id": "curl_femoral_deslizante",
+    "name": "Curl femoral deslizante",
+    "primaryMuscle": "femorales",
+    "category": "corporal"
+  },
+  {
+    "id": "curl_femoral_polea",
+    "name": "Curl femoral en polea",
+    "primaryMuscle": "femorales",
+    "category": "polea"
+  },
+  {
+    "id": "gemelos_pie_smith",
+    "name": "Elevacin de talones en Smith",
+    "primaryMuscle": "pantorrillas",
+    "category": "smith"
+  },
+  {
+    "id": "gemelos_pie_barra",
+    "name": "Elevacin de talones con barra",
+    "primaryMuscle": "pantorrillas",
+    "category": "barra"
+  },
+  {
+    "id": "gemelos_pie_kettlebell",
+    "name": "Elevacin de talones con kettlebell",
+    "primaryMuscle": "pantorrillas",
+    "category": "kettlebell"
+  },
+  {
+    "id": "gemelos_pie_corporal",
+    "name": "Elevacin de talones peso corporal",
+    "primaryMuscle": "pantorrillas",
+    "category": "corporal"
+  },
+  {
+    "id": "gemelos_pie_unilateral",
+    "name": "Elevacin de talones unilateral",
+    "primaryMuscle": "pantorrillas",
+    "category": "corporal"
+  },
+  {
+    "id": "gemelos_pie_banda",
+    "name": "Elevacin de talones con banda",
+    "primaryMuscle": "pantorrillas",
+    "category": "banda"
+  },
+  {
+    "id": "gemelos_sentado_maquina",
+    "name": "Elevacin de talones sentado en mquina",
+    "primaryMuscle": "pantorrillas",
+    "category": "maquina"
+  },
+  {
+    "id": "gemelos_sentado_mancuerna",
+    "name": "Elevacin de talones sentado con mancuerna",
+    "primaryMuscle": "pantorrillas",
+    "category": "mancuerna"
+  },
+  {
+    "id": "gemelos_sentado_barra",
+    "name": "Elevacin de talones sentado con barra",
+    "primaryMuscle": "pantorrillas",
+    "category": "barra"
+  },
+  {
+    "id": "gemelos_sentado_smith",
+    "name": "Elevacin de talones sentado en Smith",
+    "primaryMuscle": "pantorrillas",
+    "category": "smith"
+  },
+  {
+    "id": "gemelos_sentado_banda",
+    "name": "Elevacin de talones sentado con banda",
+    "primaryMuscle": "pantorrillas",
+    "category": "banda"
+  },
+  {
+    "id": "press_hombros_smith",
+    "name": "Press de hombros en Smith",
+    "primaryMuscle": "hombros",
+    "category": "smith"
+  },
+  {
+    "id": "press_hombros_maquina",
+    "name": "Press de hombros en mquina",
+    "primaryMuscle": "hombros",
+    "category": "maquina"
+  },
+  {
+    "id": "press_hombros_polea",
+    "name": "Press de hombros en polea",
+    "primaryMuscle": "hombros",
+    "category": "polea"
+  },
+  {
+    "id": "press_hombros_kettlebell",
+    "name": "Press de hombros con kettlebell",
+    "primaryMuscle": "hombros",
+    "category": "kettlebell"
+  },
+  {
+    "id": "press_hombros_bandas",
+    "name": "Press de hombros con bandas",
+    "primaryMuscle": "hombros",
+    "category": "banda"
+  },
+  {
+    "id": "press_hombros_unilateral",
+    "name": "Press de hombros unilateral",
+    "primaryMuscle": "hombros",
+    "category": "mancuerna"
+  },
+  {
+    "id": "elevaciones_laterales_polea",
+    "name": "Elevaciones laterales en polea",
+    "primaryMuscle": "hombros",
+    "category": "polea"
+  },
+  {
+    "id": "elevaciones_laterales_maquina",
+    "name": "Elevaciones laterales en mquina",
+    "primaryMuscle": "hombros",
+    "category": "maquina"
+  },
+  {
+    "id": "elevaciones_laterales_bandas",
+    "name": "Elevaciones laterales con bandas",
+    "primaryMuscle": "hombros",
+    "category": "banda"
+  },
+  {
+    "id": "elevaciones_laterales_disco",
+    "name": "Elevaciones laterales con disco",
+    "primaryMuscle": "hombros",
+    "category": "corporal"
+  },
+  {
+    "id": "elevaciones_laterales_kettlebell",
+    "name": "Elevaciones laterales con kettlebell",
+    "primaryMuscle": "hombros",
+    "category": "kettlebell"
+  },
+  {
+    "id": "elevaciones_laterales_unilateral",
+    "name": "Elevaciones laterales unilaterales",
+    "primaryMuscle": "hombros",
+    "category": "polea"
+  },
+  {
+    "id": "elevaciones_frontales_mancuernas",
+    "name": "Elevaciones frontales con mancuernas",
+    "primaryMuscle": "hombros",
+    "category": "mancuerna"
+  },
+  {
+    "id": "elevaciones_frontales_barra",
+    "name": "Elevaciones frontales con barra",
+    "primaryMuscle": "hombros",
+    "category": "barra"
+  },
+  {
+    "id": "elevaciones_frontales_polea",
+    "name": "Elevaciones frontales en polea",
+    "primaryMuscle": "hombros",
+    "category": "polea"
+  },
+  {
+    "id": "elevaciones_frontales_disco",
+    "name": "Elevaciones frontales con disco",
+    "primaryMuscle": "hombros",
+    "category": "corporal"
+  },
+  {
+    "id": "elevaciones_frontales_bandas",
+    "name": "Elevaciones frontales con bandas",
+    "primaryMuscle": "hombros",
+    "category": "banda"
+  },
+  {
+    "id": "elevaciones_frontales_kettlebell",
+    "name": "Elevaciones frontales con kettlebell",
+    "primaryMuscle": "hombros",
+    "category": "kettlebell"
+  },
+  {
+    "id": "pajaros_maquina",
+    "name": "Pjaros en mquina",
+    "primaryMuscle": "hombros",
+    "category": "maquina"
+  },
+  {
+    "id": "pajaros_polea",
+    "name": "Pjaros en polea",
+    "primaryMuscle": "hombros",
+    "category": "polea"
+  },
+  {
+    "id": "pajaros_bandas",
+    "name": "Pjaros con bandas",
+    "primaryMuscle": "hombros",
+    "category": "banda"
+  },
+  {
+    "id": "reverse_pec_deck",
+    "name": "Reverse pec deck",
+    "primaryMuscle": "hombros",
+    "category": "maquina"
+  },
+  {
+    "id": "remo_alto_polea",
+    "name": "Remo alto en polea para deltoides posterior",
+    "primaryMuscle": "hombros",
+    "category": "polea"
+  },
+  {
+    "id": "face_pull_barra",
+    "name": "Face pull con barra en polea",
+    "primaryMuscle": "hombros",
+    "category": "polea"
+  },
+  {
+    "id": "face_pull_bandas",
+    "name": "Face pull con bandas",
+    "primaryMuscle": "hombros",
+    "category": "banda"
+  },
+  {
+    "id": "face_pull_unilateral",
+    "name": "Face pull unilateral en polea",
+    "primaryMuscle": "hombros",
+    "category": "polea"
+  },
+  {
+    "id": "curl_barra_recta",
+    "name": "Curl de bceps con barra recta",
+    "primaryMuscle": "biceps",
+    "category": "barra"
+  },
+  {
+    "id": "curl_mancuernas",
+    "name": "Curl de bceps con mancuernas",
+    "primaryMuscle": "biceps",
+    "category": "mancuerna"
+  },
+  {
+    "id": "curl_polea",
+    "name": "Curl de bceps en polea",
+    "primaryMuscle": "biceps",
+    "category": "polea"
+  },
+  {
+    "id": "curl_maquina",
+    "name": "Curl de bceps en mquina",
+    "primaryMuscle": "biceps",
+    "category": "maquina"
+  },
+  {
+    "id": "curl_bandas",
+    "name": "Curl de bceps con bandas",
+    "primaryMuscle": "biceps",
+    "category": "banda"
+  },
+  {
+    "id": "curl_kettlebell",
+    "name": "Curl de bceps con kettlebell",
+    "primaryMuscle": "biceps",
+    "category": "kettlebell"
+  },
+  {
+    "id": "curl_inclinado_polea",
+    "name": "Curl inclinado en polea",
+    "primaryMuscle": "biceps",
+    "category": "polea"
+  },
+  {
+    "id": "curl_inclinado_bandas",
+    "name": "Curl inclinado con bandas",
+    "primaryMuscle": "biceps",
+    "category": "banda"
+  },
+  {
+    "id": "curl_martillo_cuerda_polea",
+    "name": "Curl martillo con cuerda en polea",
+    "primaryMuscle": "biceps",
+    "category": "polea"
+  },
+  {
+    "id": "curl_martillo_kettlebell",
+    "name": "Curl martillo con kettlebell",
+    "primaryMuscle": "biceps",
+    "category": "kettlebell"
+  },
+  {
+    "id": "curl_martillo_bandas",
+    "name": "Curl martillo con bandas",
+    "primaryMuscle": "biceps",
+    "category": "banda"
+  },
+  {
+    "id": "curl_predicador_barra_ez",
+    "name": "Curl predicador con barra EZ",
+    "primaryMuscle": "biceps",
+    "category": "barra"
+  },
+  {
+    "id": "curl_predicador_mancuerna",
+    "name": "Curl predicador con mancuerna",
+    "primaryMuscle": "biceps",
+    "category": "mancuerna"
+  },
+  {
+    "id": "curl_predicador_polea",
+    "name": "Curl predicador en polea",
+    "primaryMuscle": "biceps",
+    "category": "polea"
+  },
+  {
+    "id": "curl_predicador_bandas",
+    "name": "Curl predicador con bandas",
+    "primaryMuscle": "biceps",
+    "category": "banda"
+  },
+  {
+    "id": "curl_concentrado_mancuerna",
+    "name": "Curl concentrado con mancuerna",
+    "primaryMuscle": "biceps",
+    "category": "mancuerna"
+  },
+  {
+    "id": "curl_concentrado_polea",
+    "name": "Curl concentrado en polea",
+    "primaryMuscle": "biceps",
+    "category": "polea"
+  },
+  {
+    "id": "curl_concentrado_maquina",
+    "name": "Curl concentrado en mquina",
+    "primaryMuscle": "biceps",
+    "category": "maquina"
+  },
+  {
+    "id": "pushdown_barra_ez",
+    "name": "Pushdown con barra EZ en polea",
+    "primaryMuscle": "triceps",
+    "category": "polea"
+  },
+  {
+    "id": "pushdown_barra_v",
+    "name": "Pushdown con barra en V en polea",
+    "primaryMuscle": "triceps",
+    "category": "polea"
+  },
+  {
+    "id": "pushdown_unilateral",
+    "name": "Pushdown unilateral en polea",
+    "primaryMuscle": "triceps",
+    "category": "polea"
+  },
+  {
+    "id": "pushdown_banda",
+    "name": "Pushdown con banda",
+    "primaryMuscle": "triceps",
+    "category": "banda"
+  },
+  {
+    "id": "extension_overhead_barra_ez",
+    "name": "Extensin tras nuca con barra EZ",
+    "primaryMuscle": "triceps",
+    "category": "barra"
+  },
+  {
+    "id": "extension_overhead_polea_cuerda",
+    "name": "Extensin tras nuca con cuerda en polea",
+    "primaryMuscle": "triceps",
+    "category": "polea"
+  },
+  {
+    "id": "extension_overhead_polea_barra",
+    "name": "Extensin tras nuca con barra en polea",
+    "primaryMuscle": "triceps",
+    "category": "polea"
+  },
+  {
+    "id": "extension_overhead_banda",
+    "name": "Extensin tras nuca con banda",
+    "primaryMuscle": "triceps",
+    "category": "banda"
+  },
+  {
+    "id": "skull_crusher_barra_recta",
+    "name": "Skull crusher con barra recta",
+    "primaryMuscle": "triceps",
+    "category": "barra"
+  },
+  {
+    "id": "skull_crusher_mancuernas",
+    "name": "Skull crusher con mancuernas",
+    "primaryMuscle": "triceps",
+    "category": "mancuerna"
+  },
+  {
+    "id": "skull_crusher_polea",
+    "name": "Skull crusher en polea",
+    "primaryMuscle": "triceps",
+    "category": "polea"
+  },
+  {
+    "id": "fondos_triceps_paralelas",
+    "name": "Fondos para trceps en paralelas",
+    "primaryMuscle": "triceps",
+    "category": "corporal"
+  },
+  {
+    "id": "fondos_triceps_maquina",
+    "name": "Fondos para trceps en mquina",
+    "primaryMuscle": "triceps",
+    "category": "maquina"
+  },
+  {
+    "id": "fondos_triceps_peso_corporal",
+    "name": "Fondos entre bancos (peso corporal)",
+    "primaryMuscle": "triceps",
+    "category": "corporal"
+  },
+  {
+    "id": "fondos_triceps_lastrados",
+    "name": "Fondos para trceps lastrados",
+    "primaryMuscle": "triceps",
+    "category": "corporal"
+  },
+  {
+    "id": "fondos_triceps_asistidos",
+    "name": "Fondos para trceps asistidos",
+    "primaryMuscle": "triceps",
+    "category": "maquina"
+  },
+  {
+    "id": "kickback_mancuerna",
+    "name": "Patada de trceps (Kickback) con mancuerna",
+    "primaryMuscle": "triceps",
+    "category": "mancuerna"
+  },
+  {
+    "id": "kickback_polea",
+    "name": "Patada de trceps (Kickback) en polea",
+    "primaryMuscle": "triceps",
+    "category": "polea"
+  },
+  {
+    "id": "kickback_banda",
+    "name": "Patada de trceps (Kickback) con banda",
+    "primaryMuscle": "triceps",
+    "category": "banda"
+  },
+  {
+    "id": "kickback_maquina",
+    "name": "Patada de trceps (Kickback) en mquina",
+    "primaryMuscle": "triceps",
+    "category": "maquina"
+  },
+  {
+    "id": "crunch_peso_corporal",
+    "name": "Crunch abdominal peso corporal",
+    "primaryMuscle": "abdomen",
+    "category": "corporal"
+  },
+  {
+    "id": "crunch_disco",
+    "name": "Crunch abdominal con disco",
+    "primaryMuscle": "abdomen",
+    "category": "corporal"
+  },
+  {
+    "id": "crunch_mancuerna",
+    "name": "Crunch abdominal con mancuerna",
+    "primaryMuscle": "abdomen",
+    "category": "mancuerna"
+  },
+  {
+    "id": "crunch_maquina",
+    "name": "Crunch en mquina",
+    "primaryMuscle": "abdomen",
+    "category": "maquina"
+  },
+  {
+    "id": "crunch_banda",
+    "name": "Crunch con banda resistencia",
+    "primaryMuscle": "abdomen",
+    "category": "banda"
+  },
+  {
+    "id": "elevacion_piernas_peso_corporal",
+    "name": "Elevacin de piernas suelo",
+    "primaryMuscle": "abdomen",
+    "category": "corporal"
+  },
+  {
+    "id": "elevacion_piernas_paralelas",
+    "name": "Elevacin de piernas en paralelas",
+    "primaryMuscle": "abdomen",
+    "category": "corporal"
+  },
+  {
+    "id": "elevacion_piernas_banco",
+    "name": "Elevacin de piernas en banco inclinado",
+    "primaryMuscle": "abdomen",
+    "category": "corporal"
+  },
+  {
+    "id": "elevacion_piernas_lastre",
+    "name": "Elevacin de piernas con lastre",
+    "primaryMuscle": "abdomen",
+    "category": "corporal"
+  },
+  {
+    "id": "elevacion_piernas_mancuerna",
+    "name": "Elevacin de piernas sujetando mancuerna",
+    "primaryMuscle": "abdomen",
+    "category": "mancuerna"
+  },
+  {
+    "id": "rotacion_torso_polea",
+    "name": "Rotacin de torso en polea (Woodchopper)",
+    "primaryMuscle": "abdomen",
+    "category": "polea"
+  },
+  {
+    "id": "rotacion_torso_disco",
+    "name": "Rotacin de torso con disco (Russian Twist)",
+    "primaryMuscle": "abdomen",
+    "category": "corporal"
+  },
+  {
+    "id": "rotacion_torso_mancuerna",
+    "name": "Rotacin de torso con mancuerna",
+    "primaryMuscle": "abdomen",
+    "category": "mancuerna"
+  },
+  {
+    "id": "rotacion_torso_banda",
+    "name": "Rotacin de torso con banda",
+    "primaryMuscle": "abdomen",
+    "category": "banda"
+  },
+  {
+    "id": "rotacion_torso_maquina",
+    "name": "Rotacin de torso en mquina",
+    "primaryMuscle": "abdomen",
+    "category": "maquina"
+  },
+  {
+    "id": "pallof_press_polea",
+    "name": "Pallof press en polea",
+    "primaryMuscle": "abdomen",
+    "category": "polea"
+  },
+  {
+    "id": "pallof_press_banda",
+    "name": "Pallof press con banda",
+    "primaryMuscle": "abdomen",
+    "category": "banda"
+  },
+  {
+    "id": "pallof_press_maquina",
+    "name": "Pallof press en mquina",
+    "primaryMuscle": "abdomen",
+    "category": "maquina"
+  },
+  {
+    "id": "push_1",
+    "name": "push 1",
+    "primaryMuscle": "general",
+    "category": "general"
+  },
+  {
+    "id": "pull_1",
+    "name": "pull 1",
+    "primaryMuscle": "general",
+    "category": "general"
+  },
+  {
+    "id": "legs_1",
+    "name": "legs 1",
+    "primaryMuscle": "general",
+    "category": "general"
+  },
+  {
+    "id": "torso_2",
+    "name": "torso 2",
+    "primaryMuscle": "general",
+    "category": "general"
+  },
+  {
+    "id": "legs_2",
+    "name": "legs 2",
+    "primaryMuscle": "general",
+    "category": "general"
+  },
+  {
+    "id": "push_1_ppl6",
+    "name": "push 1 ppl6",
+    "primaryMuscle": "general",
+    "category": "general"
+  },
+  {
+    "id": "pull_1_ppl6",
+    "name": "pull 1 ppl6",
+    "primaryMuscle": "general",
+    "category": "general"
+  },
+  {
+    "id": "legs_1_ppl6",
+    "name": "legs 1 ppl6",
+    "primaryMuscle": "general",
+    "category": "general"
+  },
+  {
+    "id": "push_2_ppl6",
+    "name": "push 2 ppl6",
+    "primaryMuscle": "general",
+    "category": "general"
+  },
+  {
+    "id": "pull_2_ppl6",
+    "name": "pull 2 ppl6",
+    "primaryMuscle": "general",
+    "category": "general"
+  },
+  {
+    "id": "legs_2_ppl6",
+    "name": "legs 2 ppl6",
+    "primaryMuscle": "general",
+    "category": "general"
+  }
+]

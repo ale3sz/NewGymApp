@@ -1,0 +1,4922 @@
+[
+  {
+    "catalogEx": {
+      "id": "press_plano_barra",
+      "name": "Press plano con barra",
+      "primaryMuscle": "pecho",
+      "category": "barra",
+      "baseMovement": "Press plano / horizontal"
+    },
+    "matched": {
+      "id": "0025",
+      "name": "barbell bench press",
+      "equipment": "barbell",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0025-EIeI8Vf.jpg",
+      "gif_url": "videos/0025-EIeI8Vf.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "press_plano_mancuernas",
+      "name": "Press plano con mancuernas",
+      "primaryMuscle": "pecho",
+      "category": "mancuerna",
+      "baseMovement": "Press plano / horizontal"
+    },
+    "matched": {
+      "id": "0289",
+      "name": "dumbbell bench press",
+      "equipment": "dumbbell",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0289-SpYC0Kp.jpg",
+      "gif_url": "videos/0289-SpYC0Kp.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "press_plano_smith",
+      "name": "Press plano en Smith",
+      "primaryMuscle": "pecho",
+      "category": "smith",
+      "baseMovement": "Press plano / horizontal"
+    },
+    "matched": {
+      "id": "0025",
+      "name": "barbell bench press",
+      "equipment": "barbell",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0025-EIeI8Vf.jpg",
+      "gif_url": "videos/0025-EIeI8Vf.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_plano_maquina",
+      "name": "Press plano en mquina",
+      "primaryMuscle": "pecho",
+      "category": "maquina",
+      "baseMovement": "Press plano / horizontal"
+    },
+    "matched": {
+      "id": "0577",
+      "name": "lever chest press",
+      "equipment": "leverage machine",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0577-T0yTjgW.jpg",
+      "gif_url": "videos/0577-T0yTjgW.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_plano_poleas",
+      "name": "Press plano en poleas",
+      "primaryMuscle": "pecho",
+      "category": "polea",
+      "baseMovement": "Press plano / horizontal"
+    },
+    "matched": {
+      "id": "0151",
+      "name": "cable bench press",
+      "equipment": "cable",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0151-7xI5MXA.jpg",
+      "gif_url": "videos/0151-7xI5MXA.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_plano_bandas",
+      "name": "Press plano con bandas",
+      "primaryMuscle": "pecho",
+      "category": "banda",
+      "baseMovement": "Press plano / horizontal"
+    },
+    "matched": {
+      "id": "1254",
+      "name": "band bench press",
+      "equipment": "band",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/1254-khlHMqs.jpg",
+      "gif_url": "videos/1254-khlHMqs.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_plano_unilateral_polea",
+      "name": "Press plano unilateral en polea",
+      "primaryMuscle": "pecho",
+      "category": "polea",
+      "baseMovement": "Press plano / horizontal"
+    },
+    "matched": {
+      "id": "1260",
+      "name": "cable decline one arm press",
+      "equipment": "cable",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/1260-KHGNa16.jpg",
+      "gif_url": "videos/1260-KHGNa16.gif"
+    },
+    "score": 95,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_inclinado_barra",
+      "name": "Press inclinado con barra",
+      "primaryMuscle": "pecho",
+      "category": "barra",
+      "baseMovement": "Press inclinado"
+    },
+    "matched": {
+      "id": "0047",
+      "name": "barbell incline bench press",
+      "equipment": "barbell",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0047-3TZduzM.jpg",
+      "gif_url": "videos/0047-3TZduzM.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "press_inclinado_mancuernas",
+      "name": "Press inclinado con mancuernas",
+      "primaryMuscle": "pecho",
+      "category": "mancuerna",
+      "baseMovement": "Press inclinado"
+    },
+    "matched": {
+      "id": "0314",
+      "name": "dumbbell incline bench press",
+      "equipment": "dumbbell",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0314-ns0SIbU.jpg",
+      "gif_url": "videos/0314-ns0SIbU.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "press_inclinado_smith",
+      "name": "Press inclinado en Smith",
+      "primaryMuscle": "pecho",
+      "category": "smith",
+      "baseMovement": "Press inclinado"
+    },
+    "matched": {
+      "id": "0047",
+      "name": "barbell incline bench press",
+      "equipment": "barbell",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0047-3TZduzM.jpg",
+      "gif_url": "videos/0047-3TZduzM.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_inclinado_maquina",
+      "name": "Press inclinado en mquina",
+      "primaryMuscle": "pecho",
+      "category": "maquina",
+      "baseMovement": "Press inclinado"
+    },
+    "matched": {
+      "id": "1299",
+      "name": "lever incline chest press",
+      "equipment": "leverage machine",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/1299-jHAnWmT.jpg",
+      "gif_url": "videos/1299-jHAnWmT.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_inclinado_poleas",
+      "name": "Press inclinado en poleas",
+      "primaryMuscle": "pecho",
+      "category": "polea",
+      "baseMovement": "Press inclinado"
+    },
+    "matched": {
+      "id": "0169",
+      "name": "cable incline bench press",
+      "equipment": "cable",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0169-Vh0GsK4.jpg",
+      "gif_url": "videos/0169-Vh0GsK4.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_inclinado_bandas",
+      "name": "Press inclinado con bandas",
+      "primaryMuscle": "pecho",
+      "category": "banda",
+      "baseMovement": "Press inclinado"
+    },
+    "matched": {
+      "id": "0169",
+      "name": "cable incline bench press",
+      "equipment": "cable",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0169-Vh0GsK4.jpg",
+      "gif_url": "videos/0169-Vh0GsK4.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_declinado_barra",
+      "name": "Press declinado con barra",
+      "primaryMuscle": "pecho",
+      "category": "barra",
+      "baseMovement": "Press declinado"
+    },
+    "matched": {
+      "id": "0033",
+      "name": "barbell decline bench press",
+      "equipment": "barbell",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0033-GrO65fd.jpg",
+      "gif_url": "videos/0033-GrO65fd.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "press_declinado_mancuernas",
+      "name": "Press declinado con mancuernas",
+      "primaryMuscle": "pecho",
+      "category": "mancuerna",
+      "baseMovement": "Press declinado"
+    },
+    "matched": {
+      "id": "0301",
+      "name": "dumbbell decline bench press",
+      "equipment": "dumbbell",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0301-DwhEmmE.jpg",
+      "gif_url": "videos/0301-DwhEmmE.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_declinado_smith",
+      "name": "Press declinado en Smith",
+      "primaryMuscle": "pecho",
+      "category": "smith",
+      "baseMovement": "Press declinado"
+    },
+    "matched": {
+      "id": "0033",
+      "name": "barbell decline bench press",
+      "equipment": "barbell",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0033-GrO65fd.jpg",
+      "gif_url": "videos/0033-GrO65fd.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_declinado_maquina",
+      "name": "Press declinado en mquina",
+      "primaryMuscle": "pecho",
+      "category": "maquina",
+      "baseMovement": "Press declinado"
+    },
+    "matched": {
+      "id": "1300",
+      "name": "lever decline chest press",
+      "equipment": "leverage machine",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/1300-vsVoPHt.jpg",
+      "gif_url": "videos/1300-vsVoPHt.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_declinado_poleas",
+      "name": "Press declinado en poleas",
+      "primaryMuscle": "pecho",
+      "category": "polea",
+      "baseMovement": "Press declinado"
+    },
+    "matched": {
+      "id": "0151",
+      "name": "cable bench press",
+      "equipment": "cable",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0151-7xI5MXA.jpg",
+      "gif_url": "videos/0151-7xI5MXA.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "aperturas_mancuernas",
+      "name": "Aperturas con mancuernas",
+      "primaryMuscle": "pecho",
+      "category": "mancuerna",
+      "baseMovement": "Aperturas"
+    },
+    "matched": {
+      "id": "0308",
+      "name": "dumbbell fly",
+      "equipment": "dumbbell",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0308-yz9nUhF.jpg",
+      "gif_url": "videos/0308-yz9nUhF.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "aperturas_maquina",
+      "name": "Aperturas en mquina (Pec Deck)",
+      "primaryMuscle": "pecho",
+      "category": "maquina",
+      "baseMovement": "Aperturas"
+    },
+    "matched": {
+      "id": "0596",
+      "name": "lever seated fly",
+      "equipment": "leverage machine",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0596-v3xmPAR.jpg",
+      "gif_url": "videos/0596-v3xmPAR.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "aperturas_polea",
+      "name": "Aperturas en polea",
+      "primaryMuscle": "pecho",
+      "category": "polea",
+      "baseMovement": "Aperturas"
+    },
+    "matched": {
+      "id": "0188",
+      "name": "cable middle fly",
+      "equipment": "cable",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0188-xLYSdtg.jpg",
+      "gif_url": "videos/0188-xLYSdtg.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "aperturas_bandas",
+      "name": "Aperturas con bandas",
+      "primaryMuscle": "pecho",
+      "category": "banda",
+      "baseMovement": "Aperturas"
+    },
+    "matched": {
+      "id": "1262",
+      "name": "cable one arm decline chest fly",
+      "equipment": "cable",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/1262-w4dLzSx.jpg",
+      "gif_url": "videos/1262-w4dLzSx.gif"
+    },
+    "score": 120,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "aperturas_unilaterales_polea",
+      "name": "Aperturas unilaterales en polea",
+      "primaryMuscle": "pecho",
+      "category": "polea",
+      "baseMovement": "Aperturas"
+    },
+    "matched": {
+      "id": "1262",
+      "name": "cable one arm decline chest fly",
+      "equipment": "cable",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/1262-w4dLzSx.jpg",
+      "gif_url": "videos/1262-w4dLzSx.gif"
+    },
+    "score": 155,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "fondos_paralelas",
+      "name": "Fondos en paralelas",
+      "primaryMuscle": "pecho",
+      "category": "corporal",
+      "baseMovement": "Fondos para pecho"
+    },
+    "matched": {
+      "id": "0251",
+      "name": "chest dip",
+      "equipment": "body weight",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0251-9WTm7dq.jpg",
+      "gif_url": "videos/0251-9WTm7dq.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "fondos_asistidos",
+      "name": "Fondos asistidos",
+      "primaryMuscle": "pecho",
+      "category": "maquina",
+      "baseMovement": "Fondos para pecho"
+    },
+    "matched": {
+      "id": "0009",
+      "name": "assisted chest dip (kneeling)",
+      "equipment": "leverage machine",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0009-PAgTVaK.jpg",
+      "gif_url": "videos/0009-PAgTVaK.gif"
+    },
+    "score": 135,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "fondos_lastrados",
+      "name": "Fondos lastrados",
+      "primaryMuscle": "pecho",
+      "category": "corporal",
+      "baseMovement": "Fondos para pecho"
+    },
+    "matched": {
+      "id": "0251",
+      "name": "chest dip",
+      "equipment": "body weight",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0251-9WTm7dq.jpg",
+      "gif_url": "videos/0251-9WTm7dq.gif"
+    },
+    "score": 135,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "fondos_maquina",
+      "name": "Fondos en mquina",
+      "primaryMuscle": "pecho",
+      "category": "maquina",
+      "baseMovement": "Fondos para pecho"
+    },
+    "matched": {
+      "id": "0009",
+      "name": "assisted chest dip (kneeling)",
+      "equipment": "leverage machine",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0009-PAgTVaK.jpg",
+      "gif_url": "videos/0009-PAgTVaK.gif"
+    },
+    "score": 135,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "jalon_pecho_barra",
+      "name": "Jaln al pecho con barra",
+      "primaryMuscle": "espalda",
+      "category": "polea",
+      "baseMovement": "Jaln vertical"
+    },
+    "matched": {
+      "id": "0197",
+      "name": "cable pulldown (pro lat bar)",
+      "equipment": "cable",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/0197-qdRxqCj.jpg",
+      "gif_url": "videos/0197-qdRxqCj.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "jalon_agarre_neutro",
+      "name": "Jaln al pecho con agarre neutro",
+      "primaryMuscle": "espalda",
+      "category": "polea",
+      "baseMovement": "Jaln vertical"
+    },
+    "matched": {
+      "id": "0007",
+      "name": "alternate lateral pulldown",
+      "equipment": "cable",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/0007-4IKbhHV.jpg",
+      "gif_url": "videos/0007-4IKbhHV.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "jalon_cuerda",
+      "name": "Jaln al pecho con cuerda",
+      "primaryMuscle": "espalda",
+      "category": "polea",
+      "baseMovement": "Jaln vertical"
+    },
+    "matched": {
+      "id": "0007",
+      "name": "alternate lateral pulldown",
+      "equipment": "cable",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/0007-4IKbhHV.jpg",
+      "gif_url": "videos/0007-4IKbhHV.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "jalon_unilateral_polea",
+      "name": "Jaln unilateral en polea",
+      "primaryMuscle": "espalda",
+      "category": "polea",
+      "baseMovement": "Jaln vertical"
+    },
+    "matched": {
+      "id": "0189",
+      "name": "cable one arm bent over row",
+      "equipment": "cable",
+      "target": "upper back",
+      "body_part": "back",
+      "image": "images/0189-EIsE3u8.jpg",
+      "gif_url": "videos/0189-EIsE3u8.gif"
+    },
+    "score": 95,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "jalon_maquina",
+      "name": "Jaln en mquina",
+      "primaryMuscle": "espalda",
+      "category": "maquina",
+      "baseMovement": "Jaln vertical"
+    },
+    "matched": {
+      "id": "0015",
+      "name": "assisted parallel close grip pull-up",
+      "equipment": "leverage machine",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/0015-vrhHa6D.jpg",
+      "gif_url": "videos/0015-vrhHa6D.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "dominadas",
+      "name": "Dominadas",
+      "primaryMuscle": "espalda",
+      "category": "corporal",
+      "baseMovement": "Jaln vertical"
+    },
+    "matched": {
+      "id": "0652",
+      "name": "pull-up",
+      "equipment": "body weight",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/0652-lBDjFxJ.jpg",
+      "gif_url": "videos/0652-lBDjFxJ.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "dominadas_asistidas",
+      "name": "Dominadas asistidas",
+      "primaryMuscle": "espalda",
+      "category": "maquina",
+      "baseMovement": "Jaln vertical"
+    },
+    "matched": {
+      "id": "0015",
+      "name": "assisted parallel close grip pull-up",
+      "equipment": "leverage machine",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/0015-vrhHa6D.jpg",
+      "gif_url": "videos/0015-vrhHa6D.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "dominadas_lastradas",
+      "name": "Dominadas lastradas",
+      "primaryMuscle": "espalda",
+      "category": "corporal",
+      "baseMovement": "Jaln vertical"
+    },
+    "matched": {
+      "id": "3293",
+      "name": "archer pull up",
+      "equipment": "body weight",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/3293-72BC5Za.jpg",
+      "gif_url": "videos/3293-72BC5Za.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "dominadas_banda",
+      "name": "Dominadas con banda",
+      "primaryMuscle": "espalda",
+      "category": "banda",
+      "baseMovement": "Jaln vertical"
+    },
+    "matched": {
+      "id": "0007",
+      "name": "alternate lateral pulldown",
+      "equipment": "cable",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/0007-4IKbhHV.jpg",
+      "gif_url": "videos/0007-4IKbhHV.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_barra",
+      "name": "Remo con barra",
+      "primaryMuscle": "espalda",
+      "category": "barra",
+      "baseMovement": "Remo horizontal"
+    },
+    "matched": {
+      "id": "0027",
+      "name": "barbell bent over row",
+      "equipment": "barbell",
+      "target": "upper back",
+      "body_part": "back",
+      "image": "images/0027-eZyBC3j.jpg",
+      "gif_url": "videos/0027-eZyBC3j.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_mancuernas",
+      "name": "Remo con mancuernas",
+      "primaryMuscle": "espalda",
+      "category": "mancuerna",
+      "baseMovement": "Remo horizontal"
+    },
+    "matched": {
+      "id": "0293",
+      "name": "dumbbell bent over row",
+      "equipment": "dumbbell",
+      "target": "upper back",
+      "body_part": "back",
+      "image": "images/0293-BJ0Hz5L.jpg",
+      "gif_url": "videos/0293-BJ0Hz5L.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_maquina",
+      "name": "Remo en mquina",
+      "primaryMuscle": "espalda",
+      "category": "maquina",
+      "baseMovement": "Remo horizontal"
+    },
+    "matched": {
+      "id": "0571",
+      "name": "lever alternating narrow grip seated row",
+      "equipment": "leverage machine",
+      "target": "upper back",
+      "body_part": "back",
+      "image": "images/0571-w2oRpuH.jpg",
+      "gif_url": "videos/0571-w2oRpuH.gif"
+    },
+    "score": 135,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_polea",
+      "name": "Remo en polea (Gironda)",
+      "primaryMuscle": "espalda",
+      "category": "polea",
+      "baseMovement": "Remo horizontal"
+    },
+    "matched": {
+      "id": "0861",
+      "name": "cable seated row",
+      "equipment": "cable",
+      "target": "upper back",
+      "body_part": "back",
+      "image": "images/0861-fUBheHs.jpg",
+      "gif_url": "videos/0861-fUBheHs.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_smith",
+      "name": "Remo en Smith",
+      "primaryMuscle": "espalda",
+      "category": "smith",
+      "baseMovement": "Remo horizontal"
+    },
+    "matched": {
+      "id": "0027",
+      "name": "barbell bent over row",
+      "equipment": "barbell",
+      "target": "upper back",
+      "body_part": "back",
+      "image": "images/0027-eZyBC3j.jpg",
+      "gif_url": "videos/0027-eZyBC3j.gif"
+    },
+    "score": 135,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_bandas",
+      "name": "Remo con bandas",
+      "primaryMuscle": "espalda",
+      "category": "banda",
+      "baseMovement": "Remo horizontal"
+    },
+    "matched": {
+      "id": "0180",
+      "name": "cable low seated row",
+      "equipment": "cable",
+      "target": "upper back",
+      "body_part": "back",
+      "image": "images/0180-hvV79Si.jpg",
+      "gif_url": "videos/0180-hvV79Si.gif"
+    },
+    "score": 135,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_unilateral_mancuerna",
+      "name": "Remo unilateral con mancuerna",
+      "primaryMuscle": "espalda",
+      "category": "mancuerna",
+      "baseMovement": "Remo horizontal"
+    },
+    "matched": {
+      "id": "0292",
+      "name": "dumbbell one arm bent-over row",
+      "equipment": "dumbbell",
+      "target": "upper back",
+      "body_part": "back",
+      "image": "images/0292-C0MA9bC.jpg",
+      "gif_url": "videos/0292-C0MA9bC.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_unilateral_polea",
+      "name": "Remo unilateral en polea",
+      "primaryMuscle": "espalda",
+      "category": "polea",
+      "baseMovement": "Remo horizontal"
+    },
+    "matched": {
+      "id": "0189",
+      "name": "cable one arm bent over row",
+      "equipment": "cable",
+      "target": "upper back",
+      "body_part": "back",
+      "image": "images/0189-EIsE3u8.jpg",
+      "gif_url": "videos/0189-EIsE3u8.gif"
+    },
+    "score": 155,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_unilateral_maquina",
+      "name": "Remo unilateral en mquina",
+      "primaryMuscle": "espalda",
+      "category": "maquina",
+      "baseMovement": "Remo horizontal"
+    },
+    "matched": {
+      "id": "0189",
+      "name": "cable one arm bent over row",
+      "equipment": "cable",
+      "target": "upper back",
+      "body_part": "back",
+      "image": "images/0189-EIsE3u8.jpg",
+      "gif_url": "videos/0189-EIsE3u8.gif"
+    },
+    "score": 140,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_pecho_apoyado_mancuernas",
+      "name": "Remo pecho apoyado con mancuernas",
+      "primaryMuscle": "espalda",
+      "category": "mancuerna",
+      "baseMovement": "Remo pecho apoyado"
+    },
+    "matched": {
+      "id": "0327",
+      "name": "dumbbell incline row",
+      "equipment": "dumbbell",
+      "target": "upper back",
+      "body_part": "back",
+      "image": "images/0327-7vG5o25.jpg",
+      "gif_url": "videos/0327-7vG5o25.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_pecho_apoyado_barra",
+      "name": "Remo pecho apoyado con barra",
+      "primaryMuscle": "espalda",
+      "category": "barra",
+      "baseMovement": "Remo pecho apoyado"
+    },
+    "matched": {
+      "id": "0049",
+      "name": "barbell incline row",
+      "equipment": "barbell",
+      "target": "upper back",
+      "body_part": "back",
+      "image": "images/0049-dmgMp3n.jpg",
+      "gif_url": "videos/0049-dmgMp3n.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_pecho_apoyado_maquina",
+      "name": "Remo pecho apoyado en mquina",
+      "primaryMuscle": "espalda",
+      "category": "maquina",
+      "baseMovement": "Remo pecho apoyado"
+    },
+    "matched": {
+      "id": "0015",
+      "name": "assisted parallel close grip pull-up",
+      "equipment": "leverage machine",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/0015-vrhHa6D.jpg",
+      "gif_url": "videos/0015-vrhHa6D.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_pecho_apoyado_polea",
+      "name": "Remo pecho apoyado en polea",
+      "primaryMuscle": "espalda",
+      "category": "polea",
+      "baseMovement": "Remo pecho apoyado"
+    },
+    "matched": {
+      "id": "0007",
+      "name": "alternate lateral pulldown",
+      "equipment": "cable",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/0007-4IKbhHV.jpg",
+      "gif_url": "videos/0007-4IKbhHV.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_t_discos",
+      "name": "Remo T-bar con discos",
+      "primaryMuscle": "espalda",
+      "category": "barra",
+      "baseMovement": "Remo T"
+    },
+    "matched": {
+      "id": "1316",
+      "name": "barbell bent arm pullover",
+      "equipment": "barbell",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/1316-cA9FuWG.jpg",
+      "gif_url": "videos/1316-cA9FuWG.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_t_maquina",
+      "name": "Remo T-bar en mquina",
+      "primaryMuscle": "espalda",
+      "category": "maquina",
+      "baseMovement": "Remo T"
+    },
+    "matched": {
+      "id": "1349",
+      "name": "lever reverse t-bar row",
+      "equipment": "leverage machine",
+      "target": "upper back",
+      "body_part": "back",
+      "image": "images/1349-BgljGjd.jpg",
+      "gif_url": "videos/1349-BgljGjd.gif"
+    },
+    "score": 135,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_t_barra",
+      "name": "Remo T-bar con barra",
+      "primaryMuscle": "espalda",
+      "category": "barra",
+      "baseMovement": "Remo T"
+    },
+    "matched": {
+      "id": "1316",
+      "name": "barbell bent arm pullover",
+      "equipment": "barbell",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/1316-cA9FuWG.jpg",
+      "gif_url": "videos/1316-cA9FuWG.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "landmine_row",
+      "name": "Landmine row",
+      "primaryMuscle": "espalda",
+      "category": "barra",
+      "baseMovement": "Remo T"
+    },
+    "matched": {
+      "id": "1349",
+      "name": "lever reverse t-bar row",
+      "equipment": "leverage machine",
+      "target": "upper back",
+      "body_part": "back",
+      "image": "images/1349-BgljGjd.jpg",
+      "gif_url": "videos/1349-BgljGjd.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "pullover_mancuerna",
+      "name": "Pullover con mancuerna",
+      "primaryMuscle": "espalda",
+      "category": "mancuerna",
+      "baseMovement": "Pullover"
+    },
+    "matched": {
+      "id": "0375",
+      "name": "dumbbell pullover",
+      "equipment": "dumbbell",
+      "target": "pectorals",
+      "body_part": "chest",
+      "image": "images/0375-9XjtHvS.jpg",
+      "gif_url": "videos/0375-9XjtHvS.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "pullover_polea",
+      "name": "Pullover en polea",
+      "primaryMuscle": "espalda",
+      "category": "polea",
+      "baseMovement": "Pullover"
+    },
+    "matched": {
+      "id": "0184",
+      "name": "cable lying extension pullover (with rope attachment)",
+      "equipment": "cable",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/0184-Q2Eu1Ax.jpg",
+      "gif_url": "videos/0184-Q2Eu1Ax.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pullover_cuerda",
+      "name": "Pullover con cuerda en polea",
+      "primaryMuscle": "espalda",
+      "category": "polea",
+      "baseMovement": "Pullover"
+    },
+    "matched": {
+      "id": "0184",
+      "name": "cable lying extension pullover (with rope attachment)",
+      "equipment": "cable",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/0184-Q2Eu1Ax.jpg",
+      "gif_url": "videos/0184-Q2Eu1Ax.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pullover_barra",
+      "name": "Pullover con barra",
+      "primaryMuscle": "espalda",
+      "category": "barra",
+      "baseMovement": "Pullover"
+    },
+    "matched": {
+      "id": "1316",
+      "name": "barbell bent arm pullover",
+      "equipment": "barbell",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/1316-cA9FuWG.jpg",
+      "gif_url": "videos/1316-cA9FuWG.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pullover_maquina",
+      "name": "Pullover en mquina",
+      "primaryMuscle": "espalda",
+      "category": "maquina",
+      "baseMovement": "Pullover"
+    },
+    "matched": {
+      "id": "2285",
+      "name": "lever pullover",
+      "equipment": "leverage machine",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/2285-4U7iLb5.jpg",
+      "gif_url": "videos/2285-4U7iLb5.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pullover_banda",
+      "name": "Pullover con banda",
+      "primaryMuscle": "espalda",
+      "category": "banda",
+      "baseMovement": "Pullover"
+    },
+    "matched": {
+      "id": "0184",
+      "name": "cable lying extension pullover (with rope attachment)",
+      "equipment": "cable",
+      "target": "lats",
+      "body_part": "back",
+      "image": "images/0184-Q2Eu1Ax.jpg",
+      "gif_url": "videos/0184-Q2Eu1Ax.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "sentadilla_barra",
+      "name": "Sentadilla con barra trasnuca",
+      "primaryMuscle": "cuadriceps",
+      "category": "barra",
+      "baseMovement": "Sentadilla"
+    },
+    "matched": {
+      "id": "0043",
+      "name": "barbell full squat",
+      "equipment": "barbell",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0043-qXTaZnJ.jpg",
+      "gif_url": "videos/0043-qXTaZnJ.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "sentadilla_frontal_barra",
+      "name": "Sentadilla frontal con barra",
+      "primaryMuscle": "cuadriceps",
+      "category": "barra",
+      "baseMovement": "Sentadilla"
+    },
+    "matched": {
+      "id": "0042",
+      "name": "barbell front squat",
+      "equipment": "barbell",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0042-zG0zs85.jpg",
+      "gif_url": "videos/0042-zG0zs85.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "sentadilla_mancuernas",
+      "name": "Sentadilla con mancuernas",
+      "primaryMuscle": "cuadriceps",
+      "category": "mancuerna",
+      "baseMovement": "Sentadilla"
+    },
+    "matched": {
+      "id": "0413",
+      "name": "dumbbell squat",
+      "equipment": "dumbbell",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0413-HsvHqgf.jpg",
+      "gif_url": "videos/0413-HsvHqgf.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "goblet_squat",
+      "name": "Goblet squat",
+      "primaryMuscle": "cuadriceps",
+      "category": "kettlebell",
+      "baseMovement": "Sentadilla"
+    },
+    "matched": {
+      "id": "1760",
+      "name": "dumbbell goblet squat",
+      "equipment": "dumbbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/1760-yn8yg1r.jpg",
+      "gif_url": "videos/1760-yn8yg1r.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "sentadilla_smith",
+      "name": "Sentadilla en Smith",
+      "primaryMuscle": "cuadriceps",
+      "category": "smith",
+      "baseMovement": "Sentadilla"
+    },
+    "matched": {
+      "id": "0024",
+      "name": "barbell bench front squat",
+      "equipment": "barbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/0024-Y7YcmIJ.jpg",
+      "gif_url": "videos/0024-Y7YcmIJ.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "sentadilla_maquina",
+      "name": "Sentadilla en mquina",
+      "primaryMuscle": "cuadriceps",
+      "category": "maquina",
+      "baseMovement": "Sentadilla"
+    },
+    "matched": {
+      "id": "2287",
+      "name": "lever alternate leg press",
+      "equipment": "leverage machine",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/2287-V07qpXy.jpg",
+      "gif_url": "videos/2287-V07qpXy.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "hack_squat",
+      "name": "Hack squat",
+      "primaryMuscle": "cuadriceps",
+      "category": "maquina",
+      "baseMovement": "Sentadilla"
+    },
+    "matched": {
+      "id": "0743",
+      "name": "sled hack squat",
+      "equipment": "sled machine",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0743-Qa55kX1.jpg",
+      "gif_url": "videos/0743-Qa55kX1.gif"
+    },
+    "score": 125,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "belt_squat",
+      "name": "Belt squat",
+      "primaryMuscle": "cuadriceps",
+      "category": "maquina",
+      "baseMovement": "Sentadilla"
+    },
+    "matched": {
+      "id": "0024",
+      "name": "barbell bench front squat",
+      "equipment": "barbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/0024-Y7YcmIJ.jpg",
+      "gif_url": "videos/0024-Y7YcmIJ.gif"
+    },
+    "score": 100,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "sentadilla_kettlebell",
+      "name": "Sentadilla con kettlebell",
+      "primaryMuscle": "cuadriceps",
+      "category": "kettlebell",
+      "baseMovement": "Sentadilla"
+    },
+    "matched": {
+      "id": "1760",
+      "name": "dumbbell goblet squat",
+      "equipment": "dumbbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/1760-yn8yg1r.jpg",
+      "gif_url": "videos/1760-yn8yg1r.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "sentadilla_banda",
+      "name": "Sentadilla con banda",
+      "primaryMuscle": "cuadriceps",
+      "category": "banda",
+      "baseMovement": "Sentadilla"
+    },
+    "matched": {
+      "id": "0987",
+      "name": "band one arm single leg split squat",
+      "equipment": "band",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/0987-arsYEd3.jpg",
+      "gif_url": "videos/0987-arsYEd3.gif"
+    },
+    "score": 90,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "prensa_inclinada",
+      "name": "Prensa inclinada",
+      "primaryMuscle": "cuadriceps",
+      "category": "maquina",
+      "baseMovement": "Prensa"
+    },
+    "matched": {
+      "id": "0739",
+      "name": "sled 45в° leg press",
+      "equipment": "sled machine",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0739-10Z2DXU.jpg",
+      "gif_url": "videos/0739-10Z2DXU.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "prensa_horizontal",
+      "name": "Prensa horizontal",
+      "primaryMuscle": "cuadriceps",
+      "category": "maquina",
+      "baseMovement": "Prensa"
+    },
+    "matched": {
+      "id": "2287",
+      "name": "lever alternate leg press",
+      "equipment": "leverage machine",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/2287-V07qpXy.jpg",
+      "gif_url": "videos/2287-V07qpXy.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "prensa_vertical",
+      "name": "Prensa vertical",
+      "primaryMuscle": "cuadriceps",
+      "category": "maquina",
+      "baseMovement": "Prensa"
+    },
+    "matched": {
+      "id": "2287",
+      "name": "lever alternate leg press",
+      "equipment": "leverage machine",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/2287-V07qpXy.jpg",
+      "gif_url": "videos/2287-V07qpXy.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "prensa_unilateral",
+      "name": "Prensa unilateral",
+      "primaryMuscle": "cuadriceps",
+      "category": "maquina",
+      "baseMovement": "Prensa"
+    },
+    "matched": {
+      "id": "2287",
+      "name": "lever alternate leg press",
+      "equipment": "leverage machine",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/2287-V07qpXy.jpg",
+      "gif_url": "videos/2287-V07qpXy.gif"
+    },
+    "score": 90,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "prensa_maquina",
+      "name": "Prensa en mquina",
+      "primaryMuscle": "cuadriceps",
+      "category": "maquina",
+      "baseMovement": "Prensa"
+    },
+    "matched": {
+      "id": "2287",
+      "name": "lever alternate leg press",
+      "equipment": "leverage machine",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/2287-V07qpXy.jpg",
+      "gif_url": "videos/2287-V07qpXy.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "extension_maquina",
+      "name": "Extensin de rodilla en mquina",
+      "primaryMuscle": "cuadriceps",
+      "category": "maquina",
+      "baseMovement": "Extensin de rodilla"
+    },
+    "matched": {
+      "id": "0585",
+      "name": "lever leg extension",
+      "equipment": "leverage machine",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/0585-my33uHU.jpg",
+      "gif_url": "videos/0585-my33uHU.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "extension_unilateral_maquina",
+      "name": "Extensin unilateral en mquina",
+      "primaryMuscle": "cuadriceps",
+      "category": "maquina",
+      "baseMovement": "Extensin de rodilla"
+    },
+    "matched": {
+      "id": "0987",
+      "name": "band one arm single leg split squat",
+      "equipment": "band",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/0987-arsYEd3.jpg",
+      "gif_url": "videos/0987-arsYEd3.gif"
+    },
+    "score": 60,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "extension_banda",
+      "name": "Extensin con banda",
+      "primaryMuscle": "cuadriceps",
+      "category": "banda",
+      "baseMovement": "Extensin de rodilla"
+    },
+    "matched": {
+      "id": "3007",
+      "name": "resistance band leg extension",
+      "equipment": "resistance band",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/3007-Y1MsI1l.jpg",
+      "gif_url": "videos/3007-Y1MsI1l.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "extension_polea",
+      "name": "Extensin en polea",
+      "primaryMuscle": "cuadriceps",
+      "category": "polea",
+      "baseMovement": "Extensin de rodilla"
+    },
+    "matched": {
+      "id": "3235",
+      "name": "cable assisted inverse leg curl",
+      "equipment": "cable",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/3235-zHEpuuc.jpg",
+      "gif_url": "videos/3235-zHEpuuc.gif"
+    },
+    "score": 35,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "zancadas_barra",
+      "name": "Zancadas con barra",
+      "primaryMuscle": "cuadriceps",
+      "category": "barra",
+      "baseMovement": "Zancadas"
+    },
+    "matched": {
+      "id": "2798",
+      "name": "barbell squat jump step rear lunge",
+      "equipment": "barbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/2798-RYcV1kH.jpg",
+      "gif_url": "videos/2798-RYcV1kH.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "zancadas_mancuernas",
+      "name": "Zancadas con mancuernas",
+      "primaryMuscle": "cuadriceps",
+      "category": "mancuerna",
+      "baseMovement": "Zancadas"
+    },
+    "matched": {
+      "id": "2796",
+      "name": "dumbbell step-up lunge",
+      "equipment": "dumbbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/2796-gFyFj9z.jpg",
+      "gif_url": "videos/2796-gFyFj9z.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "zancadas_smith",
+      "name": "Zancadas en Smith",
+      "primaryMuscle": "cuadriceps",
+      "category": "smith",
+      "baseMovement": "Zancadas"
+    },
+    "matched": {
+      "id": "2798",
+      "name": "barbell squat jump step rear lunge",
+      "equipment": "barbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/2798-RYcV1kH.jpg",
+      "gif_url": "videos/2798-RYcV1kH.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "zancadas_kettlebell",
+      "name": "Zancadas con kettlebell",
+      "primaryMuscle": "cuadriceps",
+      "category": "kettlebell",
+      "baseMovement": "Zancadas"
+    },
+    "matched": {
+      "id": "2796",
+      "name": "dumbbell step-up lunge",
+      "equipment": "dumbbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/2796-gFyFj9z.jpg",
+      "gif_url": "videos/2796-gFyFj9z.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "zancadas_peso_corporal",
+      "name": "Zancadas con peso corporal",
+      "primaryMuscle": "cuadriceps",
+      "category": "corporal",
+      "baseMovement": "Zancadas"
+    },
+    "matched": {
+      "id": "1512",
+      "name": "all fours squad stretch",
+      "equipment": "body weight",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/1512-qBcKorM.jpg",
+      "gif_url": "videos/1512-qBcKorM.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "zancadas_bandas",
+      "name": "Zancadas con bandas",
+      "primaryMuscle": "cuadriceps",
+      "category": "banda",
+      "baseMovement": "Zancadas"
+    },
+    "matched": {
+      "id": "3007",
+      "name": "resistance band leg extension",
+      "equipment": "resistance band",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/3007-Y1MsI1l.jpg",
+      "gif_url": "videos/3007-Y1MsI1l.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "walking_lunges",
+      "name": "Walking lunges (Zancadas caminando)",
+      "primaryMuscle": "cuadriceps",
+      "category": "mancuerna",
+      "baseMovement": "Zancadas"
+    },
+    "matched": {
+      "id": "2796",
+      "name": "dumbbell step-up lunge",
+      "equipment": "dumbbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/2796-gFyFj9z.jpg",
+      "gif_url": "videos/2796-gFyFj9z.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "reverse_lunges",
+      "name": "Reverse lunges (Zancadas inversas)",
+      "primaryMuscle": "cuadriceps",
+      "category": "mancuerna",
+      "baseMovement": "Zancadas"
+    },
+    "matched": {
+      "id": "2796",
+      "name": "dumbbell step-up lunge",
+      "equipment": "dumbbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/2796-gFyFj9z.jpg",
+      "gif_url": "videos/2796-gFyFj9z.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "bulgara_mancuernas",
+      "name": "Sentadilla blgara con mancuernas",
+      "primaryMuscle": "cuadriceps",
+      "category": "mancuerna",
+      "baseMovement": "Split squat / blgara"
+    },
+    "matched": {
+      "id": "1760",
+      "name": "dumbbell goblet squat",
+      "equipment": "dumbbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/1760-yn8yg1r.jpg",
+      "gif_url": "videos/1760-yn8yg1r.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "bulgara_barra",
+      "name": "Sentadilla blgara con barra",
+      "primaryMuscle": "cuadriceps",
+      "category": "barra",
+      "baseMovement": "Split squat / blgara"
+    },
+    "matched": {
+      "id": "0024",
+      "name": "barbell bench front squat",
+      "equipment": "barbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/0024-Y7YcmIJ.jpg",
+      "gif_url": "videos/0024-Y7YcmIJ.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "bulgara_smith",
+      "name": "Sentadilla blgara en Smith",
+      "primaryMuscle": "cuadriceps",
+      "category": "smith",
+      "baseMovement": "Split squat / blgara"
+    },
+    "matched": {
+      "id": "0024",
+      "name": "barbell bench front squat",
+      "equipment": "barbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/0024-Y7YcmIJ.jpg",
+      "gif_url": "videos/0024-Y7YcmIJ.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "bulgara_kettlebell",
+      "name": "Sentadilla blgara con kettlebell",
+      "primaryMuscle": "cuadriceps",
+      "category": "kettlebell",
+      "baseMovement": "Split squat / blgara"
+    },
+    "matched": {
+      "id": "1760",
+      "name": "dumbbell goblet squat",
+      "equipment": "dumbbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/1760-yn8yg1r.jpg",
+      "gif_url": "videos/1760-yn8yg1r.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "bulgara_peso_corporal",
+      "name": "Sentadilla blgara con peso corporal",
+      "primaryMuscle": "cuadriceps",
+      "category": "corporal",
+      "baseMovement": "Split squat / blgara"
+    },
+    "matched": {
+      "id": "1489",
+      "name": "sissy squat",
+      "equipment": "body weight",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/1489-xdYPUtE.jpg",
+      "gif_url": "videos/1489-xdYPUtE.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "bulgara_bandas",
+      "name": "Sentadilla blgara con bandas",
+      "primaryMuscle": "cuadriceps",
+      "category": "banda",
+      "baseMovement": "Split squat / blgara"
+    },
+    "matched": {
+      "id": "0987",
+      "name": "band one arm single leg split squat",
+      "equipment": "band",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/0987-arsYEd3.jpg",
+      "gif_url": "videos/0987-arsYEd3.gif"
+    },
+    "score": 90,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "step_up_mancuernas",
+      "name": "Step-up con mancuernas",
+      "primaryMuscle": "cuadriceps",
+      "category": "mancuerna",
+      "baseMovement": "Step-up"
+    },
+    "matched": {
+      "id": "1760",
+      "name": "dumbbell goblet squat",
+      "equipment": "dumbbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/1760-yn8yg1r.jpg",
+      "gif_url": "videos/1760-yn8yg1r.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "step_up_barra",
+      "name": "Step-up con barra",
+      "primaryMuscle": "cuadriceps",
+      "category": "barra",
+      "baseMovement": "Step-up"
+    },
+    "matched": {
+      "id": "0024",
+      "name": "barbell bench front squat",
+      "equipment": "barbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/0024-Y7YcmIJ.jpg",
+      "gif_url": "videos/0024-Y7YcmIJ.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "step_up_smith",
+      "name": "Step-up en Smith",
+      "primaryMuscle": "cuadriceps",
+      "category": "smith",
+      "baseMovement": "Step-up"
+    },
+    "matched": {
+      "id": "0024",
+      "name": "barbell bench front squat",
+      "equipment": "barbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/0024-Y7YcmIJ.jpg",
+      "gif_url": "videos/0024-Y7YcmIJ.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "step_up_kettlebell",
+      "name": "Step-up con kettlebell",
+      "primaryMuscle": "cuadriceps",
+      "category": "kettlebell",
+      "baseMovement": "Step-up"
+    },
+    "matched": {
+      "id": "1760",
+      "name": "dumbbell goblet squat",
+      "equipment": "dumbbell",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/1760-yn8yg1r.jpg",
+      "gif_url": "videos/1760-yn8yg1r.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "step_up_peso_corporal",
+      "name": "Step-up con peso corporal",
+      "primaryMuscle": "cuadriceps",
+      "category": "corporal",
+      "baseMovement": "Step-up"
+    },
+    "matched": {
+      "id": "1512",
+      "name": "all fours squad stretch",
+      "equipment": "body weight",
+      "target": "quads",
+      "body_part": "upper legs",
+      "image": "images/1512-qBcKorM.jpg",
+      "gif_url": "videos/1512-qBcKorM.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "hip_thrust_barra",
+      "name": "Hip thrust con barra",
+      "primaryMuscle": "gluteos",
+      "category": "barra",
+      "baseMovement": "Hip thrust"
+    },
+    "matched": {
+      "id": "3562",
+      "name": "barbell glute bridge two legs on bench (male)",
+      "equipment": "barbell",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/3562-qg2PGl6.jpg",
+      "gif_url": "videos/3562-qg2PGl6.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "hip_thrust_mancuernas",
+      "name": "Hip thrust con mancuernas",
+      "primaryMuscle": "gluteos",
+      "category": "mancuerna",
+      "baseMovement": "Hip thrust"
+    },
+    "matched": {
+      "id": "0291",
+      "name": "dumbbell bench squat",
+      "equipment": "dumbbell",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0291-mnzcrIB.jpg",
+      "gif_url": "videos/0291-mnzcrIB.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "hip_thrust_smith",
+      "name": "Hip thrust en Smith",
+      "primaryMuscle": "gluteos",
+      "category": "smith",
+      "baseMovement": "Hip thrust"
+    },
+    "matched": {
+      "id": "1409",
+      "name": "barbell glute bridge",
+      "equipment": "barbell",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/1409-qKBpF7I.jpg",
+      "gif_url": "videos/1409-qKBpF7I.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "hip_thrust_maquina",
+      "name": "Hip thrust en mquina",
+      "primaryMuscle": "gluteos",
+      "category": "maquina",
+      "baseMovement": "Hip thrust"
+    },
+    "matched": {
+      "id": "0578",
+      "name": "lever deadlift",
+      "equipment": "leverage machine",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0578-GUT8I22.jpg",
+      "gif_url": "videos/0578-GUT8I22.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "hip_thrust_banda",
+      "name": "Hip thrust con banda",
+      "primaryMuscle": "gluteos",
+      "category": "banda",
+      "baseMovement": "Hip thrust"
+    },
+    "matched": {
+      "id": "3236",
+      "name": "resistance band hip thrusts on knees (female)",
+      "equipment": "resistance band",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/3236-Pjbc0Kt.jpg",
+      "gif_url": "videos/3236-Pjbc0Kt.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "hip_thrust_unilateral",
+      "name": "Hip thrust unilateral",
+      "primaryMuscle": "gluteos",
+      "category": "corporal",
+      "baseMovement": "Hip thrust"
+    },
+    "matched": {
+      "id": "3645",
+      "name": "single leg bridge with outstretched leg",
+      "equipment": "body weight",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/3645-rmEukuS.jpg",
+      "gif_url": "videos/3645-rmEukuS.gif"
+    },
+    "score": 95,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "glute_bridge_barra",
+      "name": "Glute bridge con barra",
+      "primaryMuscle": "gluteos",
+      "category": "barra",
+      "baseMovement": "Hip thrust"
+    },
+    "matched": {
+      "id": "1409",
+      "name": "barbell glute bridge",
+      "equipment": "barbell",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/1409-qKBpF7I.jpg",
+      "gif_url": "videos/1409-qKBpF7I.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "glute_bridge_mancuerna",
+      "name": "Glute bridge con mancuerna",
+      "primaryMuscle": "gluteos",
+      "category": "mancuerna",
+      "baseMovement": "Hip thrust"
+    },
+    "matched": {
+      "id": "0291",
+      "name": "dumbbell bench squat",
+      "equipment": "dumbbell",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0291-mnzcrIB.jpg",
+      "gif_url": "videos/0291-mnzcrIB.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "patada_polea",
+      "name": "Patada de glteo en polea",
+      "primaryMuscle": "gluteos",
+      "category": "polea",
+      "baseMovement": "Extensin de cadera"
+    },
+    "matched": {
+      "id": "0157",
+      "name": "cable deadlift",
+      "equipment": "cable",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0157-eGDudUV.jpg",
+      "gif_url": "videos/0157-eGDudUV.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "patada_banda",
+      "name": "Patada de glteo con banda",
+      "primaryMuscle": "gluteos",
+      "category": "banda",
+      "baseMovement": "Extensin de cadera"
+    },
+    "matched": {
+      "id": "0980",
+      "name": "band bent-over hip extension",
+      "equipment": "band",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0980-wSScovH.jpg",
+      "gif_url": "videos/0980-wSScovH.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "patada_maquina",
+      "name": "Patada de glteo en mquina",
+      "primaryMuscle": "gluteos",
+      "category": "maquina",
+      "baseMovement": "Extensin de cadera"
+    },
+    "matched": {
+      "id": "0578",
+      "name": "lever deadlift",
+      "equipment": "leverage machine",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0578-GUT8I22.jpg",
+      "gif_url": "videos/0578-GUT8I22.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "patada_peso_corporal",
+      "name": "Patada de glteo con peso corporal",
+      "primaryMuscle": "gluteos",
+      "category": "corporal",
+      "baseMovement": "Extensin de cadera"
+    },
+    "matched": {
+      "id": "3214",
+      "name": "arms apart circular toe touch (male)",
+      "equipment": "body weight",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/3214-RtyAsy1.jpg",
+      "gif_url": "videos/3214-RtyAsy1.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "abduccion_maquina",
+      "name": "Abduccin de cadera en mquina",
+      "primaryMuscle": "gluteos",
+      "category": "maquina",
+      "baseMovement": "Abduccin"
+    },
+    "matched": {
+      "id": "0578",
+      "name": "lever deadlift",
+      "equipment": "leverage machine",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0578-GUT8I22.jpg",
+      "gif_url": "videos/0578-GUT8I22.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "abduccion_polea",
+      "name": "Abduccin de cadera en polea",
+      "primaryMuscle": "gluteos",
+      "category": "polea",
+      "baseMovement": "Abduccin"
+    },
+    "matched": {
+      "id": "0157",
+      "name": "cable deadlift",
+      "equipment": "cable",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0157-eGDudUV.jpg",
+      "gif_url": "videos/0157-eGDudUV.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "abduccion_banda",
+      "name": "Abduccin de cadera con banda",
+      "primaryMuscle": "gluteos",
+      "category": "banda",
+      "baseMovement": "Abduccin"
+    },
+    "matched": {
+      "id": "0980",
+      "name": "band bent-over hip extension",
+      "equipment": "band",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0980-wSScovH.jpg",
+      "gif_url": "videos/0980-wSScovH.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "abduccion_mancuerna",
+      "name": "Abduccin de cadera con mancuerna",
+      "primaryMuscle": "gluteos",
+      "category": "mancuerna",
+      "baseMovement": "Abduccin"
+    },
+    "matched": {
+      "id": "0291",
+      "name": "dumbbell bench squat",
+      "equipment": "dumbbell",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0291-mnzcrIB.jpg",
+      "gif_url": "videos/0291-mnzcrIB.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "abduccion_peso_corporal",
+      "name": "Abduccin de cadera peso corporal",
+      "primaryMuscle": "gluteos",
+      "category": "corporal",
+      "baseMovement": "Abduccin"
+    },
+    "matched": {
+      "id": "3214",
+      "name": "arms apart circular toe touch (male)",
+      "equipment": "body weight",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/3214-RtyAsy1.jpg",
+      "gif_url": "videos/3214-RtyAsy1.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "rdl_barra",
+      "name": "Peso muerto rumano con barra",
+      "primaryMuscle": "femorales",
+      "category": "barra",
+      "baseMovement": "Peso muerto rumano"
+    },
+    "matched": {
+      "id": "0085",
+      "name": "barbell romanian deadlift",
+      "equipment": "barbell",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/0085-wQ2c4XD.jpg",
+      "gif_url": "videos/0085-wQ2c4XD.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "rdl_mancuernas",
+      "name": "Peso muerto rumano con mancuernas",
+      "primaryMuscle": "femorales",
+      "category": "mancuerna",
+      "baseMovement": "Peso muerto rumano"
+    },
+    "matched": {
+      "id": "1459",
+      "name": "dumbbell romanian deadlift",
+      "equipment": "dumbbell",
+      "target": "glutes",
+      "body_part": "upper legs",
+      "image": "images/1459-rR0LJzx.jpg",
+      "gif_url": "videos/1459-rR0LJzx.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "rdl_smith",
+      "name": "Peso muerto rumano en Smith",
+      "primaryMuscle": "femorales",
+      "category": "smith",
+      "baseMovement": "Peso muerto rumano"
+    },
+    "matched": {
+      "id": "0044",
+      "name": "barbell good morning",
+      "equipment": "barbell",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0044-XlZ4lAC.jpg",
+      "gif_url": "videos/0044-XlZ4lAC.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "rdl_kettlebell",
+      "name": "Peso muerto rumano con kettlebell",
+      "primaryMuscle": "femorales",
+      "category": "kettlebell",
+      "baseMovement": "Peso muerto rumano"
+    },
+    "matched": {
+      "id": "0339",
+      "name": "dumbbell lying femoral",
+      "equipment": "dumbbell",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0339-FkBIE6a.jpg",
+      "gif_url": "videos/0339-FkBIE6a.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "rdl_polea",
+      "name": "Peso muerto rumano en polea",
+      "primaryMuscle": "femorales",
+      "category": "polea",
+      "baseMovement": "Peso muerto rumano"
+    },
+    "matched": {
+      "id": "3235",
+      "name": "cable assisted inverse leg curl",
+      "equipment": "cable",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/3235-zHEpuuc.jpg",
+      "gif_url": "videos/3235-zHEpuuc.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "rdl_bandas",
+      "name": "Peso muerto rumano con bandas",
+      "primaryMuscle": "femorales",
+      "category": "banda",
+      "baseMovement": "Peso muerto rumano"
+    },
+    "matched": {
+      "id": "3235",
+      "name": "cable assisted inverse leg curl",
+      "equipment": "cable",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/3235-zHEpuuc.jpg",
+      "gif_url": "videos/3235-zHEpuuc.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "rdl_unilateral_mancuerna",
+      "name": "RDL unilateral con mancuerna",
+      "primaryMuscle": "femorales",
+      "category": "mancuerna",
+      "baseMovement": "Peso muerto rumano"
+    },
+    "matched": {
+      "id": "0339",
+      "name": "dumbbell lying femoral",
+      "equipment": "dumbbell",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0339-FkBIE6a.jpg",
+      "gif_url": "videos/0339-FkBIE6a.gif"
+    },
+    "score": 60,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "rdl_unilateral_barra",
+      "name": "RDL unilateral con barra",
+      "primaryMuscle": "femorales",
+      "category": "barra",
+      "baseMovement": "Peso muerto rumano"
+    },
+    "matched": {
+      "id": "0044",
+      "name": "barbell good morning",
+      "equipment": "barbell",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0044-XlZ4lAC.jpg",
+      "gif_url": "videos/0044-XlZ4lAC.gif"
+    },
+    "score": 60,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pm_convencional_barra",
+      "name": "Peso muerto convencional con barra",
+      "primaryMuscle": "femorales",
+      "category": "barra",
+      "baseMovement": "Peso muerto"
+    },
+    "matched": {
+      "id": "0116",
+      "name": "barbell straight leg deadlift",
+      "equipment": "barbell",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0116-hrVQWvE.jpg",
+      "gif_url": "videos/0116-hrVQWvE.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pm_sumo_barra",
+      "name": "Peso muerto sumo con barra",
+      "primaryMuscle": "femorales",
+      "category": "barra",
+      "baseMovement": "Peso muerto"
+    },
+    "matched": {
+      "id": "0044",
+      "name": "barbell good morning",
+      "equipment": "barbell",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0044-XlZ4lAC.jpg",
+      "gif_url": "videos/0044-XlZ4lAC.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pm_mancuernas",
+      "name": "Peso muerto con mancuernas",
+      "primaryMuscle": "femorales",
+      "category": "mancuerna",
+      "baseMovement": "Peso muerto"
+    },
+    "matched": {
+      "id": "0339",
+      "name": "dumbbell lying femoral",
+      "equipment": "dumbbell",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0339-FkBIE6a.jpg",
+      "gif_url": "videos/0339-FkBIE6a.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pm_kettlebell",
+      "name": "Peso muerto con kettlebell",
+      "primaryMuscle": "femorales",
+      "category": "kettlebell",
+      "baseMovement": "Peso muerto"
+    },
+    "matched": {
+      "id": "0339",
+      "name": "dumbbell lying femoral",
+      "equipment": "dumbbell",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0339-FkBIE6a.jpg",
+      "gif_url": "videos/0339-FkBIE6a.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pm_trap_bar",
+      "name": "Peso muerto con barra Trap",
+      "primaryMuscle": "femorales",
+      "category": "barra",
+      "baseMovement": "Peso muerto"
+    },
+    "matched": {
+      "id": "0044",
+      "name": "barbell good morning",
+      "equipment": "barbell",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0044-XlZ4lAC.jpg",
+      "gif_url": "videos/0044-XlZ4lAC.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pm_smith",
+      "name": "Peso muerto en Smith",
+      "primaryMuscle": "femorales",
+      "category": "smith",
+      "baseMovement": "Peso muerto"
+    },
+    "matched": {
+      "id": "0044",
+      "name": "barbell good morning",
+      "equipment": "barbell",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0044-XlZ4lAC.jpg",
+      "gif_url": "videos/0044-XlZ4lAC.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pm_polea",
+      "name": "Peso muerto en polea",
+      "primaryMuscle": "femorales",
+      "category": "polea",
+      "baseMovement": "Peso muerto"
+    },
+    "matched": {
+      "id": "3235",
+      "name": "cable assisted inverse leg curl",
+      "equipment": "cable",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/3235-zHEpuuc.jpg",
+      "gif_url": "videos/3235-zHEpuuc.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_femoral_acostado",
+      "name": "Curl femoral acostado en mquina",
+      "primaryMuscle": "femorales",
+      "category": "maquina",
+      "baseMovement": "Curl femoral"
+    },
+    "matched": {
+      "id": "0586",
+      "name": "lever lying leg curl",
+      "equipment": "leverage machine",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0586-17lJ1kr.jpg",
+      "gif_url": "videos/0586-17lJ1kr.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_femoral_sentado",
+      "name": "Curl femoral sentado en mquina",
+      "primaryMuscle": "femorales",
+      "category": "maquina",
+      "baseMovement": "Curl femoral"
+    },
+    "matched": {
+      "id": "0599",
+      "name": "lever seated leg curl",
+      "equipment": "leverage machine",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0599-Zg3XY7P.jpg",
+      "gif_url": "videos/0599-Zg3XY7P.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_femoral_unilateral",
+      "name": "Curl femoral unilateral",
+      "primaryMuscle": "femorales",
+      "category": "maquina",
+      "baseMovement": "Curl femoral"
+    },
+    "matched": {
+      "id": "0582",
+      "name": "lever kneeling leg curl",
+      "equipment": "leverage machine",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0582-nnmCTLN.jpg",
+      "gif_url": "videos/0582-nnmCTLN.gif"
+    },
+    "score": 60,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_femoral_fitball",
+      "name": "Curl femoral con fitball",
+      "primaryMuscle": "femorales",
+      "category": "corporal",
+      "baseMovement": "Curl femoral"
+    },
+    "matched": {
+      "id": "0016",
+      "name": "assisted prone hamstring",
+      "equipment": "assisted",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0016-VedGSby.jpg",
+      "gif_url": "videos/0016-VedGSby.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_femoral_banda",
+      "name": "Curl femoral con banda",
+      "primaryMuscle": "femorales",
+      "category": "banda",
+      "baseMovement": "Curl femoral"
+    },
+    "matched": {
+      "id": "3235",
+      "name": "cable assisted inverse leg curl",
+      "equipment": "cable",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/3235-zHEpuuc.jpg",
+      "gif_url": "videos/3235-zHEpuuc.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_femoral_deslizante",
+      "name": "Curl femoral deslizante",
+      "primaryMuscle": "femorales",
+      "category": "corporal",
+      "baseMovement": "Curl femoral"
+    },
+    "matched": {
+      "id": "0016",
+      "name": "assisted prone hamstring",
+      "equipment": "assisted",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/0016-VedGSby.jpg",
+      "gif_url": "videos/0016-VedGSby.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_femoral_polea",
+      "name": "Curl femoral en polea",
+      "primaryMuscle": "femorales",
+      "category": "polea",
+      "baseMovement": "Curl femoral"
+    },
+    "matched": {
+      "id": "3235",
+      "name": "cable assisted inverse leg curl",
+      "equipment": "cable",
+      "target": "hamstrings",
+      "body_part": "upper legs",
+      "image": "images/3235-zHEpuuc.jpg",
+      "gif_url": "videos/3235-zHEpuuc.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "gemelos_pie_maquina",
+      "name": "Elevacin de talones de pie en mquina",
+      "primaryMuscle": "pantorrillas",
+      "category": "maquina",
+      "baseMovement": "Elevacin de talones de pie"
+    },
+    "matched": {
+      "id": "0605",
+      "name": "lever standing calf raise",
+      "equipment": "leverage machine",
+      "target": "calves",
+      "body_part": "lower legs",
+      "image": "images/0605-ykUOVze.jpg",
+      "gif_url": "videos/0605-ykUOVze.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "gemelos_pie_smith",
+      "name": "Elevacin de talones en Smith",
+      "primaryMuscle": "pantorrillas",
+      "category": "smith",
+      "baseMovement": "Elevacin de talones de pie"
+    },
+    "matched": {
+      "id": "1370",
+      "name": "barbell floor calf raise",
+      "equipment": "barbell",
+      "target": "calves",
+      "body_part": "lower legs",
+      "image": "images/1370-2IHEa2T.jpg",
+      "gif_url": "videos/1370-2IHEa2T.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "gemelos_pie_barra",
+      "name": "Elevacin de talones con barra",
+      "primaryMuscle": "pantorrillas",
+      "category": "barra",
+      "baseMovement": "Elevacin de talones de pie"
+    },
+    "matched": {
+      "id": "1370",
+      "name": "barbell floor calf raise",
+      "equipment": "barbell",
+      "target": "calves",
+      "body_part": "lower legs",
+      "image": "images/1370-2IHEa2T.jpg",
+      "gif_url": "videos/1370-2IHEa2T.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "gemelos_pie_mancuernas",
+      "name": "Elevacin de talones con mancuernas",
+      "primaryMuscle": "pantorrillas",
+      "category": "mancuerna",
+      "baseMovement": "Elevacin de talones de pie"
+    },
+    "matched": {
+      "id": "0417",
+      "name": "dumbbell standing calf raise",
+      "equipment": "dumbbell",
+      "target": "calves",
+      "body_part": "lower legs",
+      "image": "images/0417-dPmaUaU.jpg",
+      "gif_url": "videos/0417-dPmaUaU.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "gemelos_pie_kettlebell",
+      "name": "Elevacin de talones con kettlebell",
+      "primaryMuscle": "pantorrillas",
+      "category": "kettlebell",
+      "baseMovement": "Elevacin de talones de pie"
+    },
+    "matched": {
+      "id": "1379",
+      "name": "dumbbell seated calf raise",
+      "equipment": "dumbbell",
+      "target": "calves",
+      "body_part": "lower legs",
+      "image": "images/1379-r29jP7S.jpg",
+      "gif_url": "videos/1379-r29jP7S.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "gemelos_pie_corporal",
+      "name": "Elevacin de talones peso corporal",
+      "primaryMuscle": "pantorrillas",
+      "category": "corporal",
+      "baseMovement": "Elevacin de talones de pie"
+    },
+    "matched": {
+      "id": "1368",
+      "name": "ankle circles",
+      "equipment": "body weight",
+      "target": "calves",
+      "body_part": "lower legs",
+      "image": "images/1368-uL9CsKm.jpg",
+      "gif_url": "videos/1368-uL9CsKm.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "gemelos_pie_unilateral",
+      "name": "Elevacin de talones unilateral",
+      "primaryMuscle": "pantorrillas",
+      "category": "corporal",
+      "baseMovement": "Elevacin de talones de pie"
+    },
+    "matched": {
+      "id": "1368",
+      "name": "ankle circles",
+      "equipment": "body weight",
+      "target": "calves",
+      "body_part": "lower legs",
+      "image": "images/1368-uL9CsKm.jpg",
+      "gif_url": "videos/1368-uL9CsKm.gif"
+    },
+    "score": 60,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "gemelos_pie_banda",
+      "name": "Elevacin de talones con banda",
+      "primaryMuscle": "pantorrillas",
+      "category": "banda",
+      "baseMovement": "Elevacin de talones de pie"
+    },
+    "matched": {
+      "id": "1369",
+      "name": "band two legs calf raise - (band under both legs) v. 2",
+      "equipment": "band",
+      "target": "calves",
+      "body_part": "lower legs",
+      "image": "images/1369-jl6uxZV.jpg",
+      "gif_url": "videos/1369-jl6uxZV.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "gemelos_sentado_maquina",
+      "name": "Elevacin de talones sentado en mquina",
+      "primaryMuscle": "pantorrillas",
+      "category": "maquina",
+      "baseMovement": "Elevacin sentado"
+    },
+    "matched": {
+      "id": "1383",
+      "name": "hack calf raise",
+      "equipment": "sled machine",
+      "target": "calves",
+      "body_part": "lower legs",
+      "image": "images/1383-2ORFMoR.jpg",
+      "gif_url": "videos/1383-2ORFMoR.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "gemelos_sentado_mancuerna",
+      "name": "Elevacin de talones sentado con mancuerna",
+      "primaryMuscle": "pantorrillas",
+      "category": "mancuerna",
+      "baseMovement": "Elevacin sentado"
+    },
+    "matched": {
+      "id": "1379",
+      "name": "dumbbell seated calf raise",
+      "equipment": "dumbbell",
+      "target": "calves",
+      "body_part": "lower legs",
+      "image": "images/1379-r29jP7S.jpg",
+      "gif_url": "videos/1379-r29jP7S.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "gemelos_sentado_barra",
+      "name": "Elevacin de talones sentado con barra",
+      "primaryMuscle": "pantorrillas",
+      "category": "barra",
+      "baseMovement": "Elevacin sentado"
+    },
+    "matched": {
+      "id": "1370",
+      "name": "barbell floor calf raise",
+      "equipment": "barbell",
+      "target": "calves",
+      "body_part": "lower legs",
+      "image": "images/1370-2IHEa2T.jpg",
+      "gif_url": "videos/1370-2IHEa2T.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "gemelos_sentado_smith",
+      "name": "Elevacin de talones sentado en Smith",
+      "primaryMuscle": "pantorrillas",
+      "category": "smith",
+      "baseMovement": "Elevacin sentado"
+    },
+    "matched": {
+      "id": "1370",
+      "name": "barbell floor calf raise",
+      "equipment": "barbell",
+      "target": "calves",
+      "body_part": "lower legs",
+      "image": "images/1370-2IHEa2T.jpg",
+      "gif_url": "videos/1370-2IHEa2T.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "gemelos_sentado_banda",
+      "name": "Elevacin de talones sentado con banda",
+      "primaryMuscle": "pantorrillas",
+      "category": "banda",
+      "baseMovement": "Elevacin sentado"
+    },
+    "matched": {
+      "id": "1369",
+      "name": "band two legs calf raise - (band under both legs) v. 2",
+      "equipment": "band",
+      "target": "calves",
+      "body_part": "lower legs",
+      "image": "images/1369-jl6uxZV.jpg",
+      "gif_url": "videos/1369-jl6uxZV.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_militar_barra",
+      "name": "Press militar con barra",
+      "primaryMuscle": "hombros",
+      "category": "barra",
+      "baseMovement": "Press vertical"
+    },
+    "matched": {
+      "id": "0091",
+      "name": "barbell seated overhead press",
+      "equipment": "barbell",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0091-kTbSH9h.jpg",
+      "gif_url": "videos/0091-kTbSH9h.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "press_militar_mancuernas",
+      "name": "Press de hombros con mancuernas",
+      "primaryMuscle": "hombros",
+      "category": "mancuerna",
+      "baseMovement": "Press vertical"
+    },
+    "matched": {
+      "id": "0405",
+      "name": "dumbbell seated shoulder press",
+      "equipment": "dumbbell",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0405-znQUdHY.jpg",
+      "gif_url": "videos/0405-znQUdHY.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "press_hombros_smith",
+      "name": "Press de hombros en Smith",
+      "primaryMuscle": "hombros",
+      "category": "smith",
+      "baseMovement": "Press vertical"
+    },
+    "matched": {
+      "id": "0041",
+      "name": "barbell front raise",
+      "equipment": "barbell",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0041-b2Uoz54.jpg",
+      "gif_url": "videos/0041-b2Uoz54.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_hombros_maquina",
+      "name": "Press de hombros en mquina",
+      "primaryMuscle": "hombros",
+      "category": "maquina",
+      "baseMovement": "Press vertical"
+    },
+    "matched": {
+      "id": "0580",
+      "name": "lever gripless shrug",
+      "equipment": "leverage machine",
+      "target": "traps",
+      "body_part": "back",
+      "image": "images/0580-f91FwXG.jpg",
+      "gif_url": "videos/0580-f91FwXG.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_hombros_polea",
+      "name": "Press de hombros en polea",
+      "primaryMuscle": "hombros",
+      "category": "polea",
+      "baseMovement": "Press vertical"
+    },
+    "matched": {
+      "id": "0148",
+      "name": "cable alternate shoulder press",
+      "equipment": "cable",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0148-KHPZL0b.jpg",
+      "gif_url": "videos/0148-KHPZL0b.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_hombros_kettlebell",
+      "name": "Press de hombros con kettlebell",
+      "primaryMuscle": "hombros",
+      "category": "kettlebell",
+      "baseMovement": "Press vertical"
+    },
+    "matched": {
+      "id": "0286",
+      "name": "dumbbell alternate side press",
+      "equipment": "dumbbell",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0286-izMnLqz.jpg",
+      "gif_url": "videos/0286-izMnLqz.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_hombros_bandas",
+      "name": "Press de hombros con bandas",
+      "primaryMuscle": "hombros",
+      "category": "banda",
+      "baseMovement": "Press vertical"
+    },
+    "matched": {
+      "id": "0977",
+      "name": "band front lateral raise",
+      "equipment": "band",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0977-sTg7iys.jpg",
+      "gif_url": "videos/0977-sTg7iys.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "press_hombros_unilateral",
+      "name": "Press de hombros unilateral",
+      "primaryMuscle": "hombros",
+      "category": "mancuerna",
+      "baseMovement": "Press vertical"
+    },
+    "matched": {
+      "id": "0323",
+      "name": "dumbbell incline one arm lateral raise",
+      "equipment": "dumbbell",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0323-aTNKZiC.jpg",
+      "gif_url": "videos/0323-aTNKZiC.gif"
+    },
+    "score": 95,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevaciones_laterales_mancuernas",
+      "name": "Elevaciones laterales con mancuernas",
+      "primaryMuscle": "hombros",
+      "category": "mancuerna",
+      "baseMovement": "Elevacin lateral"
+    },
+    "matched": {
+      "id": "0334",
+      "name": "dumbbell lateral raise",
+      "equipment": "dumbbell",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0334-DsgkuIt.jpg",
+      "gif_url": "videos/0334-DsgkuIt.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "elevaciones_laterales_polea",
+      "name": "Elevaciones laterales en polea",
+      "primaryMuscle": "hombros",
+      "category": "polea",
+      "baseMovement": "Elevacin lateral"
+    },
+    "matched": {
+      "id": "0178",
+      "name": "cable lateral raise",
+      "equipment": "cable",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0178-goJ6ezq.jpg",
+      "gif_url": "videos/0178-goJ6ezq.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevaciones_laterales_maquina",
+      "name": "Elevaciones laterales en mquina",
+      "primaryMuscle": "hombros",
+      "category": "maquina",
+      "baseMovement": "Elevacin lateral"
+    },
+    "matched": {
+      "id": "0584",
+      "name": "lever lateral raise",
+      "equipment": "leverage machine",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0584-dRTfGZT.jpg",
+      "gif_url": "videos/0584-dRTfGZT.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevaciones_laterales_bandas",
+      "name": "Elevaciones laterales con bandas",
+      "primaryMuscle": "hombros",
+      "category": "banda",
+      "baseMovement": "Elevacin lateral"
+    },
+    "matched": {
+      "id": "0977",
+      "name": "band front lateral raise",
+      "equipment": "band",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0977-sTg7iys.jpg",
+      "gif_url": "videos/0977-sTg7iys.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevaciones_laterales_disco",
+      "name": "Elevaciones laterales con disco",
+      "primaryMuscle": "hombros",
+      "category": "corporal",
+      "baseMovement": "Elevacin lateral"
+    },
+    "matched": {
+      "id": "2271",
+      "name": "left hook. boxing",
+      "equipment": "body weight",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/2271-hoXt6wv.jpg",
+      "gif_url": "videos/2271-hoXt6wv.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevaciones_laterales_kettlebell",
+      "name": "Elevaciones laterales con kettlebell",
+      "primaryMuscle": "hombros",
+      "category": "kettlebell",
+      "baseMovement": "Elevacin lateral"
+    },
+    "matched": {
+      "id": "0311",
+      "name": "dumbbell full can lateral raise",
+      "equipment": "dumbbell",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0311-AQ0mC4Y.jpg",
+      "gif_url": "videos/0311-AQ0mC4Y.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevaciones_laterales_unilateral",
+      "name": "Elevaciones laterales unilaterales",
+      "primaryMuscle": "hombros",
+      "category": "polea",
+      "baseMovement": "Elevacin lateral"
+    },
+    "matched": {
+      "id": "0192",
+      "name": "cable one arm lateral raise",
+      "equipment": "cable",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0192-wEulIzp.jpg",
+      "gif_url": "videos/0192-wEulIzp.gif"
+    },
+    "score": 125,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevaciones_frontales_mancuernas",
+      "name": "Elevaciones frontales con mancuernas",
+      "primaryMuscle": "hombros",
+      "category": "mancuerna",
+      "baseMovement": "Elevacin frontal"
+    },
+    "matched": {
+      "id": "0286",
+      "name": "dumbbell alternate side press",
+      "equipment": "dumbbell",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0286-izMnLqz.jpg",
+      "gif_url": "videos/0286-izMnLqz.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevaciones_frontales_barra",
+      "name": "Elevaciones frontales con barra",
+      "primaryMuscle": "hombros",
+      "category": "barra",
+      "baseMovement": "Elevacin frontal"
+    },
+    "matched": {
+      "id": "0041",
+      "name": "barbell front raise",
+      "equipment": "barbell",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0041-b2Uoz54.jpg",
+      "gif_url": "videos/0041-b2Uoz54.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevaciones_frontales_polea",
+      "name": "Elevaciones frontales en polea",
+      "primaryMuscle": "hombros",
+      "category": "polea",
+      "baseMovement": "Elevacin frontal"
+    },
+    "matched": {
+      "id": "0148",
+      "name": "cable alternate shoulder press",
+      "equipment": "cable",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0148-KHPZL0b.jpg",
+      "gif_url": "videos/0148-KHPZL0b.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevaciones_frontales_disco",
+      "name": "Elevaciones frontales con disco",
+      "primaryMuscle": "hombros",
+      "category": "corporal",
+      "baseMovement": "Elevacin frontal"
+    },
+    "matched": {
+      "id": "2271",
+      "name": "left hook. boxing",
+      "equipment": "body weight",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/2271-hoXt6wv.jpg",
+      "gif_url": "videos/2271-hoXt6wv.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevaciones_frontales_bandas",
+      "name": "Elevaciones frontales con bandas",
+      "primaryMuscle": "hombros",
+      "category": "banda",
+      "baseMovement": "Elevacin frontal"
+    },
+    "matched": {
+      "id": "0977",
+      "name": "band front lateral raise",
+      "equipment": "band",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0977-sTg7iys.jpg",
+      "gif_url": "videos/0977-sTg7iys.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevaciones_frontales_kettlebell",
+      "name": "Elevaciones frontales con kettlebell",
+      "primaryMuscle": "hombros",
+      "category": "kettlebell",
+      "baseMovement": "Elevacin frontal"
+    },
+    "matched": {
+      "id": "0286",
+      "name": "dumbbell alternate side press",
+      "equipment": "dumbbell",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0286-izMnLqz.jpg",
+      "gif_url": "videos/0286-izMnLqz.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pajaros_mancuernas",
+      "name": "Pjaros con mancuernas",
+      "primaryMuscle": "hombros",
+      "category": "mancuerna",
+      "baseMovement": "Deltoide posterior"
+    },
+    "matched": {
+      "id": "0380",
+      "name": "dumbbell rear lateral raise",
+      "equipment": "dumbbell",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0380-v1qBec9.jpg",
+      "gif_url": "videos/0380-v1qBec9.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "pajaros_maquina",
+      "name": "Pjaros en mquina",
+      "primaryMuscle": "hombros",
+      "category": "maquina",
+      "baseMovement": "Deltoide posterior"
+    },
+    "matched": {
+      "id": "0580",
+      "name": "lever gripless shrug",
+      "equipment": "leverage machine",
+      "target": "traps",
+      "body_part": "back",
+      "image": "images/0580-f91FwXG.jpg",
+      "gif_url": "videos/0580-f91FwXG.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pajaros_polea",
+      "name": "Pjaros en polea",
+      "primaryMuscle": "hombros",
+      "category": "polea",
+      "baseMovement": "Deltoide posterior"
+    },
+    "matched": {
+      "id": "0148",
+      "name": "cable alternate shoulder press",
+      "equipment": "cable",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0148-KHPZL0b.jpg",
+      "gif_url": "videos/0148-KHPZL0b.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pajaros_bandas",
+      "name": "Pjaros con bandas",
+      "primaryMuscle": "hombros",
+      "category": "banda",
+      "baseMovement": "Deltoide posterior"
+    },
+    "matched": {
+      "id": "0977",
+      "name": "band front lateral raise",
+      "equipment": "band",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0977-sTg7iys.jpg",
+      "gif_url": "videos/0977-sTg7iys.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "reverse_pec_deck",
+      "name": "Reverse pec deck",
+      "primaryMuscle": "hombros",
+      "category": "maquina",
+      "baseMovement": "Deltoide posterior"
+    },
+    "matched": {
+      "id": "0580",
+      "name": "lever gripless shrug",
+      "equipment": "leverage machine",
+      "target": "traps",
+      "body_part": "back",
+      "image": "images/0580-f91FwXG.jpg",
+      "gif_url": "videos/0580-f91FwXG.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "remo_alto_polea",
+      "name": "Remo alto en polea para deltoides posterior",
+      "primaryMuscle": "hombros",
+      "category": "polea",
+      "baseMovement": "Deltoide posterior"
+    },
+    "matched": {
+      "id": "0148",
+      "name": "cable alternate shoulder press",
+      "equipment": "cable",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0148-KHPZL0b.jpg",
+      "gif_url": "videos/0148-KHPZL0b.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "face_pull_cuerda",
+      "name": "Face pull con cuerda en polea",
+      "primaryMuscle": "hombros",
+      "category": "polea",
+      "baseMovement": "Face pull"
+    },
+    "matched": {
+      "id": "0233",
+      "name": "cable standing rear delt row (with rope)",
+      "equipment": "cable",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0233-ZfyAGhK.jpg",
+      "gif_url": "videos/0233-ZfyAGhK.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "face_pull_barra",
+      "name": "Face pull con barra en polea",
+      "primaryMuscle": "hombros",
+      "category": "polea",
+      "baseMovement": "Face pull"
+    },
+    "matched": {
+      "id": "3697",
+      "name": "cable kneeling rear delt row (with rope) (male)",
+      "equipment": "cable",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/3697-G61cXLk.jpg",
+      "gif_url": "videos/3697-G61cXLk.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "face_pull_bandas",
+      "name": "Face pull con bandas",
+      "primaryMuscle": "hombros",
+      "category": "banda",
+      "baseMovement": "Face pull"
+    },
+    "matched": {
+      "id": "1022",
+      "name": "band standing rear delt row",
+      "equipment": "band",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/1022-tc5dYrf.jpg",
+      "gif_url": "videos/1022-tc5dYrf.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "face_pull_unilateral",
+      "name": "Face pull unilateral en polea",
+      "primaryMuscle": "hombros",
+      "category": "polea",
+      "baseMovement": "Face pull"
+    },
+    "matched": {
+      "id": "0192",
+      "name": "cable one arm lateral raise",
+      "equipment": "cable",
+      "target": "delts",
+      "body_part": "shoulders",
+      "image": "images/0192-wEulIzp.jpg",
+      "gif_url": "videos/0192-wEulIzp.gif"
+    },
+    "score": 95,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_barra_recta",
+      "name": "Curl de bceps con barra recta",
+      "primaryMuscle": "biceps",
+      "category": "barra",
+      "baseMovement": "Curl de bceps"
+    },
+    "matched": {
+      "id": "0023",
+      "name": "barbell alternate biceps curl",
+      "equipment": "barbell",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0023-Yza7XrQ.jpg",
+      "gif_url": "videos/0023-Yza7XrQ.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_barra_ez",
+      "name": "Curl de bceps con barra EZ",
+      "primaryMuscle": "biceps",
+      "category": "barra",
+      "baseMovement": "Curl de bceps"
+    },
+    "matched": {
+      "id": "0031",
+      "name": "barbell curl",
+      "equipment": "barbell",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0031-25GPyDY.jpg",
+      "gif_url": "videos/0031-25GPyDY.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_mancuernas",
+      "name": "Curl de bceps con mancuernas",
+      "primaryMuscle": "biceps",
+      "category": "mancuerna",
+      "baseMovement": "Curl de bceps"
+    },
+    "matched": {
+      "id": "0285",
+      "name": "dumbbell alternate biceps curl",
+      "equipment": "dumbbell",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0285-BU15nH4.jpg",
+      "gif_url": "videos/0285-BU15nH4.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_polea",
+      "name": "Curl de bceps en polea",
+      "primaryMuscle": "biceps",
+      "category": "polea",
+      "baseMovement": "Curl de bceps"
+    },
+    "matched": {
+      "id": "1630",
+      "name": "cable close grip curl",
+      "equipment": "cable",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/1630-BCGQ6J5.jpg",
+      "gif_url": "videos/1630-BCGQ6J5.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_maquina",
+      "name": "Curl de bceps en mquina",
+      "primaryMuscle": "biceps",
+      "category": "maquina",
+      "baseMovement": "Curl de bceps"
+    },
+    "matched": {
+      "id": "0575",
+      "name": "lever bicep curl",
+      "equipment": "leverage machine",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0575-q6y3OhV.jpg",
+      "gif_url": "videos/0575-q6y3OhV.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_bandas",
+      "name": "Curl de bceps con bandas",
+      "primaryMuscle": "biceps",
+      "category": "banda",
+      "baseMovement": "Curl de bceps"
+    },
+    "matched": {
+      "id": "0968",
+      "name": "band alternating biceps curl",
+      "equipment": "band",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0968-3omWx6P.jpg",
+      "gif_url": "videos/0968-3omWx6P.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_kettlebell",
+      "name": "Curl de bceps con kettlebell",
+      "primaryMuscle": "biceps",
+      "category": "kettlebell",
+      "baseMovement": "Curl de bceps"
+    },
+    "matched": {
+      "id": "0285",
+      "name": "dumbbell alternate biceps curl",
+      "equipment": "dumbbell",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0285-BU15nH4.jpg",
+      "gif_url": "videos/0285-BU15nH4.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_inclinado_mancuernas",
+      "name": "Curl inclinado con mancuernas",
+      "primaryMuscle": "biceps",
+      "category": "mancuerna",
+      "baseMovement": "Curl inclinado"
+    },
+    "matched": {
+      "id": "1677",
+      "name": "dumbbell seated bicep curl",
+      "equipment": "dumbbell",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/1677-xiA6lRr.jpg",
+      "gif_url": "videos/1677-xiA6lRr.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_inclinado_polea",
+      "name": "Curl inclinado en polea",
+      "primaryMuscle": "biceps",
+      "category": "polea",
+      "baseMovement": "Curl inclinado"
+    },
+    "matched": {
+      "id": "1630",
+      "name": "cable close grip curl",
+      "equipment": "cable",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/1630-BCGQ6J5.jpg",
+      "gif_url": "videos/1630-BCGQ6J5.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_inclinado_bandas",
+      "name": "Curl inclinado con bandas",
+      "primaryMuscle": "biceps",
+      "category": "banda",
+      "baseMovement": "Curl inclinado"
+    },
+    "matched": {
+      "id": "0968",
+      "name": "band alternating biceps curl",
+      "equipment": "band",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0968-3omWx6P.jpg",
+      "gif_url": "videos/0968-3omWx6P.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_martillo_mancuernas",
+      "name": "Curl martillo con mancuernas",
+      "primaryMuscle": "biceps",
+      "category": "mancuerna",
+      "baseMovement": "Curl martillo"
+    },
+    "matched": {
+      "id": "0313",
+      "name": "dumbbell hammer curl",
+      "equipment": "dumbbell",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0313-slDvUAU.jpg",
+      "gif_url": "videos/0313-slDvUAU.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_martillo_cuerda_polea",
+      "name": "Curl martillo con cuerda en polea",
+      "primaryMuscle": "biceps",
+      "category": "polea",
+      "baseMovement": "Curl martillo"
+    },
+    "matched": {
+      "id": "0165",
+      "name": "cable hammer curl (with rope)",
+      "equipment": "cable",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0165-HPlPoQA.jpg",
+      "gif_url": "videos/0165-HPlPoQA.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_martillo_kettlebell",
+      "name": "Curl martillo con kettlebell",
+      "primaryMuscle": "biceps",
+      "category": "kettlebell",
+      "baseMovement": "Curl martillo"
+    },
+    "matched": {
+      "id": "1648",
+      "name": "dumbbell alternate seated hammer curl",
+      "equipment": "dumbbell",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/1648-6em2Dxj.jpg",
+      "gif_url": "videos/1648-6em2Dxj.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_martillo_bandas",
+      "name": "Curl martillo con bandas",
+      "primaryMuscle": "biceps",
+      "category": "banda",
+      "baseMovement": "Curl martillo"
+    },
+    "matched": {
+      "id": "0165",
+      "name": "cable hammer curl (with rope)",
+      "equipment": "cable",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0165-HPlPoQA.jpg",
+      "gif_url": "videos/0165-HPlPoQA.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_predicador_barra_ez",
+      "name": "Curl predicador con barra EZ",
+      "primaryMuscle": "biceps",
+      "category": "barra",
+      "baseMovement": "Curl predicador"
+    },
+    "matched": {
+      "id": "0059",
+      "name": "barbell lying preacher curl",
+      "equipment": "barbell",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0059-SYJ4Bkt.jpg",
+      "gif_url": "videos/0059-SYJ4Bkt.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_predicador_mancuerna",
+      "name": "Curl predicador con mancuerna",
+      "primaryMuscle": "biceps",
+      "category": "mancuerna",
+      "baseMovement": "Curl predicador"
+    },
+    "matched": {
+      "id": "1646",
+      "name": "dumbbell alternate hammer preacher curl",
+      "equipment": "dumbbell",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/1646-fy7Tgy4.jpg",
+      "gif_url": "videos/1646-fy7Tgy4.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_predicador_maquina",
+      "name": "Curl predicador en mquina",
+      "primaryMuscle": "biceps",
+      "category": "maquina",
+      "baseMovement": "Curl predicador"
+    },
+    "matched": {
+      "id": "0592",
+      "name": "lever preacher curl",
+      "equipment": "leverage machine",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0592-b6hQYMb.jpg",
+      "gif_url": "videos/0592-b6hQYMb.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_predicador_polea",
+      "name": "Curl predicador en polea",
+      "primaryMuscle": "biceps",
+      "category": "polea",
+      "baseMovement": "Curl predicador"
+    },
+    "matched": {
+      "id": "0195",
+      "name": "cable preacher curl",
+      "equipment": "cable",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0195-P2lNrGL.jpg",
+      "gif_url": "videos/0195-P2lNrGL.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_predicador_bandas",
+      "name": "Curl predicador con bandas",
+      "primaryMuscle": "biceps",
+      "category": "banda",
+      "baseMovement": "Curl predicador"
+    },
+    "matched": {
+      "id": "0195",
+      "name": "cable preacher curl",
+      "equipment": "cable",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0195-P2lNrGL.jpg",
+      "gif_url": "videos/0195-P2lNrGL.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_concentrado_mancuerna",
+      "name": "Curl concentrado con mancuerna",
+      "primaryMuscle": "biceps",
+      "category": "mancuerna",
+      "baseMovement": "Curl concentrado"
+    },
+    "matched": {
+      "id": "0297",
+      "name": "dumbbell concentration curl",
+      "equipment": "dumbbell",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/0297-gvsWLQw.jpg",
+      "gif_url": "videos/0297-gvsWLQw.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_concentrado_polea",
+      "name": "Curl concentrado en polea",
+      "primaryMuscle": "biceps",
+      "category": "polea",
+      "baseMovement": "Curl concentrado"
+    },
+    "matched": {
+      "id": "1631",
+      "name": "cable concentration curl",
+      "equipment": "cable",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/1631-NvfE43H.jpg",
+      "gif_url": "videos/1631-NvfE43H.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "curl_concentrado_maquina",
+      "name": "Curl concentrado en mquina",
+      "primaryMuscle": "biceps",
+      "category": "maquina",
+      "baseMovement": "Curl concentrado"
+    },
+    "matched": {
+      "id": "1631",
+      "name": "cable concentration curl",
+      "equipment": "cable",
+      "target": "biceps",
+      "body_part": "upper arms",
+      "image": "images/1631-NvfE43H.jpg",
+      "gif_url": "videos/1631-NvfE43H.gif"
+    },
+    "score": 90,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pushdown_barra_recta",
+      "name": "Pushdown con barra recta en polea",
+      "primaryMuscle": "triceps",
+      "category": "polea",
+      "baseMovement": "Pushdown"
+    },
+    "matched": {
+      "id": "0201",
+      "name": "cable pushdown",
+      "equipment": "cable",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0201-3ZflifB.jpg",
+      "gif_url": "videos/0201-3ZflifB.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "pushdown_barra_ez",
+      "name": "Pushdown con barra EZ en polea",
+      "primaryMuscle": "triceps",
+      "category": "polea",
+      "baseMovement": "Pushdown"
+    },
+    "matched": {
+      "id": "2406",
+      "name": "cable reverse grip triceps pushdown (sz-bar) (with arm blaster)",
+      "equipment": "cable",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/2406-ThKP69G.jpg",
+      "gif_url": "videos/2406-ThKP69G.gif"
+    },
+    "score": 135,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pushdown_barra_v",
+      "name": "Pushdown con barra en V en polea",
+      "primaryMuscle": "triceps",
+      "category": "polea",
+      "baseMovement": "Pushdown"
+    },
+    "matched": {
+      "id": "2406",
+      "name": "cable reverse grip triceps pushdown (sz-bar) (with arm blaster)",
+      "equipment": "cable",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/2406-ThKP69G.jpg",
+      "gif_url": "videos/2406-ThKP69G.gif"
+    },
+    "score": 135,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pushdown_cuerda",
+      "name": "Pushdown con cuerda en polea",
+      "primaryMuscle": "triceps",
+      "category": "polea",
+      "baseMovement": "Pushdown"
+    },
+    "matched": {
+      "id": "0201",
+      "name": "cable pushdown",
+      "equipment": "cable",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0201-3ZflifB.jpg",
+      "gif_url": "videos/0201-3ZflifB.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "pushdown_unilateral",
+      "name": "Pushdown unilateral en polea",
+      "primaryMuscle": "triceps",
+      "category": "polea",
+      "baseMovement": "Pushdown"
+    },
+    "matched": {
+      "id": "1723",
+      "name": "cable one arm tricep pushdown",
+      "equipment": "cable",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/1723-qRZ5S1N.jpg",
+      "gif_url": "videos/1723-qRZ5S1N.gif"
+    },
+    "score": 125,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pushdown_banda",
+      "name": "Pushdown con banda",
+      "primaryMuscle": "triceps",
+      "category": "banda",
+      "baseMovement": "Pushdown"
+    },
+    "matched": {
+      "id": "2406",
+      "name": "cable reverse grip triceps pushdown (sz-bar) (with arm blaster)",
+      "equipment": "cable",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/2406-ThKP69G.jpg",
+      "gif_url": "videos/2406-ThKP69G.gif"
+    },
+    "score": 135,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "extension_overhead_mancuerna",
+      "name": "Extensin tras nuca con mancuerna",
+      "primaryMuscle": "triceps",
+      "category": "mancuerna",
+      "baseMovement": "Extensin por encima de la cabeza"
+    },
+    "matched": {
+      "id": "0430",
+      "name": "dumbbell standing triceps extension",
+      "equipment": "dumbbell",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0430-PdmaD0N.jpg",
+      "gif_url": "videos/0430-PdmaD0N.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "extension_overhead_barra_ez",
+      "name": "Extensin tras nuca con barra EZ",
+      "primaryMuscle": "triceps",
+      "category": "barra",
+      "baseMovement": "Extensin por encima de la cabeza"
+    },
+    "matched": {
+      "id": "0030",
+      "name": "barbell close-grip bench press",
+      "equipment": "barbell",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0030-J6Dx1Mu.jpg",
+      "gif_url": "videos/0030-J6Dx1Mu.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "extension_overhead_polea_cuerda",
+      "name": "Extensin tras nuca con cuerda en polea",
+      "primaryMuscle": "triceps",
+      "category": "polea",
+      "baseMovement": "Extensin por encima de la cabeza"
+    },
+    "matched": {
+      "id": "0149",
+      "name": "cable alternate triceps extension",
+      "equipment": "cable",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0149-Gchi5Tr.jpg",
+      "gif_url": "videos/0149-Gchi5Tr.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "extension_overhead_polea_barra",
+      "name": "Extensin tras nuca con barra en polea",
+      "primaryMuscle": "triceps",
+      "category": "polea",
+      "baseMovement": "Extensin por encima de la cabeza"
+    },
+    "matched": {
+      "id": "0149",
+      "name": "cable alternate triceps extension",
+      "equipment": "cable",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0149-Gchi5Tr.jpg",
+      "gif_url": "videos/0149-Gchi5Tr.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "extension_overhead_banda",
+      "name": "Extensin tras nuca con banda",
+      "primaryMuscle": "triceps",
+      "category": "banda",
+      "baseMovement": "Extensin por encima de la cabeza"
+    },
+    "matched": {
+      "id": "0975",
+      "name": "band close-grip push-up",
+      "equipment": "band",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0975-ufaxB52.jpg",
+      "gif_url": "videos/0975-ufaxB52.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "skull_crusher_barra_ez",
+      "name": "Skull crusher con barra EZ",
+      "primaryMuscle": "triceps",
+      "category": "barra",
+      "baseMovement": "Skull crusher"
+    },
+    "matched": {
+      "id": "0061",
+      "name": "barbell lying triceps extension",
+      "equipment": "barbell",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0061-iZop9xO.jpg",
+      "gif_url": "videos/0061-iZop9xO.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "skull_crusher_barra_recta",
+      "name": "Skull crusher con barra recta",
+      "primaryMuscle": "triceps",
+      "category": "barra",
+      "baseMovement": "Skull crusher"
+    },
+    "matched": {
+      "id": "0060",
+      "name": "barbell lying triceps extension skull crusher",
+      "equipment": "barbell",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0060-h8LFzo9.jpg",
+      "gif_url": "videos/0060-h8LFzo9.gif"
+    },
+    "score": 135,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "skull_crusher_mancuernas",
+      "name": "Skull crusher con mancuernas",
+      "primaryMuscle": "triceps",
+      "category": "mancuerna",
+      "baseMovement": "Skull crusher"
+    },
+    "matched": {
+      "id": "0351",
+      "name": "dumbbell lying triceps extension",
+      "equipment": "dumbbell",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0351-mpKZGWz.jpg",
+      "gif_url": "videos/0351-mpKZGWz.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "skull_crusher_polea",
+      "name": "Skull crusher en polea",
+      "primaryMuscle": "triceps",
+      "category": "polea",
+      "baseMovement": "Skull crusher"
+    },
+    "matched": {
+      "id": "0186",
+      "name": "cable lying triceps extension v. 2",
+      "equipment": "cable",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0186-uxJcFUU.jpg",
+      "gif_url": "videos/0186-uxJcFUU.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "fondos_triceps_paralelas",
+      "name": "Fondos para trceps en paralelas",
+      "primaryMuscle": "triceps",
+      "category": "corporal",
+      "baseMovement": "Fondos"
+    },
+    "matched": {
+      "id": "0018",
+      "name": "assisted standing triceps extension (with towel)",
+      "equipment": "assisted",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0018-7HcfMBP.jpg",
+      "gif_url": "videos/0018-7HcfMBP.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "fondos_triceps_maquina",
+      "name": "Fondos para trceps en mquina",
+      "primaryMuscle": "triceps",
+      "category": "maquina",
+      "baseMovement": "Fondos"
+    },
+    "matched": {
+      "id": "0019",
+      "name": "assisted triceps dip (kneeling)",
+      "equipment": "leverage machine",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0019-J60bN17.jpg",
+      "gif_url": "videos/0019-J60bN17.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "fondos_triceps_peso_corporal",
+      "name": "Fondos entre bancos (peso corporal)",
+      "primaryMuscle": "triceps",
+      "category": "corporal",
+      "baseMovement": "Fondos"
+    },
+    "matched": {
+      "id": "0018",
+      "name": "assisted standing triceps extension (with towel)",
+      "equipment": "assisted",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0018-7HcfMBP.jpg",
+      "gif_url": "videos/0018-7HcfMBP.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "fondos_triceps_lastrados",
+      "name": "Fondos para trceps lastrados",
+      "primaryMuscle": "triceps",
+      "category": "corporal",
+      "baseMovement": "Fondos"
+    },
+    "matched": {
+      "id": "0018",
+      "name": "assisted standing triceps extension (with towel)",
+      "equipment": "assisted",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0018-7HcfMBP.jpg",
+      "gif_url": "videos/0018-7HcfMBP.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "fondos_triceps_asistidos",
+      "name": "Fondos para trceps asistidos",
+      "primaryMuscle": "triceps",
+      "category": "maquina",
+      "baseMovement": "Fondos"
+    },
+    "matched": {
+      "id": "0019",
+      "name": "assisted triceps dip (kneeling)",
+      "equipment": "leverage machine",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0019-J60bN17.jpg",
+      "gif_url": "videos/0019-J60bN17.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "kickback_mancuerna",
+      "name": "Patada de trceps (Kickback) con mancuerna",
+      "primaryMuscle": "triceps",
+      "category": "mancuerna",
+      "baseMovement": "Kickback"
+    },
+    "matched": {
+      "id": "1731",
+      "name": "dumbbell close grip press",
+      "equipment": "dumbbell",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/1731-7jGOBF3.jpg",
+      "gif_url": "videos/1731-7jGOBF3.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "kickback_polea",
+      "name": "Patada de trceps (Kickback) en polea",
+      "primaryMuscle": "triceps",
+      "category": "polea",
+      "baseMovement": "Kickback"
+    },
+    "matched": {
+      "id": "0149",
+      "name": "cable alternate triceps extension",
+      "equipment": "cable",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0149-Gchi5Tr.jpg",
+      "gif_url": "videos/0149-Gchi5Tr.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "kickback_banda",
+      "name": "Patada de trceps (Kickback) con banda",
+      "primaryMuscle": "triceps",
+      "category": "banda",
+      "baseMovement": "Kickback"
+    },
+    "matched": {
+      "id": "0975",
+      "name": "band close-grip push-up",
+      "equipment": "band",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0975-ufaxB52.jpg",
+      "gif_url": "videos/0975-ufaxB52.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "kickback_maquina",
+      "name": "Patada de trceps (Kickback) en mquina",
+      "primaryMuscle": "triceps",
+      "category": "maquina",
+      "baseMovement": "Kickback"
+    },
+    "matched": {
+      "id": "0019",
+      "name": "assisted triceps dip (kneeling)",
+      "equipment": "leverage machine",
+      "target": "triceps",
+      "body_part": "upper arms",
+      "image": "images/0019-J60bN17.jpg",
+      "gif_url": "videos/0019-J60bN17.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "crunch_peso_corporal",
+      "name": "Crunch abdominal peso corporal",
+      "primaryMuscle": "abdomen",
+      "category": "corporal",
+      "baseMovement": "Crunch"
+    },
+    "matched": {
+      "id": "0262",
+      "name": "cross body crunch",
+      "equipment": "body weight",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0262-rbu5UUb.jpg",
+      "gif_url": "videos/0262-rbu5UUb.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "crunch_disco",
+      "name": "Crunch abdominal con disco",
+      "primaryMuscle": "abdomen",
+      "category": "corporal",
+      "baseMovement": "Crunch"
+    },
+    "matched": {
+      "id": "0262",
+      "name": "cross body crunch",
+      "equipment": "body weight",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0262-rbu5UUb.jpg",
+      "gif_url": "videos/0262-rbu5UUb.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "crunch_mancuerna",
+      "name": "Crunch abdominal con mancuerna",
+      "primaryMuscle": "abdomen",
+      "category": "mancuerna",
+      "baseMovement": "Crunch"
+    },
+    "matched": {
+      "id": "0175",
+      "name": "cable kneeling crunch",
+      "equipment": "cable",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0175-WW95auq.jpg",
+      "gif_url": "videos/0175-WW95auq.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "crunch_polea",
+      "name": "Crunch en polea alta con cuerda",
+      "primaryMuscle": "abdomen",
+      "category": "polea",
+      "baseMovement": "Crunch"
+    },
+    "matched": {
+      "id": "0175",
+      "name": "cable kneeling crunch",
+      "equipment": "cable",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0175-WW95auq.jpg",
+      "gif_url": "videos/0175-WW95auq.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "crunch_maquina",
+      "name": "Crunch en mquina",
+      "primaryMuscle": "abdomen",
+      "category": "maquina",
+      "baseMovement": "Crunch"
+    },
+    "matched": {
+      "id": "0583",
+      "name": "lever kneeling twist",
+      "equipment": "leverage machine",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0583-sZOR9EV.jpg",
+      "gif_url": "videos/0583-sZOR9EV.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "crunch_banda",
+      "name": "Crunch con banda resistencia",
+      "primaryMuscle": "abdomen",
+      "category": "banda",
+      "baseMovement": "Crunch"
+    },
+    "matched": {
+      "id": "0969",
+      "name": "band alternating v-up",
+      "equipment": "band",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0969-ztAa1RK.jpg",
+      "gif_url": "videos/0969-ztAa1RK.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevacion_piernas_peso_corporal",
+      "name": "Elevacin de piernas suelo",
+      "primaryMuscle": "abdomen",
+      "category": "corporal",
+      "baseMovement": "Elevacin de piernas"
+    },
+    "matched": {
+      "id": "0001",
+      "name": "3/4 sit-up",
+      "equipment": "body weight",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0001-2gPfomN.jpg",
+      "gif_url": "videos/0001-2gPfomN.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevacion_piernas_colgado",
+      "name": "Elevacin de piernas colgado en barra",
+      "primaryMuscle": "abdomen",
+      "category": "corporal",
+      "baseMovement": "Elevacin de piernas"
+    },
+    "matched": {
+      "id": "0472",
+      "name": "hanging leg raise",
+      "equipment": "body weight",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0472-I3tsCnC.jpg",
+      "gif_url": "videos/0472-I3tsCnC.gif"
+    },
+    "score": 100,
+    "method": "existing_manual"
+  },
+  {
+    "catalogEx": {
+      "id": "elevacion_piernas_paralelas",
+      "name": "Elevacin de piernas en paralelas",
+      "primaryMuscle": "abdomen",
+      "category": "corporal",
+      "baseMovement": "Elevacin de piernas"
+    },
+    "matched": {
+      "id": "0001",
+      "name": "3/4 sit-up",
+      "equipment": "body weight",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0001-2gPfomN.jpg",
+      "gif_url": "videos/0001-2gPfomN.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevacion_piernas_banco",
+      "name": "Elevacin de piernas en banco inclinado",
+      "primaryMuscle": "abdomen",
+      "category": "corporal",
+      "baseMovement": "Elevacin de piernas"
+    },
+    "matched": {
+      "id": "0001",
+      "name": "3/4 sit-up",
+      "equipment": "body weight",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0001-2gPfomN.jpg",
+      "gif_url": "videos/0001-2gPfomN.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevacion_piernas_lastre",
+      "name": "Elevacin de piernas con lastre",
+      "primaryMuscle": "abdomen",
+      "category": "corporal",
+      "baseMovement": "Elevacin de piernas"
+    },
+    "matched": {
+      "id": "0001",
+      "name": "3/4 sit-up",
+      "equipment": "body weight",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0001-2gPfomN.jpg",
+      "gif_url": "videos/0001-2gPfomN.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "elevacion_piernas_mancuerna",
+      "name": "Elevacin de piernas sujetando mancuerna",
+      "primaryMuscle": "abdomen",
+      "category": "mancuerna",
+      "baseMovement": "Elevacin de piernas"
+    },
+    "matched": {
+      "id": "0407",
+      "name": "dumbbell side bend",
+      "equipment": "dumbbell",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0407-IpONWYv.jpg",
+      "gif_url": "videos/0407-IpONWYv.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "rotacion_torso_polea",
+      "name": "Rotacin de torso en polea (Woodchopper)",
+      "primaryMuscle": "abdomen",
+      "category": "polea",
+      "baseMovement": "Rotacin de torso"
+    },
+    "matched": {
+      "id": "0174",
+      "name": "cable judo flip",
+      "equipment": "cable",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0174-MvQPqVW.jpg",
+      "gif_url": "videos/0174-MvQPqVW.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "rotacion_torso_disco",
+      "name": "Rotacin de torso con disco (Russian Twist)",
+      "primaryMuscle": "abdomen",
+      "category": "corporal",
+      "baseMovement": "Rotacin de torso"
+    },
+    "matched": {
+      "id": "0001",
+      "name": "3/4 sit-up",
+      "equipment": "body weight",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0001-2gPfomN.jpg",
+      "gif_url": "videos/0001-2gPfomN.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "rotacion_torso_mancuerna",
+      "name": "Rotacin de torso con mancuerna",
+      "primaryMuscle": "abdomen",
+      "category": "mancuerna",
+      "baseMovement": "Rotacin de torso"
+    },
+    "matched": {
+      "id": "0407",
+      "name": "dumbbell side bend",
+      "equipment": "dumbbell",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0407-IpONWYv.jpg",
+      "gif_url": "videos/0407-IpONWYv.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "rotacion_torso_banda",
+      "name": "Rotacin de torso con banda",
+      "primaryMuscle": "abdomen",
+      "category": "banda",
+      "baseMovement": "Rotacin de torso"
+    },
+    "matched": {
+      "id": "0969",
+      "name": "band alternating v-up",
+      "equipment": "band",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0969-ztAa1RK.jpg",
+      "gif_url": "videos/0969-ztAa1RK.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "rotacion_torso_maquina",
+      "name": "Rotacin de torso en mquina",
+      "primaryMuscle": "abdomen",
+      "category": "maquina",
+      "baseMovement": "Rotacin de torso"
+    },
+    "matched": {
+      "id": "0583",
+      "name": "lever kneeling twist",
+      "equipment": "leverage machine",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0583-sZOR9EV.jpg",
+      "gif_url": "videos/0583-sZOR9EV.gif"
+    },
+    "score": 75,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pallof_press_polea",
+      "name": "Pallof press en polea",
+      "primaryMuscle": "abdomen",
+      "category": "polea",
+      "baseMovement": "Pallof press"
+    },
+    "matched": {
+      "id": "0243",
+      "name": "cable twist",
+      "equipment": "cable",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0243-aVs3BR3.jpg",
+      "gif_url": "videos/0243-aVs3BR3.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pallof_press_banda",
+      "name": "Pallof press con banda",
+      "primaryMuscle": "abdomen",
+      "category": "banda",
+      "baseMovement": "Pallof press"
+    },
+    "matched": {
+      "id": "0979",
+      "name": "band horizontal pallof press",
+      "equipment": "band",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0979-9pa4H5m.jpg",
+      "gif_url": "videos/0979-9pa4H5m.gif"
+    },
+    "score": 105,
+    "method": "heuristic"
+  },
+  {
+    "catalogEx": {
+      "id": "pallof_press_maquina",
+      "name": "Pallof press en mquina",
+      "primaryMuscle": "abdomen",
+      "category": "maquina",
+      "baseMovement": "Pallof press"
+    },
+    "matched": {
+      "id": "0243",
+      "name": "cable twist",
+      "equipment": "cable",
+      "target": "abs",
+      "body_part": "waist",
+      "image": "images/0243-aVs3BR3.jpg",
+      "gif_url": "videos/0243-aVs3BR3.gif"
+    },
+    "score": 90,
+    "method": "heuristic"
+  }
+]
