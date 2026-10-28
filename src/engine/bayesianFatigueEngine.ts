@@ -523,6 +523,15 @@ export function solveOptimalNextSetWeight(
     roundedWeight = Math.round(rawWeight / step) * step;
   }
 
+  // Si rawWeight es inferior al peso de la serie previa (la fatiga exige bajar carga para alcanzar las reps),
+  // pero el redondeo aritmético lo devolvió al mismo peso previo (o mayor), forzar el decremento al salto inferior.
+  if (rawWeight < lastSet.weightKg && roundedWeight >= lastSet.weightKg) {
+    const dropStep = exercise.category === 'barra'
+      ? (equipment?.smallestDiscKg ? equipment.smallestDiscKg * 2 : 2.5)
+      : (lastSet.weightKg >= 100 ? 5 : 2.5);
+    roundedWeight = Math.max(0, lastSet.weightKg - dropStep);
+  }
+
   const isDropRecommended = roundedWeight < lastSet.weightKg;
 
   return {

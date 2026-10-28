@@ -287,11 +287,19 @@ export function evaluateNextSetObjective(
       0,
       acuteModifier
     );
-    const recommendedWeight = Math.min(
-      currentWeight,
-      solved.calculatedWeightKg > 0 ? solved.calculatedWeightKg : nextLower
-    );
+
+    // En un Back-off táctico por fatiga/fallo, la carga RECOMENDADA DEBE SER ESTRICTAMENTE MENOR que currentWeight.
+    // Jamás prescribir "Bajar a X kg" cuando X es igual a la carga recién levantada.
+    let recommendedWeight = solved.calculatedWeightKg > 0 && solved.calculatedWeightKg < currentWeight
+      ? solved.calculatedWeightKg
+      : nextLower;
+
+    if (recommendedWeight >= currentWeight) {
+      recommendedWeight = nextLower;
+    }
+
     const backoffPred = predictNextSetReps(exercise, completedSets, recommendedWeight, 120, 0, acuteModifier);
+    const targetRepsPrescribed = Math.max(exercise.targetRepsMin, backoffPred.predictedReps);
 
     return {
       nextSetNumber,
@@ -299,12 +307,12 @@ export function evaluateNextSetObjective(
       recommendedWeightKg: recommendedWeight,
       targetRepsMin: exercise.targetRepsMin,
       targetRepsMax: exercise.targetRepsMax,
-      targetReps: Math.max(exercise.targetRepsMin, backoffPred.predictedReps),
+      targetReps: targetRepsPrescribed,
       targetRIR: exercise.targetRIR,
       badgeLabel: `BAJAR A ${recommendedWeight} KG (BACK-OFF TÁCTICO)`,
       badgeColor: 'amber',
       headline: `Fatiga por fallo (RIR 0): Ajuste para sostener hipertrofia`,
-      advice: `Fuiste al fallo muscular (RIR 0) con ${currentWeight} kg. Si mantienes esta carga, la fatiga neuromuscular residual solo te permitiría ~${pred.predictedReps} reps con RIR ${exercise.targetRIR}, cayendo fuera de tu ventana óptima de hipertrofia (${exercise.targetRepsMin}-${exercise.targetRepsMax} reps). Para asegurar volumen efectivo de alta calidad sin quemar el SNC, baja a ${recommendedWeight} kg (o descansa 3 min completos) para clavar ~${backoffPred.predictedReps} reps limpias.`,
+      advice: `Fuiste al fallo muscular (RIR 0) con ${currentWeight} kg. Si mantienes esta carga, la fatiga neuromuscular residual solo te permitiría ~${pred.predictedReps} reps con RIR ${exercise.targetRIR}, cayendo fuera de tu ventana óptima de hipertrofia (${exercise.targetRepsMin}-${exercise.targetRepsMax} reps). Para asegurar volumen efectivo de alta calidad sin quemar el SNC, baja a ${recommendedWeight} kg para clavar ~${targetRepsPrescribed} reps limpias (o si decides mantener ${currentWeight} kg, descansa al menos 3 min completos).`,
       isDeloadDrop: true,
       predictedReps: backoffPred.predictedReps,
       confidencePercent: pred.confidencePercent,

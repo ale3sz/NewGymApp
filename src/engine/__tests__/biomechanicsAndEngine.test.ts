@@ -396,6 +396,46 @@ assert(
 );
 console.log(`    Caso Prensa en Vivo Resuelto: Recomendación Serie 2 = ${legPressCoach.recommendedWeightKg} kg para ${legPressCoach.targetReps} reps @ RIR 1`);
 
+// Test 18c (CASO REAL USUARIO EN VIVO): Extensión de Cuádriceps 30kg x 11 reps @ RIR 0 (rango 10-12 reps).
+// Fuiste al fallo muscular en S2 con 30kg. Si mantienes 30kg, caes a ~9 reps (fuera de 10-12 reps).
+// El coach JAMÁS debe decir "BAJAR A 30 KG (BACK-OFF TÁCTICO)" (el mismo peso).
+// DEBE prescribir una carga estrictamente menor (< 30kg, ej. 27.5kg) y apuntar a ≥10 reps limpias.
+const legExtensionExercise: Exercise = {
+  id: 'extension_cuadriceps',
+  name: 'Extensión de rodilla en máquina',
+  primaryMuscle: 'cuadriceps',
+  category: 'maquina',
+  targetRepsMin: 10,
+  targetRepsMax: 12,
+  targetRIR: 1,
+};
+const legExtensionSets: SetLog[] = [
+  { setNumber: 1, weightKg: 30, repsCompleted: 12, rirLogged: 1 },
+  { setNumber: 2, weightKg: 30, repsCompleted: 11, rirLogged: 0, actualRestSeconds: 218, restExtensionRatio: 1.82 },
+];
+const legExtCoach = evaluateNextSetObjective(legExtensionExercise, legExtensionSets, 3, equipment);
+assert(
+  legExtCoach.action === 'DROP_WEIGHT',
+  `Debe indicar DROP_WEIGHT ante fallo RIR 0 que amenaza el rango de 10-12 reps (obtenido ${legExtCoach.action})`
+);
+assert(
+  legExtCoach.recommendedWeightKg < 30,
+  `El peso recomendado en un drop táctico DEBE ser menor a 30kg (obtenido ${legExtCoach.recommendedWeightKg} kg)`
+);
+assert(
+  legExtCoach.recommendedWeightKg === 27.5,
+  `Para 30kg en máquina el salto táctico inferior debe ser 27.5kg (obtenido ${legExtCoach.recommendedWeightKg} kg)`
+);
+assert(
+  !legExtCoach.badgeLabel.includes('30 KG'),
+  `El badge no debe decir bajar a 30kg (obtenido "${legExtCoach.badgeLabel}")`
+);
+assert(
+  legExtCoach.targetReps >= 10,
+  `El objetivo de reps tras el back-off debe rescatar el rango 10-12 reps (obtenido ${legExtCoach.targetReps})`
+);
+console.log(`    Caso Extensión en Vivo Resuelto: Recomendación Serie 3 = ${legExtCoach.recommendedWeightKg} kg para ${legExtCoach.targetReps} reps @ RIR ${legExtCoach.targetRIR}`);
+
 // ==========================================
 // 6. MOTOR DE FATIGA BAYESIANO Y PREDICCIONES
 // ==========================================
