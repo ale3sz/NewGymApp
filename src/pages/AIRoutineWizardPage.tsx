@@ -24,12 +24,13 @@ import {
   EquipmentType,
   MuscleFocus,
   InjuryLimitation,
+  VolumeDistributionStrategy,
   generateAIRoutine,
   modifyAIRoutine,
   GeneratedAIRoutineResult
 } from '../engine/aiRoutineGenerator';
 import { getRoutines, saveRoutines, setActiveRoutineId } from '../storage/storage';
-import { AppTab } from '../types';
+import { AppTab, MuscleGroup } from '../types';
 import { aiCoachImg } from '../constants/brandAssets';
 
 const ALL_WEEK_DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -54,6 +55,8 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
   const [timeMin, setTimeMin] = useState<TimeAvailableMinutes>(60);
   const [equipment, setEquipment] = useState<EquipmentType>('gym_completo');
   const [primaryFocus, setPrimaryFocus] = useState<MuscleFocus>('balanceado');
+  const [distributionStrategy, setDistributionStrategy] = useState<VolumeDistributionStrategy>('balance_total');
+  const [weakPointMuscles, setWeakPointMuscles] = useState<MuscleGroup[]>([]);
   const [limitations, setLimitations] = useState<InjuryLimitation[]>(['ninguna']);
 
   // Result & Modification State
@@ -74,6 +77,19 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
         const updated = [...selectedDays, day];
         setSelectedDays(updated);
         setDaysCount(Math.min(7, Math.max(3, updated.length)) as any);
+      }
+    }
+  };
+
+  const handleToggleWeakPoint = (muscle: MuscleGroup) => {
+    if (weakPointMuscles.includes(muscle)) {
+      setWeakPointMuscles(weakPointMuscles.filter(m => m !== muscle));
+    } else {
+      if (weakPointMuscles.length < 2) {
+        setWeakPointMuscles([...weakPointMuscles, muscle]);
+      } else {
+        // Rotar el más viejo para permitir hasta 2 puntos débiles
+        setWeakPointMuscles([weakPointMuscles[1], muscle]);
       }
     }
   };
@@ -104,7 +120,9 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
         timePerSessionMin: timeMin,
         equipment,
         primaryFocus,
-        limitations
+        limitations,
+        distributionStrategy,
+        weakPointMuscles
       };
 
       const result = generateAIRoutine(profile);
@@ -130,7 +148,9 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
         timePerSessionMin: timeMin,
         equipment,
         primaryFocus,
-        limitations
+        limitations,
+        distributionStrategy,
+        weakPointMuscles
       };
 
       const modified = modifyAIRoutine(generatedResult.routine, prompt, profile);
@@ -370,40 +390,131 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
         </div>
       )}
 
-      {/* Step 4: Muscle Focus & Limitations */}
+      {/* Step 4: Muscle Focus, Volume Distribution & Limitations */}
       {step === 4 && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl space-y-6">
           <div className="space-y-1">
-            <h2 className="text-lg font-bold text-white">Paso 4: Énfasis Muscular & Cuidado Articular</h2>
-            <p className="text-xs text-zinc-400">Prioriza grupos rezagados y protege articulaciones sensibles.</p>
+            <h2 className="text-lg font-bold text-white">Paso 4: Estrategia de Volumen, Prioridad & Cuidado Articular</h2>
+            <p className="text-xs text-zinc-400">
+              ¿Cuál es tu objetivo: ganar masa equilibrada en todo el cuerpo o priorizar algún músculo en particular?
+            </p>
           </div>
 
+          {/* 1. Estrategia de Proporción y Distribución Semanal */}
           <div className="space-y-3">
-            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">Énfasis Muscular</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">
+                Estrategia de Proporción y Distribución de Volumen
+              </label>
+              <span className="text-[10px] text-amber-400 font-mono">Meta-análisis 2025</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {[
-                { id: 'balanceado' as MuscleFocus, label: 'Equilibrado Total' },
-                { id: 'brazos' as MuscleFocus, label: 'Énfasis en Brazos' },
-                { id: 'pecho' as MuscleFocus, label: 'Énfasis en Pecho' },
-                { id: 'espalda' as MuscleFocus, label: 'Énfasis en Espalda' },
-                { id: 'hombros' as MuscleFocus, label: 'Énfasis en Hombros' },
-                { id: 'gluteos_piernas' as MuscleFocus, label: 'Glúteos & Piernas' },
-              ].map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => setPrimaryFocus(opt.id)}
-                  className={`p-3 rounded-2xl border text-xs font-bold transition ${
-                    primaryFocus === opt.id
-                      ? 'bg-amber-500/10 border-amber-500 text-white'
+                {
+                  id: 'balance_total' as VolumeDistributionStrategy,
+                  title: 'Equilibrio Simétrico Total (Recomendado)',
+                  badge: '10-14 Series Equitativas',
+                  badgeColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+                  desc: 'Evita desbalances. Asigna volumen simétrico entre tren superior e inferior (Cuádriceps 12 series, Pecho 11-13 series, Espalda 12-15 series, Hombros 12-14 series, Gemelos y Core ≥6 series).'
+                },
+                {
+                  id: 'especializacion_torso' as VolumeDistributionStrategy,
+                  title: 'Especialización Torso V-Taper',
+                  badge: 'Pecho/Espalda/Hombro 15-18 Series',
+                  badgeColor: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
+                  desc: 'Piernas en mantenimiento (MEV: 6-8 series) para liberar presupuesto neural y concentrar 15-18 series en ensanchar Pecho, Espalda y Deltoides.'
+                },
+                {
+                  id: 'especializacion_piernas' as VolumeDistributionStrategy,
+                  title: 'Especialización Piernas & Glúteos',
+                  badge: 'Cuádriceps & Glúteos 14-18 Series',
+                  badgeColor: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/30',
+                  desc: 'Prioridad absoluta en tren inferior (14-18 series de cuádriceps y 12-14 de glúteos/femorales) con el torso en mantenimiento eficiente (8-10 series).'
+                },
+                {
+                  id: 'especializacion_brazos' as VolumeDistributionStrategy,
+                  title: 'Especialización Brazos & Hombros',
+                  badge: 'Bíceps/Tríceps/Lateral 14-18 Series',
+                  badgeColor: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
+                  desc: 'Bloques prioritarios de flexores de codo, tríceps y hombro lateral con frecuencia 2-3 para acelerar el desarrollo del perímetro braquial.'
+                },
+                {
+                  id: 'powerbuilding' as VolumeDistributionStrategy,
+                  title: 'Powerbuilding (Fuerza SBD + Hipertrofia)',
+                  badge: '3-5 Reps Pesadas @ ≥80% 1RM',
+                  badgeColor: 'text-rose-400 bg-rose-500/10 border-rose-500/30',
+                  desc: 'Sentadilla, Banca y Peso Muerto en rangos de fuerza pesada (3-5 reps @ RIR 2), complementados con trabajo accesorio en hipertrofia (8-12 reps).'
+                }
+              ].map(strat => (
+                <div
+                  key={strat.id}
+                  onClick={() => setDistributionStrategy(strat.id)}
+                  className={`p-4 rounded-2xl border cursor-pointer transition ${
+                    distributionStrategy === strat.id
+                      ? 'bg-amber-500/10 border-amber-500/60 shadow-lg text-white ring-1 ring-amber-500/40'
                       : 'bg-zinc-950/40 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                   }`}
                 >
-                  {opt.label}
-                </button>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-xs text-zinc-200">{strat.title}</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${strat.badgeColor}`}>
+                      {strat.badge}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 mt-2 leading-relaxed">{strat.desc}</p>
+                </div>
               ))}
             </div>
           </div>
 
+          {/* 2. Puntos Débiles / Músculos Rezagados */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">
+                Músculos Rezagados / Puntos Débiles (Opcional, hasta 2)
+              </label>
+              <span className="text-[10px] text-emerald-400 font-mono">
+                {weakPointMuscles.length}/2 seleccionados (+3 series c/u)
+              </span>
+            </div>
+            <p className="text-[11px] text-zinc-400">
+              Inyecta automáticamente 1 ejercicio de aislamiento analítico en posición de estiramiento para acelerar el crecimiento del músculo elegido.
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+              {([
+                { id: 'cuadriceps' as MuscleGroup, label: 'Cuádriceps' },
+                { id: 'pecho' as MuscleGroup, label: 'Pecho' },
+                { id: 'espalda' as MuscleGroup, label: 'Espalda' },
+                { id: 'hombros' as MuscleGroup, label: 'Hombros' },
+                { id: 'femorales' as MuscleGroup, label: 'Femorales' },
+                { id: 'gluteos' as MuscleGroup, label: 'Glúteos' },
+                { id: 'biceps' as MuscleGroup, label: 'Bíceps' },
+                { id: 'triceps' as MuscleGroup, label: 'Tríceps' },
+                { id: 'pantorrillas' as MuscleGroup, label: 'Pantorrillas' },
+                { id: 'abdomen' as MuscleGroup, label: 'Abdomen / Core' },
+              ]).map(m => {
+                const isSelected = weakPointMuscles.includes(m.id);
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => handleToggleWeakPoint(m.id)}
+                    className={`px-3 py-2 rounded-xl border text-xs font-bold transition flex items-center space-x-1.5 ${
+                      isSelected
+                        ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 ring-1 ring-emerald-500/30'
+                        : 'bg-zinc-950/40 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                    }`}
+                  >
+                    <span>{m.label}</span>
+                    {isSelected && <span className="text-[10px] text-emerald-400 font-mono">+3s</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 3. Molestias o Limitaciones Articulares */}
           <div className="space-y-3">
             <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">
               Molestias o Limitaciones Articulares
@@ -449,7 +560,7 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
               className="flex items-center space-x-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-emerald-400 hover:opacity-95 text-black font-black text-xs shadow-xl shadow-amber-500/25 transition"
             >
               <Sparkles className="w-4 h-4 fill-black" />
-              <span>{isGenerating ? 'Generando Algoritmo...' : 'Generar Mi Rutina Científica'}</span>
+              <span>{isGenerating ? 'Calculando Volumen Óptimo...' : 'Generar Mi Rutina Científica'}</span>
             </button>
           </div>
         </div>
@@ -485,27 +596,67 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
                 <Sparkles className="w-4 h-4" />
                 <span>Justificación Científica del Entrenador</span>
               </div>
-              <p className="text-xs text-zinc-300 leading-relaxed">
+              <p className="text-xs text-zinc-300 leading-relaxed whitespace-pre-line">
                 {generatedResult.coachExplanation}
               </p>
             </div>
 
-            {/* Weekly Volume Summary */}
+            {/* Weekly Volume Summary with Scientific Badges */}
             {generatedResult.weeklyVolumeSummary && (
-              <div className="space-y-2">
-                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-                  Volumen Semanal Ponderado por Grupo Muscular
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(generatedResult.weeklyVolumeSummary).map(([m, sets]) => (
-                    <span
-                      key={m}
-                      className="text-xs bg-zinc-950 border border-zinc-800 px-3 py-1.5 rounded-xl font-mono text-zinc-300"
-                    >
-                      <strong className="text-amber-400 capitalize">{m}: </strong>
-                      {sets} series/sem
-                    </span>
-                  ))}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center space-x-1.5">
+                    <Activity className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Auditoría de Volumen Semanal Ponderado (Meta-análisis 2025)</span>
+                  </span>
+                  <span className="text-[10px] text-zinc-400 font-mono">1.0 Directo / 0.5 Indirecto</span>
+                </div>
+
+                <div className="p-3 bg-zinc-950/70 border border-zinc-800/80 rounded-2xl text-[11px] text-zinc-300 leading-relaxed">
+                  💡 <strong>Criterio de Evidencia Científica:</strong> Se requieren ≥4 series semanales por músculo para notar ganancias, siendo <strong>10 a 18 series</strong> la zona óptima más eficiente (MAV). Las series indirectas (tríceps/hombro en press, bíceps en remos) suman 0.5 series ponderadas.
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+                  {Object.entries(generatedResult.weeklyVolumeSummary).map(([m, sets]) => {
+                    let statusLabel = 'Óptimo';
+                    let statusClass = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
+                    if (sets < 6) {
+                      statusLabel = 'Bajo (<6)';
+                      statusClass = 'text-rose-400 bg-rose-500/10 border-rose-500/30';
+                    } else if (sets < 10) {
+                      statusLabel = 'Mantenimiento (6-9)';
+                      statusClass = 'text-amber-400 bg-amber-500/10 border-amber-500/30';
+                    } else if (sets > 18) {
+                      statusLabel = 'Alto / Prioridad (19+)';
+                      statusClass = 'text-purple-400 bg-purple-500/10 border-purple-500/30';
+                    }
+
+                    const direct = generatedResult.directVolumeSummary?.[m] || 0;
+                    const indirect = generatedResult.indirectVolumeSummary?.[m] || 0;
+
+                    return (
+                      <div
+                        key={m}
+                        className="p-3 bg-zinc-950 border border-zinc-800 rounded-2xl flex flex-col justify-between space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold capitalize text-white">{m}</span>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded-full border font-mono ${statusClass}`}>
+                            {statusLabel}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline space-x-1.5">
+                          <span className="text-lg font-black font-mono text-amber-400">{sets}</span>
+                          <span className="text-[10px] text-zinc-500 font-mono">series/sem</span>
+                        </div>
+                        {indirect > 0 && (
+                          <div className="text-[10px] text-zinc-500 font-mono">
+                            {direct} directas + {indirect} indirectas
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -26,13 +26,33 @@ export function getSecondaryMuscles(name: string, primaryMuscle: MuscleGroup, ca
   const lowerName = name.toLowerCase();
 
   if (primaryMuscle === 'pecho') {
+    // Si es aislamiento (aperturas, pec deck, cruces, flyes), no fatiga el tríceps ni sobrecarga el deltoide
+    if (
+      lowerName.includes('apertura') ||
+      lowerName.includes('pec deck') ||
+      lowerName.includes('cruce') ||
+      lowerName.includes('contractor') ||
+      lowerName.includes('fly')
+    ) {
+      return []; // Aislamiento analítico pectoral sin sobrecarga sinergista
+    }
     if (lowerName.includes('press') || category === 'barra' || category === 'mancuerna' || category === 'maquina') {
       return ['triceps', 'hombros'];
     }
   }
 
   if (primaryMuscle === 'espalda') {
-    return ['biceps', 'hombros'];
+    // Tracción horizontal (remos, face pull, pajaros) involucra deltoide posterior y bíceps.
+    // Tracción vertical pura (jalón, dominadas) activa dorsal mayor y bíceps sin sobrecargar deltoide posterior.
+    if (
+      lowerName.includes('remo') ||
+      lowerName.includes('face pull') ||
+      lowerName.includes('pajaro') ||
+      lowerName.includes('deltoide')
+    ) {
+      return ['biceps', 'hombros'];
+    }
+    return ['biceps'];
   }
 
   if (primaryMuscle === 'hombros') {
@@ -42,7 +62,13 @@ export function getSecondaryMuscles(name: string, primaryMuscle: MuscleGroup, ca
   }
 
   if (primaryMuscle === 'cuadriceps') {
-    if (lowerName.includes('sentadilla') || lowerName.includes('prensa') || lowerName.includes('zancadas') || lowerName.includes('hack')) {
+    if (
+      lowerName.includes('sentadilla') ||
+      lowerName.includes('prensa') ||
+      lowerName.includes('zancadas') ||
+      lowerName.includes('hack') ||
+      lowerName.includes('bulgara')
+    ) {
       return ['gluteos'];
     }
   }

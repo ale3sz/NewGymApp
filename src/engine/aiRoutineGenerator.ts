@@ -9,6 +9,13 @@ export type EquipmentType = 'gym_completo' | 'mancuernas_y_barra' | 'solo_mancue
 export type MuscleFocus = 'balanceado' | 'brazos' | 'pecho' | 'espalda' | 'hombros' | 'gluteos_piernas';
 export type InjuryLimitation = 'ninguna' | 'dolor_lumbar' | 'dolor_hombro' | 'dolor_rodilla' | 'dolor_muneca';
 
+export type VolumeDistributionStrategy =
+  | 'balance_total'
+  | 'especializacion_torso'
+  | 'especializacion_piernas'
+  | 'especializacion_brazos'
+  | 'powerbuilding';
+
 export interface AIUserProfile {
   goal: TrainingGoal;
   daysPerWeek: 3 | 4 | 5 | 6 | 7;
@@ -18,6 +25,8 @@ export interface AIUserProfile {
   equipment: EquipmentType;
   primaryFocus: MuscleFocus;
   limitations: InjuryLimitation[];
+  distributionStrategy?: VolumeDistributionStrategy;
+  weakPointMuscles?: MuscleGroup[]; // Hasta 2 grupos rezagados a priorizar con volumen adicional (+3-4 series)
   favoriteExercises?: string[];
   dislikedExercises?: string[];
   additionalNotes?: string;
@@ -87,6 +96,7 @@ function getFilteredCatalog(profile?: AIUserProfile): CatalogExercise[] {
 
 let activeContextGoal: TrainingGoal = 'hipertrofia';
 let activeContextLevel: ExperienceLevel = 'intermedio';
+let activeContextStrategy: VolumeDistributionStrategy = 'balance_total';
 
 /**
  * Selecciona el mejor ejercicio para un grupo muscular respetando biomecánica, objetivo y alternativas
@@ -98,20 +108,31 @@ function pickExercise(
   catalog: CatalogExercise[],
   usedIds: Set<string>,
   goal: TrainingGoal = activeContextGoal,
-  level: ExperienceLevel = activeContextLevel
+  level: ExperienceLevel = activeContextLevel,
+  isPowerbuildingMainLift: boolean = false,
+  preferredBaseMovement?: string
 ): Exercise {
   const candidates = catalog.filter(
     ex => ex.primaryMuscle === muscle && !usedIds.has(ex.id)
   );
 
-  let selected: CatalogExercise;
-  if (candidates.length > 0) {
+  let selected: CatalogExercise | undefined;
+
+  if (preferredBaseMovement) {
+    selected = candidates.find(
+      c => c.baseMovement && c.baseMovement.toLowerCase().includes(preferredBaseMovement.toLowerCase())
+    );
+  }
+
+  if (!selected && candidates.length > 0) {
     if (isCompound) {
-      selected = candidates.find(c => c.category === 'barra' || c.category === 'mancuerna' || c.category === 'maquina') || candidates[0];
+      selected = candidates.find(c => c.category === 'barra' || c.category === 'mancuerna' || c.category === 'maquina' || c.category === 'polea' || c.category === 'corporal') || candidates[0];
     } else {
       selected = candidates.find(c => c.category === 'polea' || c.category === 'mancuerna' || c.category === 'maquina') || candidates[0];
     }
-  } else {
+  }
+
+  if (!selected) {
     // Fallback general del catálogo completo
     selected = EXERCISE_CATALOG.find(c => c.primaryMuscle === muscle) || {
       id: `${muscle}_general`,
@@ -129,7 +150,12 @@ function pickExercise(
   let targetRepsMax = 12;
   let targetRIR = 1;
 
-  if (goal === 'fuerza') {
+  if (isPowerbuildingMainLift) {
+    targetSets = 4;
+    targetRepsMin = 3;
+    targetRepsMax = 5;
+    targetRIR = 2; // RIR 2 para fuerza pesada @ ≥80% 1RM
+  } else if (goal === 'fuerza') {
     if (isCompound) {
       targetSets = 4;
       targetRepsMin = 4;
@@ -185,6 +211,8 @@ function pickExercise(
 export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineResult {
   activeContextGoal = profile.goal || 'hipertrofia';
   activeContextLevel = profile.level || 'intermedio';
+  const distributionStrategy: VolumeDistributionStrategy = profile.distributionStrategy || 'balance_total';
+  activeContextStrategy = distributionStrategy;
 
   const catalog = getFilteredCatalog(profile);
   const usedExerciseIds = new Set<string>();
@@ -203,7 +231,7 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
     restCompound = 90;
     restIsolation = 75;
   } else if (profile.timePerSessionMin <= 60) {
-    exercisesPerSession = 5;
+    exercisesPerSession = 6;
     restCompound = 120;
     restIsolation = 90;
   } else {
@@ -229,43 +257,44 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
       // Día 1: Énfasis Torso / Empuje + Pierna
       days.push({
         id: 'fullbody_a',
-        name: `${assignedDaysLabels[0]} – Full Body A (Énfasis Empuje)`,
+        name: `${assignedDaysLabels[0]} – Full Body A (Empuje & Cuádriceps)`,
         description: 'Tensión mecánica en pecho, cuádriceps y espalda alta.',
         exercises: [
-          pickExercise('pecho', true, catalog, usedExerciseIds),
           pickExercise('cuadriceps', true, catalog, usedExerciseIds),
+          pickExercise('pecho', true, catalog, usedExerciseIds),
           pickExercise('espalda', true, catalog, usedExerciseIds),
+          pickExercise('cuadriceps', false, catalog, usedExerciseIds),
           pickExercise('hombros', false, catalog, usedExerciseIds),
-          ...(exercisesPerSession >= 5 ? [pickExercise('triceps', false, catalog, usedExerciseIds)] : []),
-        ],
+          ...(exercisesPerSession >= 6 ? [pickExercise('pantorrillas', false, catalog, usedExerciseIds)] : []),
+        ].slice(0, exercisesPerSession),
       });
 
       // Día 2: Énfasis Tracción / Cadena Posterior
       days.push({
         id: 'fullbody_b',
-        name: `${assignedDaysLabels[1]} – Full Body B (Énfasis Tracción)`,
+        name: `${assignedDaysLabels[1]} – Full Body B (Tracción & Femorales)`,
         description: 'Enfoque en espalda, femorales y deltoides.',
         exercises: [
-          pickExercise('espalda', true, catalog, usedExerciseIds),
           pickExercise('femorales', true, catalog, usedExerciseIds),
+          pickExercise('espalda', true, catalog, usedExerciseIds),
           pickExercise('pecho', false, catalog, usedExerciseIds),
           pickExercise('biceps', false, catalog, usedExerciseIds),
-          ...(exercisesPerSession >= 5 ? [pickExercise('gluteos', false, catalog, usedExerciseIds)] : []),
-        ],
+          pickExercise('pantorrillas', false, catalog, usedExerciseIds),
+        ].slice(0, exercisesPerSession),
       });
 
-      // Día 3: Énfasis Piernas / Balance
+      // Día 3: Énfasis Piernas / Balance & Core
       days.push({
         id: 'fullbody_c',
-        name: `${assignedDaysLabels[2]} – Full Body C (Hipertrofia Integral)`,
-        description: 'Volumen final semanal y brazos/hombros.',
+        name: `${assignedDaysLabels[2]} – Full Body C (Hipertrofia Integral & Core)`,
+        description: 'Volumen final semanal, cuádriceps y abdomen.',
         exercises: [
           pickExercise('cuadriceps', true, catalog, usedExerciseIds),
           pickExercise('pecho', true, catalog, usedExerciseIds),
-          pickExercise('espalda', true, catalog, usedExerciseIds),
-          pickExercise('hombros', false, catalog, usedExerciseIds),
-          ...(exercisesPerSession >= 5 ? [pickExercise('biceps', false, catalog, usedExerciseIds)] : []),
-        ],
+          pickExercise('espalda', false, catalog, usedExerciseIds),
+          pickExercise('triceps', false, catalog, usedExerciseIds),
+          pickExercise('abdomen', false, catalog, usedExerciseIds),
+        ].slice(0, exercisesPerSession),
       });
     } else {
       splitType = 'Push / Pull / Legs (Frecuencia 1 Intensa)';
@@ -276,7 +305,7 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
         name: `${assignedDaysLabels[0]} – Push (Pecho, Hombro, Tríceps)`,
         description: 'Cadena anterior de empuje.',
         exercises: [
-          pickExercise('pecho', true, catalog, usedExerciseIds),
+          pickExercise('pecho', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, distributionStrategy === 'powerbuilding'),
           pickExercise('pecho', false, catalog, usedExerciseIds),
           pickExercise('hombros', true, catalog, usedExerciseIds),
           pickExercise('hombros', false, catalog, usedExerciseIds),
@@ -289,7 +318,7 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
         name: `${assignedDaysLabels[1]} – Pull (Espalda, Bíceps, Posterior)`,
         description: 'Cadena de tracción y densidad de espalda.',
         exercises: [
-          pickExercise('espalda', true, catalog, usedExerciseIds),
+          pickExercise('espalda', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, distributionStrategy === 'powerbuilding'),
           pickExercise('espalda', true, catalog, usedExerciseIds),
           pickExercise('espalda', false, catalog, usedExerciseIds),
           pickExercise('biceps', false, catalog, usedExerciseIds),
@@ -299,14 +328,15 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
 
       days.push({
         id: 'ppl_legs',
-        name: `${assignedDaysLabels[2]} – Legs (Cuádriceps, Femorales, Glúteos)`,
-        description: 'Tren inferior completo.',
+        name: `${assignedDaysLabels[2]} – Legs (Cuádriceps, Femorales, Glúteos & Gemelos)`,
+        description: 'Tren inferior completo y equilibrado.',
         exercises: [
-          pickExercise('cuadriceps', true, catalog, usedExerciseIds),
-          pickExercise('femorales', true, catalog, usedExerciseIds),
+          pickExercise('cuadriceps', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, distributionStrategy === 'powerbuilding'),
           pickExercise('cuadriceps', false, catalog, usedExerciseIds),
+          pickExercise('femorales', true, catalog, usedExerciseIds),
           pickExercise('gluteos', false, catalog, usedExerciseIds),
           pickExercise('pantorrillas', false, catalog, usedExerciseIds),
+          ...(exercisesPerSession >= 6 ? [pickExercise('abdomen', false, catalog, usedExerciseIds)] : []),
         ].slice(0, exercisesPerSession),
       });
     }
@@ -318,7 +348,7 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
       ? 'Torso / Pierna + Especialización de Brazos'
       : 'Upper / Lower x2 (Torso / Pierna Frecuencia 2)';
 
-    coachExplanation = `Con 4 días de entrenamiento, la división Upper/Lower es el estándar de oro biomecánico: permite frecuencia 2 exacta (cada músculo estimulado cada 72-96hs) con descanso suficiente entre días. ${profile.primaryFocus === 'brazos' ? 'Se agregaron bloques prioritarios de bíceps y tríceps al inicio de los accesorios.' : ''}`;
+    coachExplanation = `Con 4 días de entrenamiento, la división Upper/Lower es el estándar de oro biomecánico: permite frecuencia 2 exacta (cada músculo estimulado cada 72-96hs) con descanso suficiente entre días.`;
 
     // Día 1: Upper A (Fuerza / Tensión)
     days.push({
@@ -326,26 +356,26 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
       name: `${assignedDaysLabels[0]} – Upper 1 (Pecho, Espalda y Hombro Pesado)`,
       description: 'Multiarticulares pesados del tren superior.',
       exercises: [
-        pickExercise('pecho', true, catalog, usedExerciseIds),
+        pickExercise('pecho', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, distributionStrategy === 'powerbuilding'),
         pickExercise('espalda', true, catalog, usedExerciseIds),
         pickExercise('hombros', true, catalog, usedExerciseIds),
-        pickExercise(profile.primaryFocus === 'brazos' ? 'triceps' : 'espalda', false, catalog, usedExerciseIds),
-        pickExercise(profile.primaryFocus === 'brazos' ? 'biceps' : 'pecho', false, catalog, usedExerciseIds),
+        pickExercise(profile.primaryFocus === 'brazos' ? 'triceps' : 'pecho', false, catalog, usedExerciseIds),
+        pickExercise(profile.primaryFocus === 'brazos' ? 'biceps' : 'hombros', false, catalog, usedExerciseIds),
         ...(exercisesPerSession >= 6 ? [pickExercise('triceps', false, catalog, usedExerciseIds)] : []),
       ].slice(0, exercisesPerSession),
     });
 
-    // Día 2: Lower A (Cuádriceps prioritario)
+    // Día 2: Lower A (Cuádriceps y Gemelos)
     days.push({
       id: 'lower_a',
       name: `${assignedDaysLabels[1]} – Lower 1 (Cuádriceps y Gemelos)`,
-      description: 'Enfoque en empuje de tren inferior.',
+      description: 'Enfoque en empuje de tren inferior y pantorrillas.',
       exercises: [
-        pickExercise('cuadriceps', true, catalog, usedExerciseIds),
-        pickExercise('femorales', true, catalog, usedExerciseIds),
+        pickExercise('cuadriceps', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, distributionStrategy === 'powerbuilding'),
         pickExercise('cuadriceps', false, catalog, usedExerciseIds),
-        pickExercise('gluteos', false, catalog, usedExerciseIds),
+        pickExercise('femorales', true, catalog, usedExerciseIds),
         pickExercise('pantorrillas', false, catalog, usedExerciseIds),
+        pickExercise('abdomen', false, catalog, usedExerciseIds),
       ].slice(0, exercisesPerSession),
     });
 
@@ -363,15 +393,15 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
       ].slice(0, exercisesPerSession),
     });
 
-    // Día 4: Lower B (Cadena Posterior y Glúteos)
+    // Día 4: Lower B (Cadena Posterior, Cuádriceps y Core)
     days.push({
       id: 'lower_b',
-      name: `${assignedDaysLabels[3]} – Lower 2 (Femorales, Glúteos y Abdomen)`,
-      description: 'Tracción de tren inferior y core.',
+      name: `${assignedDaysLabels[3]} – Lower 2 (Femorales, Cuádriceps y Core)`,
+      description: 'Tracción de tren inferior, glúteos y core.',
       exercises: [
-        pickExercise('femorales', true, catalog, usedExerciseIds),
+        pickExercise('femorales', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, distributionStrategy === 'powerbuilding'),
         pickExercise('cuadriceps', true, catalog, usedExerciseIds),
-        pickExercise('gluteos', true, catalog, usedExerciseIds),
+        pickExercise(distributionStrategy === 'especializacion_piernas' ? 'cuadriceps' : 'gluteos', false, catalog, usedExerciseIds),
         pickExercise('pantorrillas', false, catalog, usedExerciseIds),
         pickExercise('abdomen', false, catalog, usedExerciseIds),
       ].slice(0, exercisesPerSession),
@@ -380,9 +410,9 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
 
   // ==================== 5 DÍAS ====================
   else if (profile.daysPerWeek === 5) {
-    if (profile.primaryFocus === 'brazos' || profile.primaryFocus === 'hombros') {
+    if (distributionStrategy === 'especializacion_brazos' || profile.primaryFocus === 'brazos' || profile.primaryFocus === 'hombros') {
       splitType = 'Arnold Split (Pecho/Espalda, Hombro/Brazos, Pierna)';
-      coachExplanation = `Para 5 días con enfoque en ${profile.primaryFocus}, el Arnold Split es perfecto: agrupa agonistas/antagonistas (pecho + espalda) liberando un día completo para reventar hombros y brazos sin fatiga residual.`;
+      coachExplanation = `Para 5 días con enfoque en brazos y hombros, el Arnold Split agrupa agonistas/antagonistas (pecho + espalda) liberando sesiones de alta intensidad analítica en hombros y brazos sin fatiga residual.`;
 
       days.push({
         id: 'arnold_1',
@@ -412,8 +442,8 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
         name: `${assignedDaysLabels[2]} – Piernas Completo`,
         exercises: [
           pickExercise('cuadriceps', true, catalog, usedExerciseIds),
+          pickExercise('cuadriceps', false, catalog, usedExerciseIds),
           pickExercise('femorales', true, catalog, usedExerciseIds),
-          pickExercise('gluteos', false, catalog, usedExerciseIds),
           pickExercise('pantorrillas', false, catalog, usedExerciseIds),
         ].slice(0, exercisesPerSession),
       });
@@ -437,64 +467,85 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
           pickExercise('femorales', false, catalog, usedExerciseIds),
           pickExercise('biceps', false, catalog, usedExerciseIds),
           pickExercise('triceps', false, catalog, usedExerciseIds),
+          pickExercise('abdomen', false, catalog, usedExerciseIds),
         ].slice(0, exercisesPerSession),
       });
     } else {
       splitType = 'Push / Pull / Legs + Upper / Lower (Híbrido 5 Días)';
       coachExplanation = 'Esta es una de las programaciones más versátiles de la ciencia del deporte: combina un ciclo PPL con un bloque Upper/Lower al final de la semana, logrando Frecuencia 2 perfecta en todo el cuerpo.';
 
+      const isLegSpecialization = distributionStrategy === 'especializacion_piernas';
+      const isTorsoSpecialization = distributionStrategy === 'especializacion_torso';
+
+      // Push
       days.push({
         id: 'd5_push',
         name: `${assignedDaysLabels[0]} – Push (Pecho, Hombro, Tríceps)`,
         exercises: [
-          pickExercise('pecho', true, catalog, usedExerciseIds),
-          pickExercise('pecho', false, catalog, usedExerciseIds),
-          pickExercise('hombros', true, catalog, usedExerciseIds),
-          pickExercise('triceps', false, catalog, usedExerciseIds),
+          pickExercise('pecho', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, distributionStrategy === 'powerbuilding', 'Press plano / horizontal'),
+          pickExercise('pecho', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Aperturas'),
+          pickExercise('hombros', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Press vertical'),
+          pickExercise('hombros', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Elevación lateral'),
+          pickExercise('triceps', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Pushdown'),
+          ...(isTorsoSpecialization ? [pickExercise('pecho', false, catalog, usedExerciseIds)] : []),
         ].slice(0, exercisesPerSession),
       });
 
+      // Pull
       days.push({
         id: 'd5_pull',
         name: `${assignedDaysLabels[1]} – Pull (Espalda, Bíceps)`,
         exercises: [
-          pickExercise('espalda', true, catalog, usedExerciseIds),
-          pickExercise('espalda', true, catalog, usedExerciseIds),
-          pickExercise('espalda', false, catalog, usedExerciseIds),
-          pickExercise('biceps', false, catalog, usedExerciseIds),
+          pickExercise('espalda', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, distributionStrategy === 'powerbuilding', 'Jalón vertical'),
+          pickExercise('espalda', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Remo horizontal'),
+          pickExercise('espalda', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Pullover'),
+          pickExercise('biceps', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Curl de bíceps'),
+          pickExercise('biceps', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Curl martillo'),
+          ...(isTorsoSpecialization ? [pickExercise('espalda', false, catalog, usedExerciseIds)] : []),
         ].slice(0, exercisesPerSession),
       });
 
+      // Legs
       days.push({
         id: 'd5_legs',
-        name: `${assignedDaysLabels[2]} – Legs (Pierna Completa)`,
+        name: `${assignedDaysLabels[2]} – Legs (Pierna Completa - Cuádriceps & Femorales)`,
         exercises: [
-          pickExercise('cuadriceps', true, catalog, usedExerciseIds),
-          pickExercise('femorales', true, catalog, usedExerciseIds),
-          pickExercise('gluteos', false, catalog, usedExerciseIds),
-          pickExercise('pantorrillas', false, catalog, usedExerciseIds),
+          pickExercise('cuadriceps', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, distributionStrategy === 'powerbuilding', 'Sentadilla'),
+          ...(!isTorsoSpecialization ? [pickExercise('cuadriceps', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Extensión de rodilla')] : []),
+          pickExercise('femorales', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Peso muerto rumano'),
+          pickExercise('femorales', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Curl femoral'),
+          pickExercise('pantorrillas', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Elevación de talones de pie'),
+          ...(isLegSpecialization ? [pickExercise('cuadriceps', false, catalog, usedExerciseIds)] : []),
         ].slice(0, exercisesPerSession),
       });
 
+      // Upper
       days.push({
         id: 'd5_upper',
-        name: `${assignedDaysLabels[3]} – Upper (Torso Balance)`,
+        name: `${assignedDaysLabels[3]} – Upper (Torso Balance & Brazos)`,
         exercises: [
-          pickExercise('pecho', true, catalog, usedExerciseIds),
-          pickExercise('espalda', true, catalog, usedExerciseIds),
-          pickExercise('hombros', false, catalog, usedExerciseIds),
-          pickExercise('biceps', false, catalog, usedExerciseIds),
+          pickExercise('pecho', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Press inclinado'),
+          pickExercise('pecho', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Aperturas'),
+          pickExercise('espalda', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Jalón vertical'),
+          pickExercise('hombros', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Face pull'),
+          pickExercise('biceps', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Curl inclinado'),
+          pickExercise('triceps', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Skull crusher'),
+          ...(isTorsoSpecialization ? [pickExercise('espalda', false, catalog, usedExerciseIds)] : []),
         ].slice(0, exercisesPerSession),
       });
 
+      // Lower
       days.push({
         id: 'd5_lower',
         name: `${assignedDaysLabels[4]} – Lower (Pierna & Core)`,
         exercises: [
-          pickExercise('cuadriceps', true, catalog, usedExerciseIds),
-          pickExercise('femorales', true, catalog, usedExerciseIds),
-          pickExercise('gluteos', false, catalog, usedExerciseIds),
-          pickExercise('abdomen', false, catalog, usedExerciseIds),
+          pickExercise('cuadriceps', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Prensa'),
+          ...(!isTorsoSpecialization ? [pickExercise('cuadriceps', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Split squat / búlgara')] : []),
+          pickExercise('femorales', true, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Peso muerto'),
+          pickExercise('gluteos', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Hip thrust'),
+          pickExercise('pantorrillas', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Elevación sentado'),
+          pickExercise('abdomen', false, catalog, usedExerciseIds, activeContextGoal, activeContextLevel, false, 'Elevación de piernas'),
+          ...(isLegSpecialization ? [pickExercise('cuadriceps', false, catalog, usedExerciseIds)] : []),
         ].slice(0, exercisesPerSession),
       });
     }
@@ -506,12 +557,12 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
     coachExplanation = 'Con 6 días diseñamos una estructura PPL x2 dividida en sesiones de volumen moderado por día. Esto maximiza la síntesis proteica muscular manteniéndola elevada los 6 días sin provocar daño muscular excesivo.';
 
     const pplTemplates = [
-      { name: 'Push 1 (Fuerza)', m: ['pecho', 'pecho', 'hombros', 'triceps'] },
-      { name: 'Pull 1 (Tracción Vertical/Horizontal)', m: ['espalda', 'espalda', 'hombros', 'biceps'] },
-      { name: 'Legs 1 (Enfoque Cuádriceps)', m: ['cuadriceps', 'femorales', 'gluteos', 'pantorrillas'] },
-      { name: 'Push 2 (Hipertrofia)', m: ['pecho', 'hombros', 'pecho', 'triceps'] },
-      { name: 'Pull 2 (Densidad)', m: ['espalda', 'espalda', 'biceps', 'hombros'] },
-      { name: 'Legs 2 (Enfoque Cadena Posterior)', m: ['femorales', 'cuadriceps', 'gluteos', 'abdomen'] },
+      { name: 'Push 1 (Fuerza)', m: ['pecho', 'pecho', 'hombros', 'hombros', 'triceps'] },
+      { name: 'Pull 1 (Tracción Vertical/Horizontal)', m: ['espalda', 'espalda', 'espalda', 'biceps', 'biceps'] },
+      { name: 'Legs 1 (Enfoque Cuádriceps & Gemelos)', m: ['cuadriceps', 'cuadriceps', 'femorales', 'pantorrillas', 'abdomen'] },
+      { name: 'Push 2 (Hipertrofia)', m: ['pecho', 'pecho', 'hombros', 'triceps', 'triceps'] },
+      { name: 'Pull 2 (Densidad)', m: ['espalda', 'espalda', 'hombros', 'biceps', 'abdomen'] },
+      { name: 'Legs 2 (Enfoque Cadena Posterior & Cuádriceps)', m: ['femorales', 'cuadriceps', 'cuadriceps', 'gluteos', 'pantorrillas'] },
     ];
 
     pplTemplates.forEach((t, i) => {
@@ -543,6 +594,7 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
       name: `${assignedDaysLabels[1]} – Pierna Completa`,
       exercises: [
         pickExercise('cuadriceps', true, catalog, usedExerciseIds),
+        pickExercise('cuadriceps', false, catalog, usedExerciseIds),
         pickExercise('femorales', true, catalog, usedExerciseIds),
         pickExercise('gluteos', false, catalog, usedExerciseIds),
       ].slice(0, exercisesPerSession),
@@ -553,6 +605,7 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
       name: `${assignedDaysLabels[2]} – Empuje (Push Hipertrofia)`,
       exercises: [
         pickExercise('pecho', true, catalog, usedExerciseIds),
+        pickExercise('pecho', false, catalog, usedExerciseIds),
         pickExercise('hombros', false, catalog, usedExerciseIds),
         pickExercise('triceps', false, catalog, usedExerciseIds),
       ].slice(0, exercisesPerSession),
@@ -572,8 +625,8 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
       id: 'd7_5',
       name: `${assignedDaysLabels[4]} – Piernas & Cadena Posterior`,
       exercises: [
+        pickExercise('cuadriceps', true, catalog, usedExerciseIds),
         pickExercise('femorales', true, catalog, usedExerciseIds),
-        pickExercise('cuadriceps', false, catalog, usedExerciseIds),
         pickExercise('pantorrillas', false, catalog, usedExerciseIds),
       ].slice(0, exercisesPerSession),
     });
@@ -600,6 +653,49 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
         pickExercise('triceps', false, catalog, usedExerciseIds),
       ],
     });
+  }
+
+  // ==================== INYECCIÓN DE PUNTOS DÉBILES / MÚSCULOS REZAGADOS ====================
+  if (profile.weakPointMuscles && profile.weakPointMuscles.length > 0) {
+    const weakMuscles = profile.weakPointMuscles.slice(0, 2);
+    weakMuscles.forEach(muscle => {
+      // Encontrar el día más compatible
+      const targetDay = days.find(d => {
+        const dLower = d.name.toLowerCase();
+        if (muscle === 'cuadriceps' || muscle === 'femorales' || muscle === 'gluteos' || muscle === 'pantorrillas') {
+          return dLower.includes('leg') || dLower.includes('pierna') || dLower.includes('lower');
+        }
+        if (muscle === 'pecho' || muscle === 'hombros' || muscle === 'triceps') {
+          return dLower.includes('push') || dLower.includes('upper') || dLower.includes('torso') || dLower.includes('pecho');
+        }
+        if (muscle === 'espalda' || muscle === 'biceps') {
+          return dLower.includes('pull') || dLower.includes('upper') || dLower.includes('torso') || dLower.includes('espalda');
+        }
+        if (muscle === 'abdomen') {
+          return dLower.includes('lower') || dLower.includes('core') || dLower.includes('recuperación');
+        }
+        return true;
+      }) || days[0];
+
+      if (targetDay) {
+        targetDay.exercises.push(pickExercise(muscle, false, catalog, usedExerciseIds));
+      }
+    });
+
+    coachExplanation += `\n\n🎯 Refuerzo de Puntos Débiles: Se inyectaron series adicionales de aislamiento analítico para ${weakMuscles.join(' y ')} (+3 series directas), elevando su volumen hacia la zona prioritaria de hipertrofia.`;
+  }
+
+  // Anexar explicación según estrategia
+  if (distributionStrategy === 'balance_total') {
+    coachExplanation += '\n\n⚖️ Simetría Total Calibrada (Meta-análisis 2025): Volumen balanceado y simétrico entre tren superior e inferior (10-14 series en cada grupo muscular mayor), corrigiendo el desbalance entre torso y piernas.';
+  } else if (distributionStrategy === 'especializacion_torso') {
+    coachExplanation += '\n\n🛡️ Especialización Torso V-Taper: El tren inferior se programa deliberadamente en volumen de mantenimiento (MEV: 6-8 series semanales de cuádriceps y femorales), reservando el presupuesto biológico para llevar Pecho, Espalda y Hombros a 15-18 series efectivas.';
+  } else if (distributionStrategy === 'especializacion_piernas') {
+    coachExplanation += '\n\n🦵 Especialización Piernas & Glúteos: Volumen prioritario de tren inferior (14-18 series de cuádriceps y 12-14 de glúteos/femorales) con el torso en mantenimiento eficiente (MEV: 8-9 series).';
+  } else if (distributionStrategy === 'especializacion_brazos') {
+    coachExplanation += '\n\n💪 Especialización Brazos & Hombros: Mayor densidad analítica en flexores de codo, tríceps y deltoides lateral (14-18 series ponderadas) para maximizar perímetro braquial.';
+  } else if (distributionStrategy === 'powerbuilding') {
+    coachExplanation += '\n\n⚡ Programación Powerbuilding: Progresión pesada de fuerza en Sentadilla, Banca y Peso Muerto (3-5 repeticiones @ ≥80% 1RM, RIR 2) combinada con trabajo accesorio en hipertrofia de 8-12 reps.';
   }
 
   // ==================== CÁLCULO DE VOLUMEN CIENTÍFICO (informacionGym.txt #9 y #10) ====================

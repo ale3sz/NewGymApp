@@ -24,6 +24,7 @@ import {
   getPrescribedOptimalRest,
   calculateAcuteSessionFatigue,
 } from '../bayesianFatigueEngine';
+import { generateAIRoutine, AIUserProfile } from '../aiRoutineGenerator';
 import { Exercise, GymEquipmentProfile, SetLog, Routine, UserFatigueProfile } from '../../types';
 
 function assert(condition: boolean, message: string) {
@@ -479,6 +480,70 @@ assert(
 assert(
   shoulderCalibration?.averageRestExtensionRatio !== undefined && shoulderCalibration.averageRestExtensionRatio > 1.0,
   `Debe registrar ratio de extensión mayor a 1.0 (obtenido ${shoulderCalibration?.averageRestExtensionRatio})`
+);
+
+// ==========================================
+// 8. PILAR 8: DISTRIBUCIÓN DE VOLUMEN CIENTÍFICO Y SIMETRÍA (ACSM / SCHOENFELD 2025)
+// ==========================================
+console.log('\n--- Pilar 8: Calibración de Volumen Semanal, Simetría y Especialización ---');
+
+// Test 29: Estrategia balance_total debe asegurar simetría entre cuádriceps y tren superior
+const balancedProfile: AIUserProfile = {
+  goal: 'hipertrofia',
+  level: 'intermedio',
+  daysPerWeek: 5,
+  selectedWeekDays: ['Lunes', 'Martes', 'Miércoles', 'Viernes', 'Sábado'],
+  timePerSessionMin: 60,
+  equipment: 'gym_completo',
+  primaryFocus: 'balanceado',
+  limitations: ['ninguna'],
+  distributionStrategy: 'balance_total',
+};
+const balancedResult = generateAIRoutine(balancedProfile);
+const bVol = balancedResult.weeklyVolumeSummary;
+
+assert(bVol.cuadriceps >= 10, `Estrategia balance_total debe asegurar ≥10 series de cuádriceps (obtenido ${bVol.cuadriceps})`);
+assert(bVol.pecho >= 10, `Estrategia balance_total debe asegurar ≥10 series ponderadas de pecho (obtenido ${bVol.pecho})`);
+assert(bVol.espalda >= 12, `Estrategia balance_total debe asegurar ≥12 series de espalda (obtenido ${bVol.espalda})`);
+assert(bVol.hombros <= 16, `Estrategia balance_total no debe sobreinflar hombros (>16 series, obtenido ${bVol.hombros})`);
+assert(bVol.pantorrillas >= 6, `Estrategia balance_total debe incluir gemelos por encima del umbral mínimo (obtenido ${bVol.pantorrillas})`);
+assert(bVol.abdomen >= 3, `Estrategia balance_total debe incluir trabajo directo de abdomen (obtenido ${bVol.abdomen})`);
+
+// Test 30: Especialización Torso V-Taper (Piernas a MEV de 6-8 series, Torso a 15-18)
+const torsoProfile: AIUserProfile = {
+  ...balancedProfile,
+  distributionStrategy: 'especializacion_torso',
+};
+const torsoResult = generateAIRoutine(torsoProfile);
+const tVol = torsoResult.weeklyVolumeSummary;
+assert(tVol.cuadriceps <= 8, `Especialización torso debe dejar cuádriceps en mantenimiento MEV ≤8 series (obtenido ${tVol.cuadriceps})`);
+assert(tVol.pecho >= 12, `Especialización torso debe potenciar pecho ≥12 series (obtenido ${tVol.pecho})`);
+assert(tVol.espalda >= 12, `Especialización torso debe potenciar espalda ≥12 series (obtenido ${tVol.espalda})`);
+
+// Test 31: Especialización Piernas (Cuádriceps ≥14 series)
+const legsProfile: AIUserProfile = {
+  ...balancedProfile,
+  distributionStrategy: 'especializacion_piernas',
+};
+const legsResult = generateAIRoutine(legsProfile);
+const lVol = legsResult.weeklyVolumeSummary;
+assert(lVol.cuadriceps >= 14, `Especialización piernas debe llevar cuádriceps a zona de alta hipertrofia ≥14 series (obtenido ${lVol.cuadriceps})`);
+
+// Test 32: Inyección de Puntos Débiles (Lagging muscles)
+const weakPointProfile: AIUserProfile = {
+  ...balancedProfile,
+  distributionStrategy: 'balance_total',
+  weakPointMuscles: ['biceps', 'pantorrillas'],
+};
+const weakPointResult = generateAIRoutine(weakPointProfile);
+const wpVol = weakPointResult.weeklyVolumeSummary;
+assert(
+  wpVol.biceps > bVol.biceps,
+  `Puntos débiles debe incrementar volumen de bíceps respecto al baseline (${wpVol.biceps} vs ${bVol.biceps})`
+);
+assert(
+  wpVol.pantorrillas > bVol.pantorrillas,
+  `Puntos débiles debe incrementar volumen de pantorrillas respecto al baseline (${wpVol.pantorrillas} vs ${bVol.pantorrillas})`
 );
 
 console.log('\n======================================================');
