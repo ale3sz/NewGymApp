@@ -289,6 +289,26 @@ const maintainObjective = evaluateNextSetObjective(benchPressExercise, perfectSe
 assert(maintainObjective.action === 'MAINTAIN', `Debe indicar MAINTAIN ante serie en rango (obtenido ${maintainObjective.action})`);
 assert(maintainObjective.recommendedWeightKg === 80, 'Debe recomendar mantener 80 kg');
 
+// Test 16b (CASO REAL USUARIO): 70kg x 7 reps @ RIR 0 en Press Plano (rango 6-8 @ RIR 2).
+// Al ir a fallo absoluto (RIR 0), sostener 70kg causaría una caída a solo ~3 reps (insuficiente para hipertrofia en 6-8 reps).
+// El Coach en Vivo DEBE recomendar DROP_WEIGHT (Back-off táctico) para rescatar la ventana de 6-8 reps.
+const rirZeroSet: SetLog[] = [
+  { setNumber: 1, weightKg: 70, repsCompleted: 7, rirLogged: 0 }
+];
+const rirZeroObjective = evaluateNextSetObjective(benchPressExercise, rirZeroSet, 3, equipment);
+assert(
+  rirZeroObjective.action === 'DROP_WEIGHT',
+  `7 reps @ RIR 0 no debe sugerir MAINTAIN 70kg para 3 reps, debe prescribir DROP_WEIGHT (obtenido ${rirZeroObjective.action})`
+);
+assert(
+  rirZeroObjective.recommendedWeightKg < 70,
+  `Debe recomendar bajar de 70kg (obtenido ${rirZeroObjective.recommendedWeightKg} kg)`
+);
+assert(
+  rirZeroObjective.targetReps >= 6,
+  `El objetivo de reps para la Serie 2 debe rescatar el rango hipertrófico (≥6 reps, obtenido ${rirZeroObjective.targetReps})`
+);
+
 // Test 17: Al completar las 3 series de 3, debe marcar COMPLETED
 const allThreeSets: SetLog[] = [
   { setNumber: 1, weightKg: 80, repsCompleted: 8, rirLogged: 2 },

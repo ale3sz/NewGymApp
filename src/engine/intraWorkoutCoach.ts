@@ -237,8 +237,48 @@ export function evaluateNextSetObjective(
     };
   }
 
-  // Subcaso C: Zona óptima de hipertrofia (MANTENER PESO)
+  // Subcaso C: Evaluación de repeticiones proyectadas
   const pred = predictNextSetReps(exercise, completedSets, currentWeight, 90, 0, acuteModifier);
+
+  // Si la fatiga acumulada (ej. por RIR 0 o fallo) proyecta que en la siguiente serie
+  // las repeticiones van a caer por debajo del mínimo hipertrófico (pred.predictedReps < targetRepsMin),
+  // NO debemos decirle que mantenga el peso para sacar solo 3 o 4 reps, sino prescribir
+  // un Back-off Set táctico reduciendo la carga para rescatar el rango 6-8 reps.
+  if (pred.predictedReps < exercise.targetRepsMin && currentWeight > 0) {
+    const solved = solveOptimalNextSetWeight(
+      exercise,
+      completedSets,
+      exercise.targetRepsMin,
+      exercise.targetRIR,
+      120,
+      equipment,
+      0,
+      acuteModifier
+    );
+    const recommendedWeight = Math.min(
+      currentWeight,
+      solved.calculatedWeightKg > 0 ? solved.calculatedWeightKg : nextLower
+    );
+    const backoffPred = predictNextSetReps(exercise, completedSets, recommendedWeight, 120, 0, acuteModifier);
+
+    return {
+      nextSetNumber,
+      action: 'DROP_WEIGHT',
+      recommendedWeightKg: recommendedWeight,
+      targetRepsMin: exercise.targetRepsMin,
+      targetRepsMax: exercise.targetRepsMax,
+      targetReps: Math.max(exercise.targetRepsMin, backoffPred.predictedReps),
+      targetRIR: exercise.targetRIR,
+      badgeLabel: `BAJAR A ${recommendedWeight} KG (BACK-OFF TÁCTICO)`,
+      badgeColor: 'amber',
+      headline: `Fatiga por fallo (RIR 0): Ajuste para sostener hipertrofia`,
+      advice: `Fuiste al fallo muscular (RIR 0) con ${currentWeight} kg. Si mantienes esta carga, la fatiga neuromuscular residual solo te permitiría ~${pred.predictedReps} reps con RIR ${exercise.targetRIR}, cayendo fuera de tu ventana óptima de hipertrofia (${exercise.targetRepsMin}-${exercise.targetRepsMax} reps). Para asegurar volumen efectivo de alta calidad sin quemar el SNC, baja a ${recommendedWeight} kg (o descansa 3 min completos) para clavar ~${backoffPred.predictedReps} reps limpias.`,
+      isDeloadDrop: true,
+      predictedReps: backoffPred.predictedReps,
+      confidencePercent: pred.confidencePercent,
+      modelBasisExplanation: pred.basisExplanation,
+    };
+  }
 
   return {
     nextSetNumber,
