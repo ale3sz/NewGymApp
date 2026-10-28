@@ -4,11 +4,13 @@ import {
   SetLog,
   CompletedDayLog,
   GymEquipmentProfile,
-  CatalogExercise
+  CatalogExercise,
+  UserFatigueProfile
 } from '../types';
-import { INITIAL_PRESET_ROUTINES } from '../data/routines';
+import { INITIAL_PRESET_ROUTINES, MI_RUTINA_PPL_OPTIMIZADA } from '../data/routines';
 import { DEFAULT_EQUIPMENT } from '../constants/equipment';
 import { EXERCISE_CATALOG } from '../data/exerciseCatalog';
+import { formatLocalDateKey } from '../utils/dates';
 
 const WORKOUT_LOGS_KEY = 'gymscience_logs';
 const COMPLETED_DAYS_KEY = 'gymscience_completed_days';
@@ -27,7 +29,7 @@ export interface SavedSession {
 }
 
 // In-memory fallback in case localStorage is disabled or restricted
-const memoryFallback: Record<string, string> = {};
+let memoryFallback: Record<string, string> = {};
 
 function safeGetItem(key: string): string | null {
   try {
@@ -65,25 +67,23 @@ export function getAllWorkoutLogs(): SavedSession[] {
 }
 
 /**
- * Saves or updates a session for an exercise on a given day/date.
- * FIXES BUG: Replaces existing session for the same exercise on the same day if saved within the same session
- * to prevent duplicate records.
+ * Guarda o actualiza la sesión de un ejercicio para un día específico con fecha local consistente.
  */
 export function saveWorkoutSession(exerciseId: string, sets: SetLog[], customDate?: string, dayId?: string): boolean {
   try {
     const logs = getAllWorkoutLogs();
     const dateObj = customDate ? new Date(customDate) : new Date();
     const dateStr = dateObj.toISOString();
-    const dateKey = dateStr.split('T')[0];
+    const dateKey = formatLocalDateKey(dateObj);
 
-    // Filter out duplicate session for the same exercise on the exact same dateKey
+    // Evita duplicar registros del mismo ejercicio en el mismo día local
     const cleanLogs = logs.filter(l => {
-      const logDateKey = (l.dateKey || l.date.split('T')[0]);
+      const logDateKey = l.dateKey || formatLocalDateKey(l.date);
       return !(logDateKey === dateKey && l.exerciseId === exerciseId);
     });
 
     const newSession: SavedSession = {
-      id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+      id: `session_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       date: dateStr,
       dateKey,
       exerciseId,
@@ -125,7 +125,7 @@ export function saveCompletedDayLog(log: Omit<CompletedDayLog, 'id' | 'date' | '
   const existingLogs = getCompletedDaysLogs();
   const now = log.customDate ? new Date(log.customDate) : new Date();
   const dateStr = now.toISOString();
-  const dateKey = dateStr.split('T')[0];
+  const dateKey = formatLocalDateKey(now);
 
   const newLog: CompletedDayLog = {
     id: `day_${Date.now()}`,
@@ -140,8 +140,11 @@ export function saveCompletedDayLog(log: Omit<CompletedDayLog, 'id' | 'date' | '
     completedExerciseIds: log.completedExerciseIds,
   };
 
-  // Replace if there is already an entry for this exact day on this date
-  const filtered = existingLogs.filter(l => !(l.dateKey === dateKey && l.dayId === log.dayId));
+  // Reemplaza si ya existe registro para este día en la misma fecha local
+  const filtered = existingLogs.filter(l => {
+    const existingDateKey = l.dateKey || formatLocalDateKey(l.date);
+    return !(existingDateKey === dateKey && l.dayId === log.dayId);
+  });
   filtered.push(newLog);
 
   safeSetItem(COMPLETED_DAYS_KEY, JSON.stringify(filtered));
@@ -155,7 +158,15 @@ export function getRoutines(): Routine[] {
   if (data) {
     try {
       const parsed = JSON.parse(data);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Asegurar que si la rutina personalizada no está presente, se incluya
+        const customExists = parsed.some(r => r.id === MI_RUTINA_PPL_OPTIMIZADA.id);
+        if (!customExists) {
+          parsed.unshift(MI_RUTINA_PPL_OPTIMIZADA);
+          safeSetItem(ROUTINES_KEY, JSON.stringify(parsed));
+        }
+        return parsed;
+      }
     } catch (e) {
       // Fallback
     }
@@ -175,9 +186,14 @@ export function saveRoutines(routines: Routine[]): boolean {
 
 export function getActiveRoutineId(): string {
   const id = safeGetItem(ACTIVE_ROUTINE_KEY);
-  if (id) return id;
-  const routines = getRoutines();
-  const defaultId = routines[0]?.id || '5_day_split';
+  if (id) {
+    // Validar que la rutina exista
+    const routines = getRoutines();
+    if (routines.some(r => r.id === id)) {
+      return id;
+    }
+  }
+  const defaultId = MI_RUTINA_PPL_OPTIMIZADA.id;
   setActiveRoutineId(defaultId);
   return defaultId;
 }
@@ -330,8 +346,71 @@ export function resetAllData(): void {
       window.localStorage.removeItem(ACTIVE_ROUTINE_KEY);
       window.localStorage.removeItem(EQUIPMENT_KEY);
       window.localStorage.removeItem(CUSTOM_CATALOG_KEY);
+      window.localStorage.removeItem('gymscience_active_session_draft');
     }
   } catch (e) {
     // Ignore
   }
+  memoryFallback = {};
+}
+
+// ==================== SESIÓN EN VIVO / DRAFT RESILIENCE ====================
+
+export interface ActiveWorkoutDraft {
+  routineId: string;
+  dayId: string;
+  completedSets: Record<string, SetLog[]>;
+  timestamp: string;
+}
+
+export function saveActiveWorkoutDraft(draft: ActiveWorkoutDraft): void {
+  safeSetItem('gymscience_active_session_draft', JSON.stringify(draft));
+}
+
+export function getActiveWorkoutDraft(): ActiveWorkoutDraft | null {
+  const data = safeGetItem('gymscience_active_session_draft');
+  if (!data) return null;
+  try {
+    return JSON.parse(data);
+  } catch (e) {
+    return null;
+  }
+}
+
+export function clearActiveWorkoutDraft(): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.removeItem('gymscience_active_session_draft');
+    }
+  } catch (e) {
+    // Ignore
+  }
+  delete memoryFallback['gymscience_active_session_draft'];
+}
+
+// ==================== PERFIL DE FATIGA BAYESIANO ====================
+
+const USER_FATIGUE_PROFILE_KEY = 'gymscience_user_fatigue_profile';
+
+export const DEFAULT_USER_FATIGUE_PROFILE: UserFatigueProfile = {
+  muscleCalibrations: {},
+  globalWorkCapacity: 1.0,
+  acuteSessionFatigueModifier: 1.0,
+  averageRestExtensionRatio: 1.0,
+  totalSetsAnalyzed: 0,
+  lastUpdated: new Date().toISOString(),
+};
+
+export function getUserFatigueProfile(): UserFatigueProfile {
+  const data = safeGetItem(USER_FATIGUE_PROFILE_KEY);
+  if (!data) return DEFAULT_USER_FATIGUE_PROFILE;
+  try {
+    return JSON.parse(data);
+  } catch (e) {
+    return DEFAULT_USER_FATIGUE_PROFILE;
+  }
+}
+
+export function saveUserFatigueProfile(profile: UserFatigueProfile): void {
+  safeSetItem(USER_FATIGUE_PROFILE_KEY, JSON.stringify(profile));
 }

@@ -16,7 +16,13 @@ import { AIRoutineWizardPage } from './pages/AIRoutineWizardPage';
 import { EquipmentPage } from './pages/EquipmentPage';
 
 export const App: React.FC = () => {
-  const [currentTab, setCurrentTab] = useState<AppTab>('dashboard');
+  const getInitialTab = (): AppTab => {
+    const hash = window.location.hash.replace('#', '') as AppTab;
+    const validTabs: AppTab[] = ['dashboard', 'routines', 'active-workout', 'progress', 'ai-wizard', 'equipment'];
+    return validTabs.includes(hash) ? hash : 'dashboard';
+  };
+
+  const [currentTab, setCurrentTab] = useState<AppTab>(getInitialTab);
   const [routines, setRoutines] = useState<Routine[]>(getRoutines());
   const [activeRoutineId, setActiveRoutineId] = useState<string>(getActiveRoutineId());
   const [completedLogs, setCompletedLogs] = useState<CompletedDayLog[]>(getCompletedDaysLogs());
@@ -31,6 +37,15 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     refreshData();
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '') as AppTab;
+      const validTabs: AppTab[] = ['dashboard', 'routines', 'active-workout', 'progress', 'ai-wizard', 'equipment'];
+      if (validTabs.includes(hash)) {
+        setCurrentTab(hash);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
   const refreshData = () => {
@@ -49,24 +64,30 @@ export const App: React.FC = () => {
     }
   };
 
-  const activeRoutine = routines.find((r) => r.id === (workoutRoutineId || activeRoutineId)) || routines[0] || null;
+  const globalActiveRoutine = routines.find((r) => r.id === activeRoutineId) || routines[0] || null;
+  const currentWorkoutRoutine = routines.find((r) => r.id === (workoutRoutineId || activeRoutineId)) || globalActiveRoutine;
 
   const handleSelectTab = (tab: AppTab) => {
     if (tab === 'guide') {
       setGuideModalOpen(true);
       return;
     }
+    window.location.hash = tab;
     setCurrentTab(tab);
   };
 
   const handleStartDayWorkout = (routineId: string, dayId: string) => {
     setWorkoutRoutineId(routineId);
     setWorkoutDayId(dayId);
+    window.location.hash = 'active-workout';
     setCurrentTab('active-workout');
   };
 
   const handleFinishWorkout = () => {
+    setWorkoutRoutineId(null);
+    setWorkoutDayId(null);
     refreshData();
+    window.location.hash = 'dashboard';
     setCurrentTab('dashboard');
   };
 
@@ -84,7 +105,7 @@ export const App: React.FC = () => {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {currentTab === 'dashboard' && (
           <DashboardPage
-            activeRoutine={activeRoutine}
+            activeRoutine={globalActiveRoutine}
             completedLogs={completedLogs}
             recommendation={recommendation}
             onNavigate={(tab, params) => {
@@ -100,7 +121,7 @@ export const App: React.FC = () => {
 
         {currentTab === 'active-workout' && (
           <ActiveWorkoutPage
-            routine={activeRoutine}
+            routine={currentWorkoutRoutine}
             initialDayId={workoutDayId}
             onFinishWorkout={handleFinishWorkout}
           />

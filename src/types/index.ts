@@ -6,6 +6,71 @@ export type MuscleGroup =
 export type EquipmentCategory = 
   | 'mancuerna' | 'barra' | 'polea' | 'maquina' | 'corporal' | 'smith' | 'banda' | 'kettlebell';
 
+// ==================== TAXONOMÍA Y BIOMECÁNICA ====================
+
+export type MovementPattern =
+  | 'horizontal_press'
+  | 'incline_press'
+  | 'decline_press'
+  | 'overhead_press'
+  | 'chest_fly'
+  | 'dips'
+  | 'vertical_pull'
+  | 'horizontal_row'
+  | 'chest_supported_row'
+  | 't_bar_row'
+  | 'pullover'
+  | 'squat_quad'
+  | 'leg_press'
+  | 'split_squat_lunge'
+  | 'leg_extension'
+  | 'hip_hinge'
+  | 'rdl'
+  | 'knee_flexion_curl'
+  | 'hip_thrust'
+  | 'calf_raise_straight'
+  | 'calf_raise_bent'
+  | 'lateral_raise'
+  | 'rear_delt_fly'
+  | 'front_raise'
+  | 'face_pull'
+  | 'biceps_curl_neutral'
+  | 'biceps_curl_supinated'
+  | 'biceps_preacher'
+  | 'triceps_pushdown'
+  | 'triceps_overhead'
+  | 'triceps_skullcrusher'
+  | 'core_anti_extension'
+  | 'core_flexion'
+  | 'core_rotation';
+
+export type ResistanceProfile =
+  | 'lengthened'  // Máximo torque en posición de estiramiento del sarcómero
+  | 'shortened'   // Máximo torque en contracción concéntrica máxima
+  | 'uniform';    // Tensión constante en todo el ROM (polea alineada o levas elípticas)
+
+export type JointRiskZone =
+  | 'glenohumeral'     // Complejo articular del hombro (cápsula/manguito rotador)
+  | 'elbow'            // Codo (tendinopatía tricipital / braquial)
+  | 'wrist'            // Muñeca
+  | 'lumbar_spine'     // Columna lumbar (cizallamiento L4-S1)
+  | 'hip'              // Articulación coxofemoral
+  | 'patellofemoral';  // Articulación patelofemoral / tendón rotuliano
+
+export type AxialLoadLevel = 'none' | 'low' | 'moderate' | 'high';
+
+export type SFRTier = 'S' | 'A' | 'B' | 'C'; // Stimulus-to-Fatigue Ratio
+
+export type MechanicType = 'compound' | 'isolation';
+
+export type ProgressionStrategy =
+  | 'DYNAMIC_DOUBLE_PROGRESSION' // Progresión individual serie por serie
+  | 'DOUBLE_PROGRESSION'         // Todas las series en el tope antes de subir
+  | 'MICRO_LOAD'                 // Microincremento de precisión (0.5 - 1.25 kg)
+  | 'VOLUME_COMPENSATION'        // Reps o manipulación de tempo si no hay microcargas
+  | 'AUTOREGULATED_DELOAD'       // Descarga forzada por fatiga neuromuscular
+  | 'RIR_CONSOLIDATION';         // Consolidación de carga y RIR
+
 export type RecommendationType = 
   | 'WEIGHT_INCREASE' 
   | 'REP_INCREASE' 
@@ -21,6 +86,16 @@ export interface RecommendationResult {
   recommendedRIR: number;
   tempoInstruction: string;
   reasoning: string;
+  // Campos biomecánicos avanzados
+  progressionStrategy?: ProgressionStrategy;
+  microIncrementKg?: number;
+  sfrAnalysis?: string;
+  setSpecificTargets?: {
+    setNumber: number;
+    weightKg: number;
+    targetReps: number;
+    targetRIR: number;
+  }[];
 }
 
 export interface SetLog {
@@ -28,6 +103,13 @@ export interface SetLog {
   weightKg: number;
   repsCompleted: number;
   rirLogged: number;
+  rpeLogged?: number;
+  estimated1RM?: number;
+  effectiveReps?: number;
+  actualRestSeconds?: number;     // Segundos reales de descanso tomados antes de esta serie
+  prescribedRestSeconds?: number; // Segundos óptimos prescritos por el sistema
+  restExtensionRatio?: number;    // actual / prescribed (>1.0 indica fatiga aguda acumulada)
+  completedAt?: string;           // Timestamp ISO del momento de registro
 }
 
 export interface GymEquipmentProfile {
@@ -47,12 +129,33 @@ export interface CatalogExercise {
   baseMovement?: string;
   description?: string;
   alternatives?: string[];
+  // Propiedades biomecánicas profundas
+  movementPattern?: MovementPattern;
+  resistanceProfile?: ResistanceProfile;
+  jointStress?: JointRiskZone[];
+  axialLoad?: AxialLoadLevel;
+  mechanicType?: MechanicType;
+  sfrTier?: SFRTier;
 }
 
 export interface Exercise extends CatalogExercise {
   targetRepsMin: number;
   targetRepsMax: number;
   targetRIR: number;
+  restSeconds?: number;
+}
+
+// ==================== MATRIZ DE SUSTITUCIÓN BIOMECÁNICA ====================
+
+export interface SubstituteOption {
+  exercise: CatalogExercise;
+  compatibilityScore: number; // 0 - 100%
+  sfrTier: SFRTier;
+  relievedJoints: JointRiskZone[];
+  sameMuscle: boolean;
+  samePattern: boolean;
+  resistanceProfileShift: string;
+  rationale: string;
 }
 
 export interface WorkoutDay {
@@ -154,4 +257,33 @@ export interface StagnationAnalysisResult {
   historySnapshots: SessionPerformanceSnapshot[];
   analysisNote: string;
   recommendedInterventions: StagnationIntervention[];
+}
+
+// ==================== MOTOR DE FATIGA BAYESIANO ====================
+
+export interface MuscleFatigueCalibration {
+  samplesCount: number;
+  observedDecayRate: number; // Tasa de caída de reps entre series consecutivas (ej. 0.12 = 12%)
+  confidenceScore: number;   // 0.0 a 1.0 (crece asintóticamente con las series registradas)
+  pcrRecoveryRate: number;   // Velocidad individual de resíntesis de fosfocreatina (1.0 = normal)
+  optimalRestSeconds?: number; // Descanso óptimo personalizado aprendido para este grupo
+  averageRestExtensionRatio?: number; // Ratio histórico medio de extensión de descanso
+}
+
+export interface UserFatigueProfile {
+  muscleCalibrations: Partial<Record<MuscleGroup, MuscleFatigueCalibration>>;
+  globalWorkCapacity: number; // 1.0 = baseline poblacional, >1.0 = alta tolerancia, <1.0 = fatiga rápida
+  totalSetsAnalyzed: number;
+  lastUpdated: string;
+  acuteSessionFatigueModifier?: number; // 1.0 = normal, >1.1 = sesión con fatiga aguda elevada hoy
+  averageRestExtensionRatio?: number;   // Tendencia global a extender descansos
+}
+
+export interface FatiguePredictionResult {
+  predictedReps: number;
+  predictedRIR: number;
+  confidencePercent: number;
+  fatigueDecayPercent: number;
+  recoveryPercent: number;
+  basisExplanation: string;
 }

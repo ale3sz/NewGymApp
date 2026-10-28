@@ -12,7 +12,8 @@ import {
   Sliders,
   Clock,
   Layers,
-  Award
+  Award,
+  Activity
 } from 'lucide-react';
 import { Routine, CompletedDayLog, ScheduleRecommendation, AppTab } from '../types';
 import { getCurrentWeekDays } from '../engine/smartScheduleEngine';
@@ -75,26 +76,92 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         </div>
       </div>
 
+      {/* Monitor Fisiológico del Atleta (Dr. Marcus Vance) */}
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <Activity className="w-4 h-4 text-sky-400" />
+            <h3 className="text-sm font-bold text-slate-200">Monitor Fisiológico de Fatiga y Recuperación</h3>
+          </div>
+          <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border ${
+            deloadEval.fatigueScore >= 75
+              ? 'bg-rose-500/20 text-rose-400 border-rose-500/30'
+              : deloadEval.fatigueScore >= 50
+              ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+              : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+          }`}>
+            {deloadEval.fatigueScore >= 75 ? 'Fatiga Crítica 🛑' : deloadEval.fatigueScore >= 50 ? 'Fatiga Acumulada ⚠️' : 'Recuperación Óptima ✅'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+            <span className="text-[11px] text-slate-400 font-medium block mb-1">Índice de Fatiga Sistémica</span>
+            <div className="flex items-baseline space-x-2">
+              <span className="text-xl font-black font-mono text-white">{deloadEval.fatigueScore}</span>
+              <span className="text-xs text-slate-500">/ 100</span>
+            </div>
+            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  deloadEval.fatigueScore >= 75 ? 'bg-rose-500' : deloadEval.fatigueScore >= 50 ? 'bg-amber-400' : 'bg-emerald-400'
+                }`}
+                style={{ width: `${Math.min(100, deloadEval.fatigueScore)}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+            <span className="text-[11px] text-slate-400 font-medium block mb-1">Series al Fallo Absoluto (RIR 0)</span>
+            <div className="flex items-baseline space-x-2">
+              <span className="text-xl font-black font-mono text-white">{deloadEval.systemicFailureRatio}%</span>
+              <span className="text-xs text-slate-500">{deloadEval.systemicFailureRatio > 35 ? 'Excesivo' : 'Controlado'}</span>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1">Recluta unidades motoras pero dispara fatiga del SNC.</p>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+            <span className="text-[11px] text-slate-400 font-medium block mb-1">Carga Axial / Compresión Espinal</span>
+            <div className="flex items-baseline space-x-2">
+              <span className="text-xl font-black font-mono text-white">{deloadEval.axialFatigueScore}</span>
+              <span className="text-xs text-slate-500">/ 100</span>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1">Estrés en columna lumbar y erectores espinales.</p>
+          </div>
+        </div>
+      </div>
+
       {/* Systemic Fatigue Deload Warning if detected */}
       {deloadEval.needsDeload && (
-        <div className="p-5 rounded-3xl bg-rose-950/40 border border-rose-500/30 flex items-start space-x-4 shadow-lg shadow-rose-950/30 animate-pulse-slow">
+        <div className="p-5 rounded-3xl bg-rose-950/40 border border-rose-500/30 flex items-start space-x-4 shadow-lg shadow-rose-950/30">
           <div className="p-2.5 rounded-2xl bg-rose-500/20 text-rose-400 shrink-0">
             <AlertTriangle className="w-6 h-6" />
           </div>
-          <div className="flex-1">
-            <h4 className="text-sm font-bold text-rose-200">
-              Alerta Científica: Recomendación de Descarga (Deload)
-            </h4>
-            <p className="text-xs text-rose-300/80 mt-1 leading-relaxed">
-              {deloadEval.reason}
-            </p>
-            <div className="mt-3 flex items-center space-x-3">
-              <button
-                onClick={() => onNavigate('guide')}
-                className="text-xs font-bold text-rose-400 hover:text-rose-300 underline"
-              >
-                Ver protocolo de descarga en la Guía
-              </button>
+          <div className="flex-1 space-y-2">
+            <div>
+              <h4 className="text-sm font-bold text-rose-200">
+                Alerta Científica: Recomendación de Descarga Estratégica (Deload)
+              </h4>
+              <p className="text-xs text-rose-300/80 mt-1 leading-relaxed">
+                {deloadEval.reason}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-slate-950/50 p-3 rounded-2xl border border-rose-500/20">
+              <div>
+                <span className="font-bold text-rose-300 block">Prescripción de Volumen:</span>
+                <span className="text-slate-300">Reducción del {deloadEval.prescription.setReductionPercent}% de series de trabajo (@ RIR {deloadEval.prescription.targetRIR}).</span>
+              </div>
+              <div>
+                <span className="font-bold text-rose-300 block">Estrategia de Carga:</span>
+                <span className="text-slate-300">{deloadEval.prescription.intensityStrategy}</span>
+              </div>
+            </div>
+
+            <div className="pt-1">
+              <span className="text-[11px] text-amber-300 font-semibold block">
+                🛡️ Recomendación Biomecánica: {deloadEval.prescription.axialReliefAction}
+              </span>
             </div>
           </div>
         </div>

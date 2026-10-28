@@ -174,43 +174,45 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </header>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 pb-safe">
-        <div className="grid grid-cols-5 h-16">
-          {[
-            { id: 'dashboard' as AppTab, label: 'Inicio', icon: Flame },
-            { id: 'active-workout' as AppTab, label: 'Entrenar', icon: Play, isPrimary: true },
-            { id: 'routines' as AppTab, label: 'Rutinas', icon: Dumbbell },
-            { id: 'progress' as AppTab, label: 'Progreso', icon: TrendingUp },
-            { id: 'ai-wizard' as AppTab, label: 'IA', icon: Sparkles },
-          ].map((item) => {
-            const Icon = item.icon;
-            const isActive = currentTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => onSelectTab(item.id)}
-                className={`flex flex-col items-center justify-center relative transition-colors ${
-                  isActive ? 'text-sky-400' : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                {item.isPrimary ? (
-                  <div className={`w-10 h-10 -mt-4 rounded-xl flex items-center justify-center shadow-lg transition-transform ${
-                    isActive
-                      ? 'bg-gradient-to-tr from-sky-500 to-emerald-400 text-slate-950 scale-105 shadow-sky-500/30'
-                      : 'bg-slate-800 text-slate-200 border border-slate-700'
-                  }`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-                ) : (
-                  <Icon className="w-5 h-5 mb-1" />
-                )}
-                <span className="text-[10px] font-medium tracking-tight">{item.label}</span>
-              </button>
-            );
-          })}
+      {/* Mobile Bottom Navigation Bar - Oculto durante el entrenamiento activo para evitar colisiones */}
+      {currentTab !== 'active-workout' && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 pb-safe">
+          <div className="grid grid-cols-5 h-16">
+            {[
+              { id: 'dashboard' as AppTab, label: 'Inicio', icon: Flame },
+              { id: 'active-workout' as AppTab, label: 'Entrenar', icon: Play, isPrimary: true },
+              { id: 'routines' as AppTab, label: 'Rutinas', icon: Dumbbell },
+              { id: 'progress' as AppTab, label: 'Progreso', icon: TrendingUp },
+              { id: 'ai-wizard' as AppTab, label: 'IA', icon: Sparkles },
+            ].map((item) => {
+              const Icon = item.icon;
+              const isActive = currentTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onSelectTab(item.id)}
+                  className={`flex flex-col items-center justify-center relative transition-colors ${
+                    isActive ? 'text-sky-400' : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {item.isPrimary ? (
+                    <div className={`w-10 h-10 -mt-4 rounded-xl flex items-center justify-center shadow-lg transition-transform ${
+                      isActive
+                        ? 'bg-gradient-to-tr from-sky-500 to-emerald-400 text-slate-950 scale-105 shadow-sky-500/30'
+                        : 'bg-slate-800 text-slate-200 border border-slate-700'
+                    }`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                  ) : (
+                    <Icon className="w-5 h-5 mb-1" />
+                  )}
+                  <span className="text-[10px] font-medium tracking-tight">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 };

@@ -37,7 +37,8 @@ export interface GeneratedAIRoutineResult {
 /**
  * Filtra los ejercicios del catálogo según el equipamiento y limitaciones del usuario
  */
-function getFilteredCatalog(profile: AIUserProfile): CatalogExercise[] {
+function getFilteredCatalog(profile?: AIUserProfile): CatalogExercise[] {
+  if (!profile) return EXERCISE_CATALOG;
   return EXERCISE_CATALOG.filter(ex => {
     // Filtro de equipamiento
     if (profile.equipment === 'solo_mancuernas') {
@@ -56,7 +57,8 @@ function getFilteredCatalog(profile: AIUserProfile): CatalogExercise[] {
 
     // Filtro de limitaciones y lesiones
     const lowerName = ex.name.toLowerCase();
-    if (profile.limitations.includes('dolor_lumbar')) {
+    const limitations = profile.limitations || [];
+    if (limitations.includes('dolor_lumbar')) {
       if (lowerName.includes('peso muerto convencional') || lowerName.includes('buenos dias') || lowerName.includes('sentadilla con barra libre')) {
         return false;
       }
@@ -659,7 +661,7 @@ export function generateAIRoutine(profile: AIUserProfile): GeneratedAIRoutineRes
 export function modifyAIRoutine(
   currentRoutine: Routine,
   modificationPrompt: string,
-  profile: AIUserProfile
+  profile?: AIUserProfile
 ): GeneratedAIRoutineResult {
   if (profile) {
     activeContextGoal = profile.goal || 'hipertrofia';
@@ -668,7 +670,11 @@ export function modifyAIRoutine(
 
   const promptLower = modificationPrompt.toLowerCase();
   const catalog = getFilteredCatalog(profile);
-  const updatedDays = [...currentRoutine.days];
+  // Clonado profundo para no mutar el estado anterior
+  const updatedDays = currentRoutine.days.map(d => ({
+    ...d,
+    exercises: d.exercises.map(e => ({ ...e }))
+  }));
 
   let explanation = 'He ajustado la rutina según tus indicaciones.';
 
@@ -698,7 +704,14 @@ export function modifyAIRoutine(
         });
       } else if (day.exercises.length < 6) {
         // Agregar un ejercicio de bíceps o tríceps
-        const armExercise = pickExercise(day.name.toLowerCase().includes('push') ? 'triceps' : 'biceps', false, catalog, new Set(), profile.goal, profile.level);
+        const armExercise = pickExercise(
+          day.name.toLowerCase().includes('push') ? 'triceps' : 'biceps',
+          false,
+          catalog,
+          new Set(),
+          profile?.goal || 'hipertrofia',
+          profile?.level || 'intermedio'
+        );
         day.exercises.push(armExercise);
       }
     });
@@ -771,11 +784,35 @@ export function modifyAIRoutine(
     updatedAt: new Date().toISOString(),
   };
 
+  const directVolume: Record<string, number> = {};
+  const indirectVolume: Record<string, number> = {};
+  const totalEffectiveVolume: Record<string, number> = {};
+
+  updatedDays.forEach(day => {
+    day.exercises.forEach(ex => {
+      const sets = 3;
+      if (ex.primaryMuscle) {
+        directVolume[ex.primaryMuscle] = (directVolume[ex.primaryMuscle] || 0) + sets;
+        const secondaries = getSecondaryMuscles(ex.name, ex.primaryMuscle, ex.category);
+        secondaries.forEach(sec => {
+          indirectVolume[sec] = (indirectVolume[sec] || 0) + (sets * 0.5);
+        });
+      }
+    });
+  });
+
+  const allMuscles = new Set([...Object.keys(directVolume), ...Object.keys(indirectVolume)]);
+  allMuscles.forEach(m => {
+    totalEffectiveVolume[m] = Math.round((directVolume[m] || 0) + (indirectVolume[m] || 0));
+  });
+
   return {
     routine: modifiedRoutine,
     splitType: currentRoutine.name,
     coachExplanation: explanation,
-    weeklyVolumeSummary: {},
+    weeklyVolumeSummary: totalEffectiveVolume,
+    directVolumeSummary: directVolume,
+    indirectVolumeSummary: indirectVolume,
     progressionSystem: 'Doble Progresión Dinámica calibrada.',
   };
 }

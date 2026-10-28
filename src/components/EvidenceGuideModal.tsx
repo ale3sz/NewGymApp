@@ -48,6 +48,18 @@ export const EvidenceGuideModal: React.FC<EvidenceGuideModalProps> = ({
       icon: ShieldAlert,
       color: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
       description: 'Una mala sesión no significa cambiar la rutina. Si llevas ≥3 sesiones sin progresar o notas caída de rendimiento con fallo prematuro, es síntoma de fatiga del sistema nervioso o articular. Aplica una semana de descarga reduciendo series un 40-50% a RIR 3.'
+    },
+    {
+      title: '7. Biomecánica y Ratio Estímulo-Fatiga (SFR Tier)',
+      icon: Scale,
+      color: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
+      description: 'Priorizamos ejercicios con alto SFR (ej. Hack Squat, Remo con apoyo de torso, Curl Bayesiano) donde la estabilidad externa es máxima y la fatiga axial sobre la columna lumbar es nula. Aliviar articulaciones comprometidas previene la inflamación de tejido conectivo.'
+    },
+    {
+      title: '8. Estimación de e1RM Autorregulado (Henneman)',
+      icon: TrendingUp,
+      color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+      description: 'El 1RM se calcula dinámicamente integrando las Repeticiones en Reserva (RIR): 1RM = Carga / (1.0278 - 0.0278 * (Reps + RIR)). Solo las repeticiones ejecutadas a RIR ≤ 4 imponen tensión mecánica suficiente para reclutar las fibras de alto umbral.'
     }
   ];
 

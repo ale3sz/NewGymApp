@@ -57,7 +57,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
   const [newDayName, setNewDayName] = useState<string>('');
 
   // Exercise Catalog Filter in Add Modal
-  const catalog = getFullExerciseCatalog();
+  const [catalog, setCatalog] = useState<CatalogExercise[]>(getFullExerciseCatalog());
   const [catalogSearch, setCatalogSearch] = useState<string>('');
   const [muscleFilter, setMuscleFilter] = useState<MuscleGroup | 'all'>('all');
   const [categoryFilter, setCategoryFilter] = useState<Exercise['category'] | 'all'>('all');
@@ -191,7 +191,8 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
       description: 'Ejercicio personalizado creado por el usuario.'
     };
 
-    saveCustomCatalogExercise(newCatItem);
+    const updatedCat = saveCustomCatalogExercise(newCatItem);
+    setCatalog(updatedCat);
     handleAddExerciseToCurrentDay(newCatItem);
     setCustomExerciseName('');
   };
@@ -232,7 +233,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
   });
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-6 pb-32">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
         <div>

@@ -152,7 +152,7 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
   };
 
   return (
-    <div className="space-y-6 pb-20 max-w-4xl mx-auto">
+    <div className="space-y-6 pb-32 max-w-4xl mx-auto">
       {/* Wizard Header */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl flex items-center justify-between">
         <div className="flex items-center space-x-3">

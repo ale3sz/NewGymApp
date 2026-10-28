@@ -52,7 +52,7 @@ export const EquipmentPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-20 max-w-4xl mx-auto">
+    <div className="space-y-6 pb-32 max-w-4xl mx-auto">
       {/* Header */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

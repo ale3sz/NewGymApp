@@ -1,19 +1,14 @@
 import { Routine, WorkoutDay, MuscleGroup, CompletedDayLog, ScheduleRecommendation } from '../types';
 import { getSecondaryMuscles } from './trainerEngine';
+import { getTodayKey, formatLocalDateKey } from '../utils/dates';
+
+export { getTodayKey };
 
 export interface MuscleFrequencyStatus {
   muscle: MuscleGroup;
   daysSinceLastTrained: number;
   setsLast7Days: number;
   status: 'OPTIMAL' | 'RECOVERED_READY' | 'LAGGING' | 'NEEDS_REST';
-}
-
-export function getTodayKey(): string {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
 }
 
 export function getCurrentWeekDays(): { date: Date; dateKey: string; dayName: string; dayNumber: number; isToday: boolean }[] {
@@ -27,15 +22,13 @@ export function getCurrentWeekDays(): { date: Date; dateKey: string; dayName: st
 
   const dayLabels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
   const weekDays = [];
+  const todayKey = getTodayKey();
 
   for (let i = 0; i < 7; i++) {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const dateKey = `${year}-${month}-${day}`;
-    const isToday = dateKey === getTodayKey();
+    const dateKey = formatLocalDateKey(d);
+    const isToday = dateKey === todayKey;
 
     weekDays.push({
       date: d,
@@ -73,7 +66,7 @@ export function analyzeMuscleFrequencies(
   const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
 
   allMuscles.forEach(muscle => {
-    const logsWithMuscle = history
+    const logsWithMuscle = [...history]
       .filter(log => (log.primaryMuscles || []).includes(muscle))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -126,7 +119,7 @@ export function getSmartWorkoutRecommendation(
   const days = routine.days;
   const todayKey = getTodayKey();
 
-  const todayWorkout = history.find(log => log.dateKey === todayKey);
+  const todayWorkout = history.find(log => (log.dateKey || formatLocalDateKey(log.date)) === todayKey);
   if (todayWorkout) {
     return {
       recommendedDayId: todayWorkout.dayId,
@@ -182,7 +175,7 @@ export function getSmartWorkoutRecommendation(
       }
     });
 
-    const lastDayLog = history
+    const lastDayLog = [...history]
       .filter(h => h.dayId === day.id)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
 
@@ -224,7 +217,7 @@ export function getSmartWorkoutRecommendation(
     };
   }
 
-  const lastSession = history.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+  const lastSession = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
   let nextDay = days[0];
 
   if (lastSession) {

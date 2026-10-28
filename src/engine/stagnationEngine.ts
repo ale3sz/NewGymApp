@@ -6,13 +6,20 @@ import {
   SessionPerformanceSnapshot
 } from '../types';
 import { EXERCISE_CATALOG } from '../data/exerciseCatalog';
-import { estimate1RM } from '../utils/formulas';
+import { estimateAutoregulated1RM } from '../utils/formulas';
+import { formatLocalDateKey } from '../utils/dates';
+import { findBiomechanicalSubstitutes } from './biomechanicsEngine';
 
 /**
- * Motor Científico de Detección de Estancamiento y Fatiga Acumulada
- * - "No cambies automáticamente una rutina porque una sola sesión haya salido mal."
- * - "Si el usuario no progresa durante una única sesión: NO cambies automáticamente el programa."
- * - "Si existe estancamiento durante varias sesiones/semanas (≥3 sesiones consecutivas), analiza tendencias y ofrece deload o variantes biomecánicas."
+ * MOTOR DE DETECCIÓN DE ESTANCAMIENTO Y FATIGA LOCALIZADA (Dr. Marcus Vance, CSCS)
+ * 
+ * Principios Científicos:
+ * 1. "Una sesión aislada sin progreso NO constituye estancamiento": Adaptación motora normal o fatiga transitoria.
+ * 2. Estancamiento real (>= 3 sesiones en la misma carga sin progreso de reps ni de e1RM):
+ *    - Induce desensibilización de mecanosensores musculares (costámeros y vías mTORC1).
+ *    - Requiere intervención biomecánica: rotación a variante con perfil de resistencia opuesto
+ *      (ej. de estiramiento a acortamiento/uniforme) o micro-deload.
+ * 3. Regresión por fatiga acumulada: Caída sostenida de reps con RIR colapsando a 0.
  */
 export function analyzeExerciseStagnation(
   exerciseId: string,
@@ -24,9 +31,15 @@ export function analyzeExerciseStagnation(
     .filter(s => s.exerciseId === exerciseId && s.sets && s.sets.length > 0)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  const catalogEntry = EXERCISE_CATALOG.find(e => e.id === exerciseId);
+  const catalogEntry = EXERCISE_CATALOG.find(e => e.id === exerciseId) ||
+    EXERCISE_CATALOG.find(e => e.name.toLowerCase() === exerciseName.toLowerCase()) || {
+      id: exerciseId,
+      name: exerciseName,
+      primaryMuscle: 'pecho' as const,
+      category: 'barra' as const,
+    };
 
-  // Mapear cada sesión a un snapshot de rendimiento
+  // Mapear cada sesión a un snapshot de rendimiento con e1RM autorregulado
   const historySnapshots: SessionPerformanceSnapshot[] = exerciseSessions.map(session => {
     const sets = session.sets;
     const maxWeight = Math.max(...sets.map(s => s.weightKg));
@@ -34,11 +47,12 @@ export function analyzeExerciseStagnation(
     const avgRIR = Math.round((sets.reduce((sum, s) => sum + (s.rirLogged ?? 1), 0) / sets.length) * 10) / 10;
     const totalVolume = Math.round(sets.reduce((sum, s) => sum + (s.weightKg * s.repsCompleted), 0));
     
-    const e1RM = estimate1RM(maxWeight, avgReps);
+    // e1RM corregido por el RIR medio de la sesión
+    const e1RM = estimateAutoregulated1RM(maxWeight, avgReps, avgRIR).e1rm;
 
     return {
       date: session.date,
-      dateKey: session.dateKey || session.date.split('T')[0],
+      dateKey: session.dateKey || formatLocalDateKey(session.date),
       weightKg: maxWeight,
       avgReps,
       estimated1RM: e1RM,
@@ -52,17 +66,17 @@ export function analyzeExerciseStagnation(
       exerciseId,
       exerciseName,
       status: 'NEW',
-      statusBadgeText: 'Registro Inicial 🆕',
+      statusBadgeText: 'Línea Base 🆕',
       statusColor: '#38bdf8',
       consecutiveUnchangedSessions: historySnapshots.length,
       performanceTrend: 'FLAT',
       historySnapshots,
-      analysisNote: 'Pocos registros previos para detectar estancamiento. Continúa entrenando con la carga y repeticiones prescritas para establecer una línea base.',
+      analysisNote: 'Estableciendo calibración inicial. Se requieren al menos 2 sesiones para que el algoritmo evalúe la pendiente de sobrecarga progresiva autorregulada.',
       recommendedInterventions: [
         {
           type: 'KEEP_PUSHING',
-          title: 'Establecer Línea Base de Rendimiento',
-          description: 'Completa al menos 2 a 3 sesiones con este ejercicio para que el algoritmo pueda evaluar tu tasa de sobrecarga progresiva.',
+          title: 'Establecer Carga Base',
+          description: 'Ejecuta tus series manteniendo técnica estricta y anota el RIR real para construir la curva de fuerza-velocidad.',
         },
       ],
     };
@@ -100,40 +114,38 @@ export function analyzeExerciseStagnation(
     statusBadgeText = 'Fatiga Acumulada 🛑';
     statusColor = '#ef4444';
     performanceTrend = 'DOWN';
-    analysisNote = `Detectamos una caída sostenida de repeticiones (${previous.avgReps} ➔ ${current.avgReps} reps) con RIR muy cercano al fallo prematuro. La evidencia científica indica acumulación de fatiga neuromuscular o articular.`;
+    analysisNote = `Colapso de rendimiento detectado: El 1RM estimado cayó de ${previous.estimated1RM} kg a ${current.estimated1RM} kg con RIR ${current.avgRIR.toFixed(1)} (fallo prematuro). Fatiga neuromuscular periférica o desbalance articular evidente.`;
 
     recommendedInterventions.push({
       type: 'DELOAD',
-      title: 'Semana de Descarga Estratégica (Deload)',
-      description: 'Reduce el volumen de series en un 40% y mantén un RIR 3-4 durante 1 semana para disipar la fatiga del sistema nervioso central y regenerar tendones.',
-      actionLabel: 'Activar Descarga en Rutina',
+      title: 'Micro-Descarga del Ejercicio (Deload)',
+      description: 'Reduce el volumen un 50% y eleva el RIR objetivo a 3-4 durante 1 semana para regenerar el sistema neuromuscular.',
+      actionLabel: 'Activar Descarga',
     });
 
     recommendedInterventions.push({
       type: 'RECOVERY_OPTIMIZATION',
-      title: 'Optimización de Recuperación Sistémica',
-      description: 'Verifica tu descanso (7-9 horas de sueño) y consumo de proteína (1.6 a 2.2 g/kg/día). El déficit calórico o el estrés elevado pueden provocar regresión.',
+      title: 'Auditoría de Sueño y Nutrición',
+      description: 'Asegura un mínimo de 7.5h de sueño y balance proteico adecuado (2g/kg de peso magro) para restaurar glucógeno y tono parasimpático.',
     });
   }
-  // 2. CASO ESTANCAMIENTO PROLONGADO (≥ 3 SESIONES)
+  // 2. CASO ESTANCAMIENTO PROLONGADO (>= 3 SESIONES)
   else if (consecutiveUnchanged >= 3) {
     status = 'STAGNATED';
-    statusBadgeText = 'Estancado (≥3 Sesiones) ⚠️';
+    statusBadgeText = 'Meseta Biomecánica ⚠️';
     statusColor = '#f59e0b';
     performanceTrend = 'FLAT';
-    analysisNote = `Llevas ${consecutiveUnchanged} sesiones consecutivas levantando ${current.weightKg}kg sin lograr repeticiones adicionales. Como indica el Principio de Variación Inteligente, es momento de introducir un estímulo novedoso.`;
+    analysisNote = `Estancamiento confirmado en ${current.weightKg} kg durante ${consecutiveUnchanged} microciclos. Se ha agotado la tasa de adaptación inmediata en este vector de fuerza. Proceder con rotación o cambio de perfil de resistencia.`;
 
-    const alternativeExercise = catalogEntry?.primaryMuscle
-      ? EXERCISE_CATALOG.find(
-          e => e.primaryMuscle === catalogEntry.primaryMuscle && e.id !== exerciseId
-        )
-      : null;
+    // Buscar sustitutos biomecánicos de élite
+    const substitutes = findBiomechanicalSubstitutes(catalogEntry);
+    const topSubstitute = substitutes.length > 0 ? substitutes[0] : null;
 
-    if (alternativeExercise) {
+    if (topSubstitute) {
       recommendedInterventions.push({
         type: 'SWAP_EXERCISE',
-        title: `Rotar a Variante Biomecánica: ${alternativeExercise.name}`,
-        description: `Cambia a ${alternativeExercise.name} (${alternativeExercise.category}). Ofrece una curva de resistencia y ángulo de tracción diferente para reactivar la hipertrofia sin acumular fatiga específica.`,
+        title: `Rotar a ${topSubstitute.exercise.name} (${topSubstitute.sfrTier} SFR)`,
+        description: `${topSubstitute.rationale} Proporciona un nuevo estímulo hipertrófico (${topSubstitute.resistanceProfileShift}) con ${topSubstitute.compatibilityScore}% de compatibilidad biomecánica.`,
         actionLabel: 'Sustituir Ejercicio',
       });
     }
@@ -142,14 +154,14 @@ export function analyzeExerciseStagnation(
       type: 'REP_RANGE_ROTATION',
       title: 'Rotar Rango de Repeticiones',
       description: current.avgReps <= 8
-        ? 'Pasa temporalmente a un rango más alto (10-15 reps) con un 10-15% menos de peso para acumular estrés metabólico y superar la meseta.'
-        : 'Pasa temporalmente a un rango más pesado (5-8 reps @ RIR 2) con descansos de 3 minutos para inducir mayor tensión mecánica.',
+        ? 'Cambia temporalmente a un rango metabólico más alto (12-15 reps @ RIR 2) con un 15% menos de carga para superar el punto de estancamiento neural.'
+        : 'Cambia a un bloque de fuerza mecánica (5-7 reps @ RIR 2) con 3-4 minutos de descanso.',
     });
 
     recommendedInterventions.push({
       type: 'DELOAD',
-      title: 'Micro-Descarga de Volumen',
-      description: 'Haz 1 semana con 2 series en lugar de 3-4 series para restablecer la sensibilidad muscular al estímulo.',
+      title: 'Descarga de Volumen Local',
+      description: 'Ejecuta solo 2 series al 85% de la carga habitual para disipar la fatiga de fijadores articulares.',
     });
   }
   // 3. CASO EN PROGRESIÓN SOSTENIDA
@@ -158,12 +170,12 @@ export function analyzeExerciseStagnation(
     statusBadgeText = 'En Progresión 🔥';
     statusColor = '#22c55e';
     performanceTrend = 'UP';
-    analysisNote = `¡Excelente ritmo de sobrecarga progresiva! Aumentaste tu 1RM estimado (+${(current.estimated1RM - previous.estimated1RM).toFixed(1)} kg) o sumaste repeticiones netas respecto a la sesión anterior.`;
+    analysisNote = `Sobrecarga progresiva óptima. Crecimiento en 1RM estimado (+${(current.estimated1RM - previous.estimated1RM).toFixed(1)} kg) o repeticiones netas respecto a la sesión previa.`;
 
     recommendedInterventions.push({
       type: 'KEEP_PUSHING',
       title: 'Continuar con Doble Progresión Dinámica',
-      description: 'Mantén la carga actual hasta llegar al tope de repeticiones en todas las series con RIR 1-2, luego salta al siguiente escalón de peso.',
+      description: 'Continúa acumulando repeticiones en el rango objetivo hasta completar el tope en todas las series con RIR 1-2.',
     });
   }
   // 4. CASO CONSOLIDANDO (1 O 2 SESIONES)
@@ -172,12 +184,12 @@ export function analyzeExerciseStagnation(
     statusBadgeText = 'Consolidando Carga ⏳';
     statusColor = '#38bdf8';
     performanceTrend = 'FLAT';
-    analysisNote = `Llevas ${consecutiveUnchanged} sesión(es) en ${current.weightKg}kg. Es completamente normal en el proceso de adaptación motora y fuerza. No cambies el ejercicio todavía.`;
+    analysisNote = `Sesión ${consecutiveUnchanged} en ${current.weightKg} kg. Fase de consolidación neuromuscular completamente fisiológica. No realices cambios bruscos en el programa.`;
 
     recommendedInterventions.push({
       type: 'KEEP_PUSHING',
-      title: 'Foco en Añadir +1 Repetición',
-      description: 'En tu próxima sesión, busca completar al menos 1 repetición más en tu primera serie manteniendo el RIR prescrito y técnica controlada.',
+      title: 'Objetivo: +1 Repetición Neta',
+      description: 'Enfoca la próxima sesión en sumar al menos una repetición adicional en la primera serie con máxima intención de aceleración concéntrica.',
     });
   }
 

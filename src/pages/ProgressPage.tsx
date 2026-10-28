@@ -21,6 +21,7 @@ import {
 } from '../storage/storage';
 import { EXERCISE_CATALOG } from '../data/exerciseCatalog';
 import { analyzeExerciseStagnation } from '../engine/stagnationEngine';
+import { inferBiomechanicalProfile } from '../engine/biomechanicsEngine';
 import { AppTab } from '../types';
 
 interface ProgressPageProps {
@@ -35,7 +36,7 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
   const uniqueExerciseIds = Array.from(new Set(rawLogs.map(l => l.exerciseId)));
 
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>(
-    uniqueExerciseIds[0] || 'press_banca_plano'
+    uniqueExerciseIds[0] || 'press_plano_barra'
   );
 
   // Global calculations
@@ -114,8 +115,21 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
         </p>
 
         {stagnationReports.length === 0 ? (
-          <div className="text-center py-8 text-slate-500 text-xs">
-            Aún no hay registros de ejercicios. Completa una sesión en la pestaña Entrenar para ver el análisis.
+          <div className="text-center py-10 px-4 rounded-2xl bg-slate-950/40 border border-slate-800/60 max-w-md mx-auto space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <h3 className="text-sm font-bold text-white">Sin datos de estancamiento todavía</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              El radar monitorea tus cargas sesión a sesión. Completa tu primera sesión de entrenamiento para comenzar a proyectar mesetas y sobrecarga progresiva.
+            </p>
+            <button
+              onClick={() => onNavigate('active-workout')}
+              className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs transition shadow-md shadow-sky-500/20"
+            >
+              <Dumbbell className="w-3.5 h-3.5" />
+              <span>Iniciar Primer Entrenamiento</span>
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -182,6 +196,33 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
               <h2 className="text-xl font-extrabold text-white mt-1">
                 {selectedExName}
               </h2>
+              {selectedCatalogItem && (() => {
+                const bio = inferBiomechanicalProfile(selectedCatalogItem);
+                return (
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-sky-950/80 border border-sky-800 text-sky-300 uppercase">
+                      Patrón: {bio.movementPattern.replace(/_/g, ' ')}
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-emerald-950/80 border border-emerald-800 text-emerald-300">
+                      Perfil: {bio.resistanceProfile === 'lengthened' ? 'Estiramiento' : bio.resistanceProfile === 'shortened' ? 'Acortamiento' : 'Uniforme'}
+                    </span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${
+                      bio.sfrTier === 'S'
+                        ? 'bg-purple-950/80 border-purple-800 text-purple-300'
+                        : bio.sfrTier === 'A'
+                        ? 'bg-sky-950/80 border-sky-800 text-sky-300'
+                        : 'bg-amber-950/80 border-amber-800 text-amber-300'
+                    }`}>
+                      SFR Tier {bio.sfrTier}
+                    </span>
+                    {bio.jointStress.length > 0 && (
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-lg bg-rose-950/60 border border-rose-900 text-rose-300">
+                        Estrés Articular: {bio.jointStress.join(', ')}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Exercise Selector */}
@@ -257,8 +298,20 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
               )}
             </div>
           ) : (
-            <div className="text-center py-8 text-slate-500 text-xs">
-              No hay suficientes registros previos para este ejercicio.
+            <div className="text-center py-10 px-4 rounded-2xl bg-slate-950/40 border border-slate-800/60 max-w-md mx-auto space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center mx-auto">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-bold text-white">Línea base en preparación</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Este ejercicio aún no tiene series registradas. En cuanto completes una serie, visualizaremos aquí la curva de 1RM estimado y el volumen.
+              </p>
+              <button
+                onClick={() => onNavigate('active-workout')}
+                className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 font-bold text-xs border border-slate-700 transition"
+              >
+                <span>Registrar en sesión activa</span>
+              </button>
             </div>
           )}
         </div>
