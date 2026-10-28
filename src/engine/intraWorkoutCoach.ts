@@ -34,12 +34,17 @@ export function getNextHigherWeight(
     const higher = dumbbells.find(w => w > currentWeight);
     return higher !== undefined ? higher : currentWeight + 2;
   }
-  if (category === 'barra') {
-    const smallestDisc = equipment?.smallestDiscKg || 1.25;
-    return Math.round((currentWeight + smallestDisc * 2) * 10) / 10;
+  const smallestDisc = equipment?.smallestDiscKg || 1.25;
+  // Cargas pesadas (>= 100kg): salto mínimo realista de 5kg (discos de 2.5kg por lado o placas grandes)
+  if (currentWeight >= 100) {
+    return Math.round((currentWeight + 5) / 5) * 5;
   }
-  const inc = equipment?.smallestDiscKg || 2.5;
-  return Math.round((currentWeight + inc) * 10) / 10;
+  if (category === 'barra') {
+    const step = smallestDisc * 2;
+    return Math.round((currentWeight + step) / step) * step;
+  }
+  const inc = Math.max(2.5, smallestDisc * 2);
+  return Math.round((currentWeight + inc) / 2.5) * 2.5;
 }
 
 /**
@@ -55,12 +60,15 @@ export function getNextLowerWeight(
     const lower = dumbbells.find(w => w < currentWeight);
     return lower !== undefined ? lower : Math.max(0, currentWeight - 2);
   }
-  if (category === 'barra') {
-    const smallestDisc = equipment?.smallestDiscKg || 1.25;
-    return Math.max(0, Math.round((currentWeight - smallestDisc * 2) * 10) / 10);
+  const smallestDisc = equipment?.smallestDiscKg || 1.25;
+  if (currentWeight >= 100) {
+    return Math.max(0, Math.round((currentWeight - 5) / 5) * 5);
   }
-  const drop = Math.max(equipment?.smallestDiscKg || 2.5, currentWeight * 0.1);
-  return Math.max(0, Math.round((currentWeight - drop) * 10) / 10);
+  if (category === 'barra') {
+    const step = smallestDisc * 2;
+    return Math.max(0, Math.round((currentWeight - step) / step) * step);
+  }
+  return Math.max(0, Math.round((currentWeight - 2.5) / 2.5) * 2.5);
 }
 
 /**
@@ -129,19 +137,30 @@ export function evaluateNextSetObjective(
   // 2. CASO: VOLUMEN DE SERIES PRESCRITO COMPLETADO (ej. 3 de 3 series)
   if (currentSetCount >= targetSetsCount) {
     if (isTooLight) {
-      const pred = predictNextSetReps(exercise, completedSets, nextHigher, 120);
+      const solved = solveOptimalNextSetWeight(
+        exercise,
+        completedSets,
+        exercise.targetRepsMax,
+        exercise.targetRIR,
+        120,
+        equipment,
+        0,
+        acuteModifier
+      );
+      const recommendedWeight = Math.max(nextHigher, solved.calculatedWeightKg);
+      const pred = predictNextSetReps(exercise, completedSets, recommendedWeight, 120);
       return {
         nextSetNumber,
         action: 'COMPLETED',
-        recommendedWeightKg: nextHigher,
+        recommendedWeightKg: recommendedWeight,
         targetRepsMin: exercise.targetRepsMin,
         targetRepsMax: exercise.targetRepsMax,
         targetReps: pred.predictedReps,
         targetRIR: exercise.targetRIR,
-        badgeLabel: `SERIE SUPERADA: SUBIR A ${nextHigher} KG`,
+        badgeLabel: `SERIE SUPERADA: SUBIR A ${recommendedWeight} KG`,
         badgeColor: 'emerald',
         headline: '¡Excelente! Has superado ampliamente esta carga',
-        advice: `En la Serie ${lastSet.setNumber} registraste ${lastSet.repsCompleted} reps con RIR ${lastSet.rirLogged} (superaste el rango ${exercise.targetRepsMin}-${exercise.targetRepsMax}). Los ${currentWeight} kg ya te quedan demasiado ligeros. Para tu próxima sesión (o si deseas hacer una Serie ${nextSetNumber} extra ahora), sube a ${nextHigher} kg. (Predicción adaptativa: lograrás ~${pred.predictedReps} reps @ RIR ${exercise.targetRIR}).`,
+        advice: `En la Serie ${lastSet.setNumber} registraste ${lastSet.repsCompleted} reps con RIR ${lastSet.rirLogged} (superaste ampliamente el rango de ${exercise.targetRepsMin}-${exercise.targetRepsMax} reps). Para tu próxima sesión, sube a ${recommendedWeight} kg para situarte en tu ventana objetivo. (Predicción: lograrás ~${pred.predictedReps} reps @ RIR ${exercise.targetRIR}).`,
         isDeloadDrop: false,
         predictedReps: pred.predictedReps,
         confidencePercent: pred.confidencePercent,
@@ -193,21 +212,34 @@ export function evaluateNextSetObjective(
 
   // 3. CASO: ENTRE SERIES (Serie 1 -> Serie 2, Serie 2 -> Serie 3)
 
-  // Subcaso A: La carga está demasiado ligera (SUBIR PESO INMEDIATAMENTE)
+  // Subcaso A: La carga está demasiado ligera (SUBIR PESO INMEDIATAMENTE AL RANGO OBJETIVO)
   if (isTooLight) {
-    const pred = predictNextSetReps(exercise, completedSets, nextHigher, 90, 0, acuteModifier);
+    // Si el atleta hizo muchas más reps de las programadas (ej. 16 reps en rango 8-10 con RIR 3),
+    // calcular el peso real para situarlo en targetRepsMax (ej. 10 reps)
+    const solved = solveOptimalNextSetWeight(
+      exercise,
+      completedSets,
+      exercise.targetRepsMax,
+      exercise.targetRIR,
+      90,
+      equipment,
+      0,
+      acuteModifier
+    );
+    const recommendedWeight = Math.max(nextHigher, solved.calculatedWeightKg);
+    const pred = predictNextSetReps(exercise, completedSets, recommendedWeight, 90, 0, acuteModifier);
     return {
       nextSetNumber,
       action: 'INCREASE_WEIGHT',
-      recommendedWeightKg: nextHigher,
+      recommendedWeightKg: recommendedWeight,
       targetRepsMin: exercise.targetRepsMin,
       targetRepsMax: exercise.targetRepsMax,
       targetReps: pred.predictedReps,
       targetRIR: exercise.targetRIR,
-      badgeLabel: `SUBIR CARGA A ${nextHigher} KG`,
-      badgeColor: 'red',
+      badgeLabel: `SUBIR CARGA A ${recommendedWeight} KG`,
+      badgeColor: 'emerald',
       headline: `Ajuste en vivo: ${currentWeight} kg te queda muy ligero`,
-      advice: `Hiciste ${lastSet.repsCompleted} reps con RIR ${lastSet.rirLogged} (superaste el rango objetivo de ${exercise.targetRepsMin}-${exercise.targetRepsMax} reps). Sube inmediatamente a ${nextHigher} kg para que la Serie ${nextSetNumber} entre en verdadera tensión mecánica efectiva. Predicción Bayesiana: lograrás ~${pred.predictedReps} reps @ RIR ${exercise.targetRIR}.`,
+      advice: `Hiciste ${lastSet.repsCompleted} reps con RIR ${lastSet.rirLogged} (superaste ampliamente el rango objetivo de ${exercise.targetRepsMin}-${exercise.targetRepsMax} reps). Sube la carga a ${recommendedWeight} kg para que la Serie ${nextSetNumber} entre en verdadera tensión mecánica efectiva. Predicción Bayesiana: lograrás ~${pred.predictedReps} reps @ RIR ${exercise.targetRIR}.`,
       isDeloadDrop: false,
       predictedReps: pred.predictedReps,
       confidencePercent: pred.confidencePercent,

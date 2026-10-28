@@ -361,6 +361,41 @@ assert(
 
 console.log(`    Caso Usuario Resuelto: Carga recomendada para Serie 4 / próxima sesión: ${liveCoachVerdict.recommendedWeightKg} kg`);
 
+// Test 18b (CASO REAL USUARIO EN VIVO): Prensa / Hack 120kg x 16 reps @ RIR 3 (rango 8-10 reps @ RIR 1).
+// El usuario superó enormemente el rango objetivo (16 reps @ RIR 3 con 120kg => e1RM ~194kg).
+// El coach NO debe recomendar un absurdo +1.3kg (121.3kg) ni predecir 16 reps.
+// Debe resolver la carga para el rango 8-10 reps (≥140kg en saltos limpios de 5kg) y apuntar a ~8-10 reps.
+const legPressExercise: Exercise = {
+  id: 'prensa_45',
+  name: 'Prensa de piernas 45°',
+  primaryMuscle: 'cuadriceps',
+  category: 'maquina',
+  targetRepsMin: 8,
+  targetRepsMax: 10,
+  targetRIR: 1,
+};
+const legPressSet1: SetLog[] = [
+  { setNumber: 1, weightKg: 120, repsCompleted: 16, rirLogged: 3 }
+];
+const legPressCoach = evaluateNextSetObjective(legPressExercise, legPressSet1, 3, equipment);
+assert(
+  legPressCoach.action === 'INCREASE_WEIGHT',
+  `Debe indicar INCREASE_WEIGHT (obtenido ${legPressCoach.action})`
+);
+assert(
+  legPressCoach.recommendedWeightKg >= 135,
+  `Debe recomendar un salto sustancial (≥135kg para entrar en 8-10 reps), obtenido ${legPressCoach.recommendedWeightKg} kg`
+);
+assert(
+  legPressCoach.recommendedWeightKg % 5 === 0,
+  `Para cargas ≥100kg la recomendación debe ser múltiplo de 5kg sin decimales raros (obtenido ${legPressCoach.recommendedWeightKg} kg)`
+);
+assert(
+  legPressCoach.targetReps <= 11 && legPressCoach.targetReps >= 7,
+  `El objetivo de reps para Serie 2 debe apuntar a la ventana 8-10 reps (obtenido ${legPressCoach.targetReps})`
+);
+console.log(`    Caso Prensa en Vivo Resuelto: Recomendación Serie 2 = ${legPressCoach.recommendedWeightKg} kg para ${legPressCoach.targetReps} reps @ RIR 1`);
+
 // ==========================================
 // 6. MOTOR DE FATIGA BAYESIANO Y PREDICCIONES
 // ==========================================

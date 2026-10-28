@@ -515,18 +515,18 @@ export function solveOptimalNextSetWeight(
     );
   } else if (exercise.category === 'barra') {
     const smallestDisc = equipment?.smallestDiscKg || 1.25;
-    const step = smallestDisc * 2;
+    const step = rawWeight >= 100 ? 5 : smallestDisc * 2;
     roundedWeight = Math.round(rawWeight / step) * step;
   } else {
-    // Máquinas / poleas: múltiplos de 2.5kg o smallestDisc
-    const step = equipment?.smallestDiscKg || 2.5;
+    // Máquinas / poleas / prensa (evitar decimales irreales como .3 o .75)
+    const step = rawWeight >= 100 ? 5 : 2.5;
     roundedWeight = Math.round(rawWeight / step) * step;
   }
 
   const isDropRecommended = roundedWeight < lastSet.weightKg;
 
   return {
-    calculatedWeightKg: Math.round(roundedWeight * 10) / 10,
+    calculatedWeightKg: Math.round(roundedWeight * 2) / 2,
     exactRawWeight: Math.round(rawWeight * 10) / 10,
     isDropRecommended,
   };
