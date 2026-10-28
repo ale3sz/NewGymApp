@@ -10,6 +10,12 @@
   "orientation": "portrait-primary",
   "icons": [
     {
+      "src": "./brand/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
       "src": "./brand/logo.jpg",
       "sizes": "192x192 512x512",
       "type": "image/jpeg",

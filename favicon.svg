@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <radialGradient id="favBg" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#18181b" />
+      <stop offset="80%" stop-color="#09090b" />
+      <stop offset="100%" stop-color="#000000" />
+    </radialGradient>
+    <linearGradient id="favRed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f87171" />
+      <stop offset="50%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#b91c1c" />
+    </linearGradient>
+  </defs>
+
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#favBg)" stroke="#ef4444" stroke-width="6" />
+
+  <path
+    d="M 334 176 
+       C 312 148, 285 134, 256 134
+       C 188.6 134, 134 188.6, 134 256
+       C 134 323.4, 188.6, 378, 256 378
+       C 310 378, 356 342, 372 292
+       L 316 292
+       C 304 318, 282 334, 256 334
+       C 212.9 334, 178 299.1, 178 256
+       C 178 212.9, 212.9, 178, 256 178
+       C 275 178, 292 186, 304 198
+       Z"
+    fill="url(#favRed)"
+  />
+  <polygon points="232,232 384,232 344,280 192,280" fill="url(#favRed)" />
+  <rect x="241" y="241" width="30" height="30" transform="rotate(45 256 256)" fill="#ffffff" />
+</svg>
