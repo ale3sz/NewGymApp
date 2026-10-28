@@ -475,15 +475,17 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
     <div className="space-y-6 pb-44 animate-in fade-in duration-300">
       {/* Draft Restored Banner */}
       {draftRestoredNotification && (
-        <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-between text-xs text-red-300 shadow-md">
-          <div className="flex items-center space-x-2">
-            <Save className="w-4 h-4 text-red-400 shrink-0" />
-            <span className="font-bold">Sesión en curso recuperada automáticamente:</span>
-            <span>Tus series previas se restauraron tras el reinicio de la página.</span>
+        <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-start sm:items-center justify-between text-xs text-red-300 shadow-md gap-2">
+          <div className="flex items-start sm:items-center space-x-2 min-w-0">
+            <Save className="w-4 h-4 text-red-400 shrink-0 mt-0.5 sm:mt-0" />
+            <div className="leading-snug">
+              <span className="font-bold mr-1">Sesión en curso recuperada:</span>
+              <span className="text-red-300/80">Tus series previas se restauraron automáticamente.</span>
+            </div>
           </div>
           <button
             onClick={() => setDraftRestoredNotification(false)}
-            className="p-1 text-zinc-400 hover:text-white"
+            className="p-1 text-zinc-400 hover:text-white shrink-0"
           >
             ✕
           </button>
@@ -492,14 +494,14 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
 
       {/* Acute Fatigue Feedback Notification */}
       {acuteFeedback && (
-        <div className="bg-amber-500/15 border border-amber-500/40 rounded-2xl p-3.5 flex items-center justify-between text-xs text-amber-200 animate-in fade-in slide-in-from-top-2 duration-200 shadow-lg">
-          <div className="flex items-center space-x-2.5 font-medium">
-            <Timer className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
-            <span>{acuteFeedback}</span>
+        <div className="bg-amber-500/15 border border-amber-500/40 rounded-2xl p-3.5 flex items-start sm:items-center justify-between text-xs text-amber-200 animate-in fade-in slide-in-from-top-2 duration-200 shadow-lg gap-2">
+          <div className="flex items-start sm:items-center space-x-2.5 font-medium min-w-0">
+            <Timer className="w-4 h-4 text-amber-400 shrink-0 animate-pulse mt-0.5 sm:mt-0" />
+            <span className="leading-snug">{acuteFeedback}</span>
           </div>
           <button
             onClick={() => setAcuteFeedback(null)}
-            className="p-1 text-amber-400/80 hover:text-white text-sm"
+            className="p-1 text-amber-400/80 hover:text-white text-sm shrink-0"
           >
             ✕
           </button>
@@ -507,26 +509,26 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       )}
 
       {/* 1. Header & Quick Day Switcher */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-start space-x-3.5">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-start space-x-3.5 min-w-0">
           {(() => {
             const badge = getWorkoutDayBadge(workoutDay.name);
             return badge ? (
               <img src={badge} alt={workoutDay.name} className="w-14 h-14 rounded-2xl object-cover border border-red-500/30 shadow-lg shadow-red-500/10 shrink-0 hidden sm:block" />
             ) : null;
           })()}
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xs font-mono font-bold text-red-500 uppercase tracking-widest">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <span className="text-xs font-mono font-bold text-red-500 uppercase tracking-widest truncate">
                 {routine.name}
               </span>
-              <span className="text-zinc-600">•</span>
+              <span className="text-zinc-600 hidden xs:inline">•</span>
               <span className="text-xs font-mono text-emerald-400 font-bold">
                 {exercisesWithCompletedSetsCount}/{totalExercisesCount} ejercicios iniciados
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight mt-1 break-words">
               {workoutDay.name}
             </h1>
 
@@ -540,12 +542,12 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
 
         {/* Change Day Dropdown */}
         {routine.days && routine.days.length > 1 && (
-          <div className="flex items-center space-x-2.5 self-start md:self-auto bg-zinc-950 px-3 py-2 rounded-2xl border border-zinc-800">
-            <label className="text-xs text-zinc-400 font-bold whitespace-nowrap">Día:</label>
+          <div className="flex items-center space-x-2.5 self-stretch sm:self-start md:self-auto bg-zinc-950 px-3 py-2 rounded-2xl border border-zinc-800 w-full sm:w-auto max-w-full">
+            <label className="text-xs text-zinc-400 font-bold whitespace-nowrap shrink-0">Día:</label>
             <select
               value={selectedDayId}
               onChange={(e) => handleSelectDay(e.target.value)}
-              className="bg-transparent text-xs font-black text-zinc-200 focus:outline-none cursor-pointer"
+              className="bg-transparent text-xs font-black text-zinc-200 focus:outline-none cursor-pointer truncate w-full sm:max-w-xs md:max-w-sm"
             >
               {routine.days.map((d) => (
                 <option key={d.id} value={d.id} className="bg-zinc-900 text-white">
@@ -558,7 +560,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       </div>
 
       {/* 2. Quick Jump Carousel / Exercise Tabs (Thumb-Friendly for Gym) */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin">
+      <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin max-w-full touch-pan-x">
         {workoutDay.exercises.map((ex, exIdx) => {
           const setsCount = completedSets[ex.id]?.length || 0;
           const isSelected = activeExerciseIndex === exIdx;
@@ -634,18 +636,18 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       </div>
 
       {/* 4. Floating Sticky Bottom Bar for Session Completion */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 p-4 bg-zinc-950/85 backdrop-blur-xl border-t border-zinc-800/80 shadow-2xl">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-red-500 font-mono font-black text-sm">
+      <div className="fixed bottom-0 left-0 right-0 z-40 p-3 sm:p-4 bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-800/80 shadow-2xl pb-safe">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-red-500 font-mono font-black text-xs sm:text-sm shrink-0">
               {totalSetsCompleted}
             </div>
-            <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+            <div className="min-w-0">
+              <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-zinc-400 truncate">
                 Progreso Sesión
               </div>
-              <div className="text-sm font-black font-mono text-white">
-                {totalSetsCompleted} {totalSetsCompleted === 1 ? 'serie registrada' : 'series registradas'}
+              <div className="text-xs sm:text-sm font-black font-mono text-white truncate">
+                {totalSetsCompleted} {totalSetsCompleted === 1 ? 'serie' : 'series'}
               </div>
             </div>
           </div>
@@ -654,10 +656,10 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
             type="button"
             onClick={handleFinishDayWorkout}
             disabled={totalSetsCompleted === 0}
-            className="flex items-center space-x-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-black text-sm shadow-xl shadow-emerald-500/25 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none select-none touch-manipulation"
+            className="flex items-center space-x-1.5 sm:space-x-2 px-3.5 py-2.5 sm:px-6 sm:py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-black text-xs sm:text-sm shadow-xl shadow-emerald-500/25 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none select-none touch-manipulation shrink-0"
           >
-            <CheckCircle2 className="w-5 h-5 fill-black text-emerald-400" />
-            <span>Finalizar Sesión</span>
+            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 fill-black text-emerald-400 shrink-0" />
+            <span>Finalizar<span className="hidden xs:inline"> Sesión</span></span>
           </button>
         </div>
       </div>

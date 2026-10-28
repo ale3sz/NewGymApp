@@ -207,26 +207,26 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           </span>
         </div>
 
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2">
           {weekDays.map((d) => {
             const isCompleted = completedDateKeys.has(d.dateKey);
             return (
               <div
                 key={d.dateKey}
-                className={`flex flex-col items-center justify-center py-3 px-1 rounded-2xl border transition-all ${
+                className={`flex flex-col items-center justify-center py-2 sm:py-3 px-0.5 sm:px-1 rounded-xl sm:rounded-2xl border transition-all ${
                   d.isToday
                     ? 'border-red-500/50 bg-red-500/10 text-white'
                     : 'border-zinc-800/80 bg-zinc-950/40 text-zinc-400'
                 }`}
               >
-                <span className="text-[11px] font-semibold uppercase tracking-wider">{d.dayName}</span>
-                <span className={`text-base font-bold my-1 font-mono ${d.isToday ? 'text-red-400' : 'text-zinc-300'}`}>
+                <span className="text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider">{d.dayName}</span>
+                <span className={`text-sm sm:text-base font-bold my-0.5 sm:my-1 font-mono ${d.isToday ? 'text-red-400' : 'text-zinc-300'}`}>
                   {d.dayNumber}
                 </span>
                 {isCompleted ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 fill-emerald-400/20" />
+                  <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 fill-emerald-400/20" />
                 ) : (
-                  <div className={`w-2 h-2 rounded-full ${d.isToday ? 'bg-red-500 animate-ping' : 'bg-zinc-700'}`} />
+                  <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${d.isToday ? 'bg-red-500 animate-ping' : 'bg-zinc-700'}`} />
                 )}
               </div>
             );
@@ -236,18 +236,18 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
       {/* Smart Workout Recommendation (IA Coach) */}
       {recommendation && (
-        <div className="bg-gradient-to-r from-red-950/50 via-zinc-900 to-zinc-900 border border-red-500/30 rounded-3xl p-6 shadow-xl relative overflow-hidden">
+        <div className="bg-gradient-to-r from-red-950/50 via-zinc-900 to-zinc-900 border border-red-500/30 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-start space-x-4 max-w-xl">
-              <div className="w-14 h-14 rounded-2xl overflow-hidden border border-red-500/30 shadow-lg shadow-red-500/10 shrink-0 hidden sm:block">
+            <div className="flex items-start space-x-3.5 sm:space-x-4 max-w-xl min-w-0">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border border-red-500/30 shadow-lg shadow-red-500/10 shrink-0 hidden sm:block">
                 <img src={aiCoachImg} alt="AI Coach" className="w-full h-full object-cover" />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 min-w-0">
                 <div className="inline-flex items-center space-x-1.5 text-xs font-bold text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/20">
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <Sparkles className="w-3.5 h-3.5 shrink-0" />
                   <span>Recomendación Inteligente para Hoy</span>
                 </div>
-                <h2 className="text-xl font-extrabold text-white">
+                <h2 className="text-lg sm:text-xl font-extrabold text-white break-words">
                   {recommendation.title}
                 </h2>
                 <p className="text-xs text-zinc-300 leading-relaxed">
@@ -263,10 +263,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                     onStartDayWorkout(activeRoutine.id, recommendation.recommendedDayId);
                   }
                 }}
-                className="flex items-center justify-center space-x-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-extrabold text-sm hover:scale-[1.02] shadow-lg shadow-red-600/30 transition-all shrink-0"
+                className="flex items-center justify-center space-x-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-extrabold text-xs sm:text-sm hover:scale-[1.02] shadow-lg shadow-red-600/30 transition-all w-full sm:w-auto shrink-0"
               >
-                <Play className="w-4 h-4 fill-current" />
-                <span>Iniciar: {recommendation.recommendedDayName}</span>
+                <Play className="w-4 h-4 fill-current shrink-0" />
+                <span className="truncate">Iniciar: {recommendation.recommendedDayName}</span>
               </button>
             ) : (
               <div className="flex items-center space-x-2 text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-4 py-3 rounded-2xl border border-emerald-500/20">

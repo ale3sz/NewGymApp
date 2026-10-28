@@ -112,7 +112,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
+            <nav className="hidden lg:flex items-center space-x-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentTab === item.id;
@@ -120,7 +120,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     key={item.id}
                     onClick={() => onSelectTab(item.id)}
-                    className={`relative flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`relative flex items-center space-x-1.5 px-2.5 py-1.5 xl:px-3 xl:py-2 rounded-lg text-xs xl:text-sm font-medium transition-all ${
                       isActive
                         ? 'bg-red-500/15 text-red-400 border border-red-500/30 shadow-sm'
                         : item.highlight
@@ -139,16 +139,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </nav>
 
             {/* Quick Actions (Install PWA / Backup / Restore) */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
               {/* Botón Descargar App como Acceso Directo */}
               {onOpenInstallModal && (
                 <button
                   onClick={onOpenInstallModal}
                   title="Descargar como App / Acceso directo a tu pantalla"
-                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-md shadow-red-600/25 transition transform active:scale-95"
+                  className="flex items-center space-x-1 sm:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-md shadow-red-600/25 transition transform active:scale-95 shrink-0"
                 >
                   <Smartphone className="w-4 h-4" />
-                  <span>Descargar App</span>
+                  <span className="hidden 2xl:inline">Descargar App</span>
+                  <span className="hidden sm:inline 2xl:hidden">App</span>
                 </button>
               )}
 
@@ -163,16 +164,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={handleExportBackup}
                 title="Descargar copia de seguridad de datos (JSON)"
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 transition shadow-sm"
+                className="flex items-center space-x-1.5 p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-semibold text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 transition shadow-sm shrink-0"
               >
                 <Download className="w-4 h-4" />
-                <span className="hidden sm:inline">Descargar Datos</span>
+                <span className="hidden 2xl:inline">Descargar Datos</span>
+                <span className="hidden xl:inline 2xl:hidden">Datos</span>
               </button>
 
               <button
                 onClick={handleImportClick}
                 title="Restaurar copia de seguridad JSON"
-                className="p-2 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-transparent hover:border-zinc-700 transition"
+                className="p-1.5 sm:p-2 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-transparent hover:border-zinc-700 transition shrink-0"
               >
                 <Upload className="w-4 h-4" />
               </button>
@@ -180,7 +182,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={handleResetData}
                 title="Restablecer datos de fábrica"
-                className="p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition hidden sm:block"
+                className="p-1.5 sm:p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition hidden sm:block shrink-0"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
@@ -191,7 +193,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Bottom Navigation Bar - Oculto durante el entrenamiento activo para evitar colisiones */}
       {currentTab !== 'active-workout' && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-zinc-950/95 backdrop-blur-lg border-t border-zinc-800 pb-safe">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-zinc-950/95 backdrop-blur-lg border-t border-zinc-800 pb-safe">
           <div className="grid grid-cols-5 h-16">
             {[
               { id: 'dashboard' as AppTab, label: 'Inicio', icon: Flame },

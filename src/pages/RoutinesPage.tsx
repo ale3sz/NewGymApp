@@ -386,22 +386,24 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
               </h2>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => downloadRoutineAsText(editingRoutine)}
-                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-xs font-bold text-red-400 border border-red-500/30 transition shadow-sm"
+                className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-xs font-bold text-red-400 border border-red-500/30 transition shadow-sm"
                 title="Descargar rutina como archivo de texto"
               >
-                <Download className="w-4 h-4" />
-                <span>Descargar Rutina</span>
+                <Download className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Descargar Rutina</span>
+                <span className="sm:hidden">Descargar</span>
               </button>
 
               <button
                 onClick={() => setVolumeModalOpen(true)}
-                className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-zinc-200 transition"
+                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-zinc-200 transition"
               >
-                <Activity className="w-4 h-4 text-red-500" />
-                <span>Auditar Volumen Semanal</span>
+                <Activity className="w-4 h-4 text-red-500 shrink-0" />
+                <span className="hidden sm:inline">Auditar </span>
+                <span>Volumen</span>
               </button>
 
               <button

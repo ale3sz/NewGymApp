@@ -305,18 +305,18 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
             <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">
               Tiempo Disponible por Sesión
             </label>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
               {([30, 45, 60, 75, 90] as TimeAvailableMinutes[]).map(t => (
                 <button
                   key={t}
                   onClick={() => setTimeMin(t)}
-                  className={`py-3 rounded-2xl border text-center transition ${
+                  className={`py-2.5 sm:py-3 px-1 rounded-xl sm:rounded-2xl border text-center transition ${
                     timeMin === t
                       ? 'bg-amber-500/10 border-amber-500/50 text-white font-bold'
                       : 'bg-zinc-950/40 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                   }`}
                 >
-                  <span className="text-xs font-mono">{t} min</span>
+                  <span className="text-[11px] sm:text-xs font-mono">{t} min</span>
                 </button>
               ))}
             </div>
