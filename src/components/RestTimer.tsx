@@ -99,7 +99,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
     return (
       <aside
         aria-label="Temporizador de descanso flotante"
-        className="fixed bottom-20 md:bottom-20 left-3 right-3 sm:left-auto sm:right-6 sm:w-[380px] z-40 bg-slate-950 border border-sky-500/50 text-white p-2.5 sm:p-3 rounded-2xl shadow-2xl shadow-black flex items-center justify-between gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200"
+        className="fixed bottom-20 md:bottom-20 left-3 right-3 sm:left-auto sm:right-6 sm:w-[380px] z-40 bg-zinc-950 border border-red-500/50 text-white p-2.5 sm:p-3 rounded-2xl shadow-2xl shadow-black flex items-center justify-between gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200"
       >
         {/* Info & Countdown - Tap to expand */}
         <div
@@ -114,7 +114,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
                 cx="20"
                 cy="20"
                 r="16"
-                stroke="#1e293b"
+                stroke="#27272a"
                 strokeWidth="3.5"
                 fill="transparent"
               />
@@ -122,7 +122,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
                 cx="20"
                 cy="20"
                 r="16"
-                stroke={secondsLeft === 0 ? '#10b981' : '#38bdf8'}
+                stroke={secondsLeft === 0 ? '#10b981' : '#ef4444'}
                 strokeWidth="3.5"
                 fill="transparent"
                 strokeDasharray={100.5}
@@ -131,11 +131,11 @@ export const RestTimer: React.FC<RestTimerProps> = ({
                 className="transition-all duration-300"
               />
             </svg>
-            <Timer className={`w-3.5 h-3.5 absolute ${secondsLeft === 0 ? 'text-emerald-400' : 'text-sky-400'}`} />
+            <Timer className={`w-3.5 h-3.5 absolute ${secondsLeft === 0 ? 'text-emerald-400' : 'text-red-500'}`} />
           </div>
 
           <div className="truncate">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">
+            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider truncate">
               {secondsLeft === 0 ? '¡Listo para la serie!' : (exerciseName || 'Descanso activo')}
             </div>
             <div className="flex items-center space-x-1.5 mt-0.5">
@@ -158,7 +158,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
           <button
             type="button"
             onClick={handleAdd30s}
-            className="px-2 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 border border-slate-800 text-[11px] font-mono font-bold text-slate-200 transition"
+            className="px-2 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 active:scale-95 border border-zinc-800 text-[11px] font-mono font-bold text-zinc-200 transition"
             title="Sumar 30s"
           >
             +30s
@@ -170,7 +170,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
             className={`p-2 rounded-xl active:scale-95 transition ${
               isRunning
                 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
-                : 'bg-emerald-500 text-slate-950 font-bold hover:bg-emerald-400'
+                : 'bg-emerald-500 text-zinc-950 font-bold hover:bg-emerald-400'
             }`}
             title={isRunning ? 'Pausar descanso' : 'Reanudar descanso'}
           >
@@ -180,7 +180,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
           <button
             type="button"
             onClick={handleSkip}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-slate-300 hover:text-white transition active:scale-95"
+            className="px-2.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white transition active:scale-95"
             title="Saltar descanso"
           >
             Saltar
@@ -189,7 +189,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
           <button
             type="button"
             onClick={() => setIsExpanded(true)}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition"
+            className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition"
             title="Expandir a pantalla completa"
           >
             <Maximize2 className="w-3.5 h-3.5" />
@@ -203,30 +203,30 @@ export const RestTimer: React.FC<RestTimerProps> = ({
   return (
     <div
       onClick={() => setIsExpanded(false)}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-200"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl relative overflow-hidden"
+        className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl relative overflow-hidden"
       >
         {/* Glow ambient background */}
         <div
           className={`absolute -top-24 -left-24 w-48 h-48 rounded-full blur-3xl opacity-25 pointer-events-none transition-colors duration-500 ${
-            secondsLeft === 0 ? 'bg-emerald-500' : 'bg-sky-500'
+            secondsLeft === 0 ? 'bg-emerald-500' : 'bg-red-600'
           }`}
         />
 
         {/* Modal Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <Timer className="w-5 h-5 text-sky-400" />
+            <Timer className="w-5 h-5 text-red-500" />
             <h3 className="font-bold text-white text-base">Descanso Neuromuscular</h3>
           </div>
           <div className="flex items-center space-x-1">
             <button
               type="button"
               onClick={() => setIsExpanded(false)}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
               title="Volver a barra flotante"
             >
               <Minimize2 className="w-4 h-4" />
@@ -239,7 +239,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
                 const extension = Math.max(0, totalSeconds - initialSeconds);
                 onClose({ actualRestedSeconds: rested, wasExtended, extensionSeconds: extension });
               }}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
               title="Cerrar temporizador"
             >
               <X className="w-4 h-4" />
@@ -248,7 +248,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
         </div>
 
         {exerciseName && (
-          <p className="text-xs text-center text-slate-300 mb-6 bg-slate-950/60 py-1.5 px-3 rounded-full border border-slate-800 truncate font-medium">
+          <p className="text-xs text-center text-zinc-300 mb-6 bg-zinc-950/60 py-1.5 px-3 rounded-full border border-zinc-800 truncate font-medium">
             {exerciseName}
           </p>
         )}
@@ -261,7 +261,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
                 cx="96"
                 cy="96"
                 r="82"
-                stroke="#1e293b"
+                stroke="#27272a"
                 strokeWidth="8"
                 fill="transparent"
               />
@@ -269,7 +269,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
                 cx="96"
                 cy="96"
                 r="82"
-                stroke={secondsLeft === 0 ? '#10b981' : '#38bdf8'}
+                stroke={secondsLeft === 0 ? '#10b981' : '#ef4444'}
                 strokeWidth="8"
                 fill="transparent"
                 strokeDasharray={515}
@@ -286,7 +286,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
               >
                 {formatTime(secondsLeft)}
               </span>
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2">
+              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest mt-2">
                 {secondsLeft === 0
                   ? '¡Listo para la serie!'
                   : isRunning
@@ -302,7 +302,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
           <button
             type="button"
             onClick={handleSub30s}
-            className="flex items-center space-x-1 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-200 transition active:scale-95"
+            className="flex items-center space-x-1 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-bold text-zinc-200 transition active:scale-95"
           >
             <Minus className="w-4 h-4" />
             <span>30s</span>
@@ -310,7 +310,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
           <button
             type="button"
             onClick={handleAdd30s}
-            className="flex items-center space-x-1 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-200 transition active:scale-95"
+            className="flex items-center space-x-1 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-bold text-zinc-200 transition active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>30s</span>
@@ -325,7 +325,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
             className={`flex items-center justify-center space-x-2 py-3.5 rounded-2xl font-black text-sm transition-all shadow-lg active:scale-95 ${
               isRunning
                 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
-                : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-emerald-500/25'
+                : 'bg-emerald-500 text-zinc-950 hover:bg-emerald-400 shadow-emerald-500/25'
             }`}
           >
             {isRunning ? (
@@ -344,7 +344,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
           <button
             type="button"
             onClick={handleSkip}
-            className="py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-black text-sm transition active:scale-95"
+            className="py-3.5 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-black text-sm transition active:scale-95"
           >
             Saltar Descanso
           </button>

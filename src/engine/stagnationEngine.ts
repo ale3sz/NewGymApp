@@ -66,7 +66,7 @@ export function analyzeExerciseStagnation(
       exerciseId,
       exerciseName,
       status: 'NEW',
-      statusBadgeText: 'Línea Base 🆕',
+      statusBadgeText: 'Línea Base',
       statusColor: '#38bdf8',
       consecutiveUnchangedSessions: historySnapshots.length,
       performanceTrend: 'FLAT',
@@ -102,7 +102,7 @@ export function analyzeExerciseStagnation(
   const isHighExertionPrematureFailure = current.avgRIR < 0.5 && current.avgReps < previous.avgReps;
 
   let status: StagnationStatus = 'CONSOLIDATING';
-  let statusBadgeText = 'Consolidando Carga ⏳';
+  let statusBadgeText = 'Consolidando Carga';
   let statusColor = '#38bdf8';
   let performanceTrend: 'UP' | 'FLAT' | 'DOWN' = 'FLAT';
   let analysisNote = '';
@@ -111,7 +111,7 @@ export function analyzeExerciseStagnation(
   // 1. CASO REGRESIÓN POR FATIGA ACUMULADA
   if (isPerformanceDropping && isHighExertionPrematureFailure && consecutiveUnchanged >= 2) {
     status = 'FATIGUE_REGRESSION';
-    statusBadgeText = 'Fatiga Acumulada 🛑';
+    statusBadgeText = 'Fatiga Acumulada';
     statusColor = '#ef4444';
     performanceTrend = 'DOWN';
     analysisNote = `Colapso de rendimiento detectado: El 1RM estimado cayó de ${previous.estimated1RM} kg a ${current.estimated1RM} kg con RIR ${current.avgRIR.toFixed(1)} (fallo prematuro). Fatiga neuromuscular periférica o desbalance articular evidente.`;
@@ -132,7 +132,7 @@ export function analyzeExerciseStagnation(
   // 2. CASO ESTANCAMIENTO PROLONGADO (>= 3 SESIONES)
   else if (consecutiveUnchanged >= 3) {
     status = 'STAGNATED';
-    statusBadgeText = 'Meseta Biomecánica ⚠️';
+    statusBadgeText = 'Meseta Biomecánica';
     statusColor = '#f59e0b';
     performanceTrend = 'FLAT';
     analysisNote = `Estancamiento confirmado en ${current.weightKg} kg durante ${consecutiveUnchanged} microciclos. Se ha agotado la tasa de adaptación inmediata en este vector de fuerza. Proceder con rotación o cambio de perfil de resistencia.`;
@@ -167,7 +167,7 @@ export function analyzeExerciseStagnation(
   // 3. CASO EN PROGRESIÓN SOSTENIDA
   else if (current.estimated1RM > previous.estimated1RM + 0.5 || current.avgReps > previous.avgReps) {
     status = 'PROGRESSING';
-    statusBadgeText = 'En Progresión 🔥';
+    statusBadgeText = 'En Progresión';
     statusColor = '#22c55e';
     performanceTrend = 'UP';
     analysisNote = `Sobrecarga progresiva óptima. Crecimiento en 1RM estimado (+${(current.estimated1RM - previous.estimated1RM).toFixed(1)} kg) o repeticiones netas respecto a la sesión previa.`;

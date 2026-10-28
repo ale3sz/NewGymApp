@@ -56,30 +56,30 @@ export const WeeklyVolumeModal: React.FC<WeeklyVolumeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
+            <div className="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500">
               <Activity className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-base font-bold text-white">Auditoría de Volumen Semanal</h3>
-              <p className="text-xs text-slate-400">{routineName}</p>
+              <p className="text-xs text-zinc-400">{routineName}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Scientific Note */}
-        <div className="my-4 p-3 rounded-2xl bg-slate-800/40 border border-slate-700/50 flex items-start space-x-2.5 text-xs text-slate-300">
-          <Info className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
+        <div className="my-4 p-3 rounded-2xl bg-zinc-800/40 border border-zinc-700/50 flex items-start space-x-2.5 text-xs text-zinc-300">
+          <Info className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
           <p>
             Calculado con el <strong>Principio de Solapamiento</strong>: Las series directas cuentan 1.0 y las indirectas (sinergistas como tríceps en press de banca o bíceps en remos) cuentan 0.5. El rango ideal de hipertrofia según la literatura científica es de <strong>10 a 18 series efectivas semanales</strong>.
           </p>
@@ -88,21 +88,21 @@ export const WeeklyVolumeModal: React.FC<WeeklyVolumeModalProps> = ({
         {/* Audits List */}
         <div className="flex-1 overflow-y-auto space-y-3 pr-1">
           {volumeAudits.length === 0 ? (
-            <div className="text-center py-8 text-slate-500 text-sm">
+            <div className="text-center py-8 text-zinc-500 text-sm">
               Esta rutina aún no tiene ejercicios asignados para auditar.
             </div>
           ) : (
             volumeAudits.map((item) => (
               <div
                 key={item.muscleGroup}
-                className="p-4 rounded-2xl bg-slate-950/50 border border-slate-800 hover:border-slate-700 transition"
+                className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800 hover:border-zinc-700 transition"
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
-                    <span className="font-bold text-slate-200 capitalize text-sm">
+                    <span className="font-bold text-zinc-200 capitalize text-sm">
                       {item.muscleGroup}
                     </span>
-                    <span className="text-xs text-slate-400 font-mono">
+                    <span className="text-xs text-zinc-400 font-mono">
                       {item.totalWeeklySets} series efectivas/sem
                     </span>
                   </div>
@@ -110,7 +110,7 @@ export const WeeklyVolumeModal: React.FC<WeeklyVolumeModalProps> = ({
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden mb-2.5">
+                <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden mb-2.5">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
                       item.status === 'ÓPTIMO'
@@ -127,12 +127,12 @@ export const WeeklyVolumeModal: React.FC<WeeklyVolumeModalProps> = ({
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-slate-400">
+                <div className="flex items-center justify-between text-[11px] text-zinc-400">
                   <div className="flex items-center space-x-3">
-                    <span>Directas: <strong className="text-slate-300">{item.directSets}</strong></span>
-                    <span>Indirectas: <strong className="text-slate-300">{item.indirectSets}</strong></span>
+                    <span>Directas: <strong className="text-zinc-300">{item.directSets}</strong></span>
+                    <span>Indirectas: <strong className="text-zinc-300">{item.indirectSets}</strong></span>
                   </div>
-                  <span className="text-slate-400 italic">{item.advice}</span>
+                  <span className="text-zinc-400 italic">{item.advice}</span>
                 </div>
               </div>
             ))

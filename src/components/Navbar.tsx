@@ -54,7 +54,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       if (content) {
         const success = importBackupData(content);
         if (success) {
-          alert('¡Datos importados con éxito! 🎉');
+          alert('¡Datos importados con éxito!');
           onDataChanged?.();
         } else {
           alert('Error: El archivo de backup no es válido.');
@@ -85,7 +85,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+      <header className="sticky top-0 z-40 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -93,19 +93,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="flex items-center space-x-3 cursor-pointer group"
               onClick={() => onSelectTab('dashboard')}
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-emerald-400 p-0.5 shadow-lg shadow-sky-500/20 group-hover:scale-105 transition-transform">
-                <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                  <Flame className="w-5 h-5 text-sky-400" />
-                </div>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 to-rose-500 p-0.5 shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform overflow-hidden">
+                <img src="/brand/logo.jpg" alt="GymScience Logo" className="w-full h-full object-cover rounded-[10px]" />
               </div>
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="font-extrabold text-lg text-white tracking-tight">GymScience</span>
-                  <span className="bg-sky-500/10 text-sky-400 border border-sky-500/30 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                  <span className="bg-red-500/10 text-red-400 border border-red-500/30 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
                     Web
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 -mt-1 hidden sm:block">Entrenamiento Basado en Evidencia</p>
+                <p className="text-[11px] text-zinc-400 -mt-1 hidden sm:block">Entrenamiento Basado en Evidencia</p>
               </div>
             </div>
 
@@ -120,16 +118,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onClick={() => onSelectTab(item.id)}
                     className={`relative flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       isActive
-                        ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30 shadow-sm'
+                        ? 'bg-red-500/15 text-red-400 border border-red-500/30 shadow-sm'
                         : item.highlight
                         ? 'text-amber-300 hover:bg-amber-500/10 hover:text-amber-200'
-                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                        : 'text-zinc-300 hover:bg-zinc-800 hover:text-white'
                     }`}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-sky-400' : item.highlight ? 'text-amber-400' : 'text-slate-400'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-red-400' : item.highlight ? 'text-amber-400' : 'text-zinc-400'}`} />
                     <span>{item.label}</span>
                     {item.badge && (
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                     )}
                   </button>
                 );
@@ -148,16 +146,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               
               <button
                 onClick={handleExportBackup}
-                title="Descargar copia de seguridad JSON"
-                className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-transparent hover:border-slate-700 transition"
+                title="Descargar copia de seguridad de datos (JSON)"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 transition shadow-sm"
               >
                 <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">Descargar Datos</span>
               </button>
 
               <button
                 onClick={handleImportClick}
                 title="Restaurar copia de seguridad JSON"
-                className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-transparent hover:border-slate-700 transition"
+                className="p-2 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-transparent hover:border-zinc-700 transition"
               >
                 <Upload className="w-4 h-4" />
               </button>
@@ -165,7 +164,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={handleResetData}
                 title="Restablecer datos de fábrica"
-                className="p-2 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition hidden sm:block"
+                className="p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition hidden sm:block"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
@@ -176,7 +175,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Bottom Navigation Bar - Oculto durante el entrenamiento activo para evitar colisiones */}
       {currentTab !== 'active-workout' && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 pb-safe">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-zinc-950/95 backdrop-blur-lg border-t border-zinc-800 pb-safe">
           <div className="grid grid-cols-5 h-16">
             {[
               { id: 'dashboard' as AppTab, label: 'Inicio', icon: Flame },
@@ -192,14 +191,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                   key={item.id}
                   onClick={() => onSelectTab(item.id)}
                   className={`flex flex-col items-center justify-center relative transition-colors ${
-                    isActive ? 'text-sky-400' : 'text-slate-400 hover:text-slate-200'
+                    isActive ? 'text-red-500' : 'text-zinc-400 hover:text-zinc-200'
                   }`}
                 >
                   {item.isPrimary ? (
                     <div className={`w-10 h-10 -mt-4 rounded-xl flex items-center justify-center shadow-lg transition-transform ${
                       isActive
-                        ? 'bg-gradient-to-tr from-sky-500 to-emerald-400 text-slate-950 scale-105 shadow-sky-500/30'
-                        : 'bg-slate-800 text-slate-200 border border-slate-700'
+                        ? 'bg-gradient-to-tr from-red-600 to-rose-600 text-white scale-105 shadow-red-600/30'
+                        : 'bg-zinc-800 text-zinc-200 border border-zinc-700'
                     }`}>
                       <Icon className="w-5 h-5" />
                     </div>

@@ -12,7 +12,7 @@ export interface NextSetObjective {
   targetReps: number;
   targetRIR: number;
   badgeLabel: string;
-  badgeColor: 'emerald' | 'amber' | 'rose' | 'sky';
+  badgeColor: 'emerald' | 'amber' | 'rose' | 'sky' | 'red';
   headline: string;
   advice: string;
   isDeloadDrop: boolean;
@@ -92,8 +92,8 @@ export function evaluateNextSetObjective(
       targetRepsMax: exercise.targetRepsMax,
       targetReps: exercise.targetRepsMin,
       targetRIR: exercise.targetRIR,
-      badgeLabel: '🎯 SERIE 1: CALIBRACIÓN BASE',
-      badgeColor: 'sky',
+      badgeLabel: 'SERIE 1: CALIBRACIÓN BASE',
+      badgeColor: 'red',
       headline: 'Serie 1: Apertura con técnica estricta',
       advice: `Inicia con tu carga objetivo buscando entre ${exercise.targetRepsMin} y ${exercise.targetRepsMax} reps. Detén la serie dejando ${exercise.targetRIR} reps en reserva (RIR ${exercise.targetRIR}).`,
       isDeloadDrop: false,
@@ -138,7 +138,7 @@ export function evaluateNextSetObjective(
         targetRepsMax: exercise.targetRepsMax,
         targetReps: pred.predictedReps,
         targetRIR: exercise.targetRIR,
-        badgeLabel: `🏁 SERIE SUPERADA: SUBIR A ${nextHigher} KG`,
+        badgeLabel: `SERIE SUPERADA: SUBIR A ${nextHigher} KG`,
         badgeColor: 'emerald',
         headline: '¡Excelente! Has superado ampliamente esta carga',
         advice: `En la Serie ${lastSet.setNumber} registraste ${lastSet.repsCompleted} reps con RIR ${lastSet.rirLogged} (superaste el rango ${exercise.targetRepsMin}-${exercise.targetRepsMax}). Los ${currentWeight} kg ya te quedan demasiado ligeros. Para tu próxima sesión (o si deseas hacer una Serie ${nextSetNumber} extra ahora), sube a ${nextHigher} kg. (Predicción adaptativa: lograrás ~${pred.predictedReps} reps @ RIR ${exercise.targetRIR}).`,
@@ -159,7 +159,7 @@ export function evaluateNextSetObjective(
         targetRepsMax: exercise.targetRepsMax,
         targetReps: pred.predictedReps,
         targetRIR: 2,
-        badgeLabel: '🏁 VOLUMEN COMPLETADO CON FATIGA',
+        badgeLabel: 'VOLUMEN COMPLETADO CON FATIGA',
         badgeColor: 'rose',
         headline: 'Volumen completado (Rendimiento al límite)',
         advice: `Completaste las ${targetSetsCount} series, pero en la última caíste a ${lastSet.repsCompleted} reps @ RIR ${lastSet.rirLogged}. Has alcanzado el estímulo efectivo; pasa al siguiente ejercicio y disipa la fatiga neuromuscular.`,
@@ -180,7 +180,7 @@ export function evaluateNextSetObjective(
       targetRepsMax: exercise.targetRepsMax,
       targetReps: lastSet.repsCompleted,
       targetRIR: exercise.targetRIR,
-      badgeLabel: '🏁 EJERCICIO COMPLETADO',
+      badgeLabel: 'EJERCICIO COMPLETADO',
       badgeColor: 'emerald',
       headline: `¡Objetivo de ${targetSetsCount} series alcanzado!`,
       advice: `Has completado el volumen efectivo para ${exercise.name} en ${currentWeight} kg. Pasa al siguiente ejercicio para permitir que este grupo muscular recupere tono y reservas de fosfocreatina.`,
@@ -204,8 +204,8 @@ export function evaluateNextSetObjective(
       targetRepsMax: exercise.targetRepsMax,
       targetReps: pred.predictedReps,
       targetRIR: exercise.targetRIR,
-      badgeLabel: `⚡ SUBIR CARGA A ${nextHigher} KG`,
-      badgeColor: 'sky',
+      badgeLabel: `SUBIR CARGA A ${nextHigher} KG`,
+      badgeColor: 'red',
       headline: `Ajuste en vivo: ${currentWeight} kg te queda muy ligero`,
       advice: `Hiciste ${lastSet.repsCompleted} reps con RIR ${lastSet.rirLogged} (superaste el rango objetivo de ${exercise.targetRepsMin}-${exercise.targetRepsMax} reps). Sube inmediatamente a ${nextHigher} kg para que la Serie ${nextSetNumber} entre en verdadera tensión mecánica efectiva. Predicción Bayesiana: lograrás ~${pred.predictedReps} reps @ RIR ${exercise.targetRIR}.`,
       isDeloadDrop: false,
@@ -226,7 +226,7 @@ export function evaluateNextSetObjective(
       targetRepsMax: exercise.targetRepsMax,
       targetReps: pred.predictedReps,
       targetRIR: 2,
-      badgeLabel: `📉 BAJAR PESO A ${nextLower} KG (-10%)`,
+      badgeLabel: `BAJAR PESO A ${nextLower} KG (-10%)`,
       badgeColor: 'rose',
       headline: `Back-off Set táctico para Serie ${nextSetNumber}`,
       advice: `En la Serie ${lastSet.setNumber} caíste a ${lastSet.repsCompleted} reps con RIR ${lastSet.rirLogged} (fatiga excesiva). Mantener ${currentWeight} kg causará fallo prematuro. Baja a ${nextLower} kg para rescatar el volumen efectivo. Con ${nextLower} kg predecimos ~${pred.predictedReps} reps limpias.`,
@@ -248,12 +248,12 @@ export function evaluateNextSetObjective(
     targetRepsMax: exercise.targetRepsMax,
     targetReps: pred.predictedReps,
     targetRIR: exercise.targetRIR,
-    badgeLabel: `🎯 MANTENER PESO (${currentWeight} KG)`,
+    badgeLabel: `MANTENER PESO (${currentWeight} KG)`,
     badgeColor: 'emerald',
     headline: `Excelente control: Mantén la carga para Serie ${nextSetNumber}`,
     advice: `Mantén los ${currentWeight} kg. El modelo de fatiga proyecta ~${pred.predictedReps} repeticiones con RIR ${exercise.targetRIR} tras descansar adecuadamente.${
       lastSet.restExtensionRatio && lastSet.restExtensionRatio >= 1.20
-        ? ` (⚠️ Registrado descanso extendido de ${lastSet.actualRestSeconds}s, +${Math.round((lastSet.restExtensionRatio - 1) * 100)}% por fatiga).`
+        ? ` (Registrado descanso extendido de ${lastSet.actualRestSeconds}s, +${Math.round((lastSet.restExtensionRatio - 1) * 100)}% por fatiga).`
         : ''
     }`,
     isDeloadDrop: false,

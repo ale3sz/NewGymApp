@@ -43,7 +43,7 @@ const RIR_TIERS: RirOption[] = [
     rpe: 8,
     label: '2',
     sublabel: 'Hipertrofia Óptima',
-    activeColor: 'bg-emerald-500 text-slate-950 font-black',
+    activeColor: 'bg-emerald-500 text-black font-black',
     borderColor: 'border-emerald-500/80',
     bgGlow: 'shadow-emerald-500/30',
     textColor: 'text-emerald-400',
@@ -53,20 +53,20 @@ const RIR_TIERS: RirOption[] = [
     rpe: 7,
     label: '3',
     sublabel: 'Sobrecarga',
-    activeColor: 'bg-sky-500 text-slate-950 font-black',
-    borderColor: 'border-sky-500/80',
-    bgGlow: 'shadow-sky-500/30',
-    textColor: 'text-sky-400',
+    activeColor: 'bg-red-500 text-white font-black',
+    borderColor: 'border-red-500/80',
+    bgGlow: 'shadow-red-500/30',
+    textColor: 'text-red-400',
   },
   {
     rir: 4,
     rpe: 6,
     label: '4+',
     sublabel: 'Subumbral',
-    activeColor: 'bg-slate-700 text-white font-bold',
-    borderColor: 'border-slate-600',
-    bgGlow: 'shadow-slate-700/20',
-    textColor: 'text-slate-400',
+    activeColor: 'bg-zinc-700 text-white font-bold',
+    borderColor: 'border-zinc-600',
+    bgGlow: 'shadow-zinc-700/20',
+    textColor: 'text-zinc-400',
   },
 ];
 
@@ -78,17 +78,17 @@ export const RirSegmentedPicker: React.FC<RirSegmentedPickerProps> = ({
   const selectedOption = RIR_TIERS.find((opt) => opt.rir === currentRir) || RIR_TIERS[2];
 
   return (
-    <div className="bg-slate-950/80 rounded-2xl p-3 border border-slate-800/90 shadow-inner">
+    <div className="bg-zinc-950/80 rounded-2xl p-3 border border-zinc-800/90 shadow-inner">
       {/* Header with selected summary */}
       <div className="flex items-center justify-between mb-2 gap-1">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
           Intensidad (RIR)
         </span>
         <div className="flex items-center space-x-1.5 text-xs font-mono font-bold">
           <span className={selectedOption.textColor}>
             RIR {selectedOption.label} • RPE {selectedOption.rpe}
           </span>
-          <span className="text-[10px] text-slate-400 font-sans font-medium uppercase tracking-wider hidden xs:inline">
+          <span className="text-[10px] text-zinc-400 font-sans font-medium uppercase tracking-wider hidden xs:inline">
             ({selectedOption.sublabel})
           </span>
         </div>
@@ -106,14 +106,14 @@ export const RirSegmentedPicker: React.FC<RirSegmentedPickerProps> = ({
               className={`h-12 rounded-xl flex flex-col items-center justify-center transition-all select-none touch-manipulation border ${
                 isSelected
                   ? `${tier.activeColor} ${tier.borderColor} shadow-lg ${tier.bgGlow} scale-[1.03] z-10`
-                  : 'bg-slate-900/90 text-slate-300 border-slate-800 hover:border-slate-700 hover:bg-slate-850 active:scale-95'
+                  : 'bg-zinc-900/90 text-zinc-300 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800 active:scale-95'
               }`}
             >
               <span className="text-base font-black font-mono leading-none">
                 {tier.label}
               </span>
               <span className={`text-[9px] font-semibold uppercase leading-tight mt-0.5 truncate max-w-full px-0.5 ${
-                isSelected ? 'opacity-90' : 'text-slate-400'
+                isSelected ? 'opacity-90' : 'text-zinc-400'
               }`}>
                 {tier.rir === 0 ? 'Fallo' : tier.rir === 4 ? 'Reserva' : `RPE ${tier.rpe}`}
               </span>
@@ -123,7 +123,7 @@ export const RirSegmentedPicker: React.FC<RirSegmentedPickerProps> = ({
       </div>
 
       {/* Contextual feedback badge */}
-      <div className="mt-2.5 pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px]">
+      <div className="mt-2.5 pt-2 border-t border-zinc-800/60 flex items-center justify-between text-[11px]">
         {currentRir === 0 ? (
           <div className="flex items-center space-x-1.5 text-rose-400 font-medium">
             <Flame className="w-3.5 h-3.5 shrink-0" />
@@ -140,12 +140,12 @@ export const RirSegmentedPicker: React.FC<RirSegmentedPickerProps> = ({
             <span>Rango óptimo para hipertrofia y adaptación neuromuscular con SFR ideal.</span>
           </div>
         ) : currentRir === 3 ? (
-          <div className="flex items-center space-x-1.5 text-sky-400 font-medium">
+          <div className="flex items-center space-x-1.5 text-red-400 font-medium">
             <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
             <span>Consolidación técnica y acumulación de volumen de calidad.</span>
           </div>
         ) : (
-          <div className="flex items-center space-x-1.5 text-slate-400">
+          <div className="flex items-center space-x-1.5 text-zinc-400">
             <span>Reps de aproximación o calentamiento preparatorio.</span>
           </div>
         )}

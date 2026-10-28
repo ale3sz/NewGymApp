@@ -125,7 +125,7 @@ export function getSmartWorkoutRecommendation(
       recommendedDayId: todayWorkout.dayId,
       recommendedDayName: todayWorkout.dayName,
       actionType: 'REST_SUGGESTION',
-      title: '¡Sesión de hoy completada! 🎉',
+      title: '¡Sesión de hoy completada!',
       subtitle: `Completaste ${todayWorkout.dayName}`,
       reasoning: 'Ya registraste tu entrenamiento de hoy. Tu cuerpo entra en fase de síntesis proteica y recuperación muscular.',
       laggingMuscles: [],

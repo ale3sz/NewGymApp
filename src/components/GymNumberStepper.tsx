@@ -46,14 +46,14 @@ export const GymNumberStepper: React.FC<GymNumberStepperProps> = ({
   };
 
   return (
-    <div className="flex flex-col bg-slate-950/80 rounded-2xl p-3 border border-slate-800/90 shadow-inner group focus-within:border-sky-500/60 transition-all">
+    <div className="flex flex-col bg-zinc-950/80 rounded-2xl p-3 border border-zinc-800/90 shadow-inner group focus-within:border-red-500/60 transition-all">
       {/* Label and Quick badges */}
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 group-focus-within:text-sky-400 transition-colors">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 group-focus-within:text-red-400 transition-colors">
           {label}
         </span>
         {unit && (
-          <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-900 px-2 py-0.5 rounded-full border border-slate-800">
+          <span className="text-[10px] font-mono font-bold text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800">
             {unit}
           </span>
         )}
@@ -67,7 +67,7 @@ export const GymNumberStepper: React.FC<GymNumberStepperProps> = ({
           onClick={() => handleAdjust(-step)}
           disabled={numValue <= min && value !== ''}
           aria-label={`Reducir ${label} por ${step}`}
-          className="w-12 h-12 shrink-0 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 active:scale-95 active:bg-slate-800 flex items-center justify-center text-slate-200 hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none select-none touch-manipulation shadow-sm"
+          className="w-12 h-12 shrink-0 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 active:scale-95 active:bg-zinc-800 flex items-center justify-center text-zinc-200 hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none select-none touch-manipulation shadow-sm"
         >
           <Minus className="w-5 h-5" />
         </button>
@@ -97,7 +97,7 @@ export const GymNumberStepper: React.FC<GymNumberStepperProps> = ({
           onClick={() => handleAdjust(step)}
           disabled={numValue >= max}
           aria-label={`Aumentar ${label} por ${step}`}
-          className="w-12 h-12 shrink-0 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 active:scale-95 active:bg-slate-800 flex items-center justify-center text-slate-200 hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none select-none touch-manipulation shadow-sm"
+          className="w-12 h-12 shrink-0 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 active:scale-95 active:bg-zinc-800 flex items-center justify-center text-zinc-200 hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none select-none touch-manipulation shadow-sm"
         >
           <Plus className="w-5 h-5" />
         </button>
@@ -105,13 +105,13 @@ export const GymNumberStepper: React.FC<GymNumberStepperProps> = ({
 
       {/* Quick Increment Micro-Pills */}
       {quickIncrements.length > 0 && (
-        <div className="flex items-center justify-center gap-1.5 mt-2.5 pt-2 border-t border-slate-800/60">
+        <div className="flex items-center justify-center gap-1.5 mt-2.5 pt-2 border-t border-zinc-800/60">
           {quickIncrements.map((inc) => (
             <button
               key={inc}
               type="button"
               onClick={() => handleAdjust(inc)}
-              className="flex-1 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 active:scale-95 border border-slate-800 text-[11px] font-mono font-bold text-slate-300 hover:text-sky-300 transition-all select-none touch-manipulation"
+              className="flex-1 py-1 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 active:scale-95 border border-zinc-800 text-[11px] font-mono font-bold text-zinc-300 hover:text-red-400 transition-all select-none touch-manipulation"
             >
               +{inc}
             </button>

@@ -12,7 +12,8 @@ import {
   Play,
   Calendar,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Download
 } from 'lucide-react';
 import { Routine, WorkoutDay, Exercise, CatalogExercise, MuscleGroup, AppTab } from '../types';
 import {
@@ -25,6 +26,7 @@ import {
 } from '../storage/storage';
 import { prescribeExerciseParameters } from '../engine/trainerEngine';
 import { WeeklyVolumeModal } from '../components/WeeklyVolumeModal';
+import { downloadRoutineAsText } from '../utils/routineExport';
 
 interface RoutinesPageProps {
   onStartDayWorkout: (routineId: string, dayId: string) => void;
@@ -235,10 +237,10 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
   return (
     <div className="space-y-6 pb-32">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl">
         <div>
           <h1 className="text-2xl font-black text-white tracking-tight">Gestor de Rutinas</h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-zinc-400 mt-1">
             Administra tus splits de entrenamiento, audita el volumen semanal o diseña nuevas rutinas.
           </p>
         </div>
@@ -254,7 +256,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
 
           <button
             onClick={() => setIsNewRoutineModalOpen(true)}
-            className="flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs shadow-lg shadow-sky-500/20 transition"
+            className="flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-xs shadow-lg shadow-red-600/20 transition"
           >
             <Plus className="w-4 h-4" />
             <span>Nueva Rutina</span>
@@ -271,21 +273,21 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
               key={routine.id}
               className={`p-5 rounded-3xl border transition-all flex flex-col justify-between ${
                 isActive
-                  ? 'bg-slate-900/95 border-sky-500/50 shadow-xl shadow-sky-950/40 ring-1 ring-sky-500/30'
-                  : 'bg-slate-900 border-slate-800 hover:border-slate-700 shadow-lg'
+                  ? 'bg-zinc-900/95 border-red-500/50 shadow-xl shadow-red-950/40 ring-1 ring-red-500/30'
+                  : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700 shadow-lg'
               }`}
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
                   {isActive ? (
-                    <span className="flex items-center space-x-1 text-[11px] font-black text-sky-400 bg-sky-500/10 px-2.5 py-0.5 rounded-full border border-sky-500/30">
+                    <span className="flex items-center space-x-1 text-[11px] font-black text-red-400 bg-red-500/10 px-2.5 py-0.5 rounded-full border border-red-500/30">
                       <Check className="w-3 h-3" />
                       <span>RUTINA ACTIVA</span>
                     </span>
                   ) : (
                     <button
                       onClick={() => handleSetActive(routine.id)}
-                      className="text-[11px] font-bold text-slate-400 hover:text-sky-300 bg-slate-950 px-2.5 py-0.5 rounded-full border border-slate-800 transition"
+                      className="text-[11px] font-bold text-zinc-400 hover:text-red-400 bg-zinc-950 px-2.5 py-0.5 rounded-full border border-zinc-800 transition"
                     >
                       Activar Rutina
                     </button>
@@ -294,7 +296,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
                   <div className="flex items-center space-x-1">
                     <button
                       onClick={() => handleOpenEditor(routine)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                      className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
                       title="Editar Rutina"
                     >
                       <Edit className="w-4 h-4" />
@@ -302,7 +304,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
                     {routines.length > 1 && (
                       <button
                         onClick={(e) => handleDeleteRoutine(routine.id, e)}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition"
+                        className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition"
                         title="Eliminar Rutina"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -314,19 +316,19 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
                 <h3 className="text-base font-bold text-white tracking-tight">
                   {routine.name}
                 </h3>
-                <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
                   {routine.description || 'Sin descripción.'}
                 </p>
 
                 <div className="mt-4 space-y-1">
-                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
                     Días ({routine.days?.length || 0}):
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {(routine.days || []).map((day, dIdx) => (
                       <span
                         key={dIdx}
-                        className="text-[11px] bg-slate-950 text-slate-300 px-2.5 py-1 rounded-xl border border-slate-800 truncate max-w-[140px]"
+                        className="text-[11px] bg-zinc-950 text-zinc-300 px-2.5 py-1 rounded-xl border border-zinc-800 truncate max-w-[140px]"
                       >
                         {day.name}
                       </span>
@@ -335,19 +337,30 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
                 </div>
               </div>
 
-              <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between">
-                <button
-                  onClick={() => handleOpenEditor(routine)}
-                  className="text-xs font-bold text-slate-300 hover:text-sky-400 flex items-center space-x-1 transition"
-                >
-                  <span>Configurar Días</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
+              <div className="mt-5 pt-4 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handleOpenEditor(routine)}
+                    className="text-xs font-bold text-zinc-300 hover:text-red-400 flex items-center space-x-1 transition"
+                  >
+                    <span>Configurar Días</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    onClick={() => downloadRoutineAsText(routine)}
+                    className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-xs font-semibold transition border border-zinc-700/60"
+                    title="Descargar esta rutina (.txt)"
+                  >
+                    <Download className="w-3.5 h-3.5 text-red-400" />
+                    <span>Descargar</span>
+                  </button>
+                </div>
 
                 {routine.days && routine.days.length > 0 && (
                   <button
                     onClick={() => onStartDayWorkout(routine.id, routine.days[0].id)}
-                    className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-sky-500 hover:text-slate-950 text-xs font-bold text-slate-200 transition"
+                    className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-red-600 hover:text-white text-xs font-bold text-zinc-200 transition"
                   >
                     <Play className="w-3.5 h-3.5" />
                     <span>Entrenar Día 1</span>
@@ -361,11 +374,11 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
 
       {/* Routine Detailed Editor Modal / Section */}
       {editingRoutine && (
-        <div className="bg-slate-900 border border-sky-500/30 rounded-3xl p-6 shadow-2xl space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div className="bg-zinc-900 border border-red-500/30 rounded-3xl p-6 shadow-2xl space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800">
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">Editor de Rutina</span>
+                <span className="text-xs font-bold text-red-500 uppercase tracking-wider">Editor de Rutina</span>
               </div>
               <h2 className="text-xl font-extrabold text-white mt-0.5">
                 {editingRoutine.name}
@@ -374,16 +387,25 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
 
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => setVolumeModalOpen(true)}
-                className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition"
+                onClick={() => downloadRoutineAsText(editingRoutine)}
+                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-xs font-bold text-red-400 border border-red-500/30 transition shadow-sm"
+                title="Descargar rutina como archivo de texto"
               >
-                <Activity className="w-4 h-4 text-sky-400" />
+                <Download className="w-4 h-4" />
+                <span>Descargar Rutina</span>
+              </button>
+
+              <button
+                onClick={() => setVolumeModalOpen(true)}
+                className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-zinc-200 transition"
+              >
+                <Activity className="w-4 h-4 text-red-500" />
                 <span>Auditar Volumen Semanal</span>
               </button>
 
               <button
                 onClick={() => setEditingRoutine(null)}
-                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
+                className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -392,24 +414,35 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
 
           {/* Days Tabs */}
           <div className="flex items-center space-x-2 overflow-x-auto pb-2">
-            {(editingRoutine.days || []).map((day) => (
-              <button
-                key={day.id}
-                onClick={() => setSelectedDayId(day.id)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition ${
-                  selectedDayId === day.id
-                    ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
-                    : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
-                }`}
-              >
-                <span>{day.name}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                  selectedDayId === day.id ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-400'
-                }`}>
-                  {day.exercises.length}
-                </span>
-              </button>
-            ))}
+            {(editingRoutine.days || []).map((day) => {
+              const lower = day.name.toLowerCase();
+              const badge = lower.includes('push') || lower.includes('empuje') ? '/brand/push.jpg'
+                : lower.includes('pull') || lower.includes('tracci') || lower.includes('espalda') ? '/brand/pull.jpg'
+                : lower.includes('leg') || lower.includes('pierna') ? '/brand/legs.jpg'
+                : null;
+
+              return (
+                <button
+                  key={day.id}
+                  onClick={() => setSelectedDayId(day.id)}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition ${
+                    selectedDayId === day.id
+                      ? 'bg-red-600 text-white shadow-md shadow-red-600/20'
+                      : 'bg-zinc-950 text-zinc-300 hover:bg-zinc-800 border border-zinc-800'
+                  }`}
+                >
+                  {badge && (
+                    <img src={badge} alt="" className="w-4 h-4 rounded-full object-cover shrink-0" />
+                  )}
+                  <span>{day.name}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                    selectedDayId === day.id ? 'bg-zinc-950/20 text-white' : 'bg-zinc-800 text-zinc-400'
+                  }`}>
+                    {day.exercises.length}
+                  </span>
+                </button>
+              );
+            })}
 
             {/* Quick Add Day */}
             <div className="flex items-center space-x-1">
@@ -418,11 +451,11 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
                 placeholder="Nombre del nuevo día..."
                 value={newDayName}
                 onChange={(e) => setNewDayName(e.target.value)}
-                className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 w-44"
+                className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-red-500 w-44"
               />
               <button
                 onClick={handleAddDay}
-                className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-400 transition"
+                className="p-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-red-500 transition"
                 title="Agregar día"
               >
                 <Plus className="w-4 h-4" />
@@ -438,7 +471,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
                   <h3 className="text-base font-bold text-white">
                     Ejercicios en {currentSelectedDay.name}
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-zinc-400">
                     {currentSelectedDay.exercises.length} ejercicios asignados.
                   </p>
                 </div>
@@ -446,7 +479,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setIsAddExerciseModalOpen(true)}
-                    className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition"
+                    className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Agregar Ejercicio</span>
@@ -454,7 +487,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
 
                   <button
                     onClick={() => handleDeleteDay(currentSelectedDay.id)}
-                    className="p-2 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 border border-slate-800 transition"
+                    className="p-2 rounded-xl text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 border border-zinc-800 transition"
                     title="Eliminar este día"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -465,29 +498,29 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
               {/* Exercises Table / List */}
               <div className="space-y-2">
                 {currentSelectedDay.exercises.length === 0 ? (
-                  <div className="text-center py-10 bg-slate-950/50 rounded-2xl border border-slate-800 text-slate-500 text-xs">
+                  <div className="text-center py-10 bg-zinc-950/50 rounded-2xl border border-zinc-800 text-zinc-500 text-xs">
                     No hay ejercicios en este día. Haz clic en "Agregar Ejercicio" para seleccionarlo del catálogo.
                   </div>
                 ) : (
                   currentSelectedDay.exercises.map((ex, exIdx) => (
                     <div
                       key={ex.id || exIdx}
-                      className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 flex items-center justify-between gap-3 hover:border-slate-700 transition"
+                      className="p-3.5 rounded-2xl bg-zinc-950/60 border border-zinc-800 flex items-center justify-between gap-3 hover:border-zinc-700 transition"
                     >
                       <div className="flex items-center space-x-3">
-                        <span className="w-6 text-center font-mono text-xs font-bold text-slate-500">
+                        <span className="w-6 text-center font-mono text-xs font-bold text-zinc-500">
                           #{exIdx + 1}
                         </span>
                         <div>
-                          <div className="text-sm font-bold text-slate-200">{ex.name}</div>
+                          <div className="text-sm font-bold text-zinc-200">{ex.name}</div>
                           <div className="flex items-center space-x-2 mt-1">
-                            <span className="text-[10px] font-semibold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/20 capitalize">
+                            <span className="text-[10px] font-semibold text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20 capitalize">
                               {ex.primaryMuscle}
                             </span>
-                            <span className="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded-full capitalize">
+                            <span className="text-[10px] text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded-full capitalize">
                               {ex.category}
                             </span>
-                            <span className="text-[10px] font-mono text-slate-300">
+                            <span className="text-[10px] font-mono text-zinc-300">
                               {ex.targetRepsMin}-{ex.targetRepsMax} reps @ RIR {ex.targetRIR}
                             </span>
                           </div>
@@ -496,7 +529,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
 
                       <button
                         onClick={() => handleRemoveExerciseFromCurrentDay(ex.id)}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition"
+                        className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition"
                         title="Eliminar ejercicio de este día"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -507,7 +540,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
               </div>
             </div>
           ) : (
-            <div className="text-center py-8 text-slate-500 text-xs">
+            <div className="text-center py-8 text-zinc-500 text-xs">
               Selecciona o crea un día para comenzar a añadir ejercicios.
             </div>
           )}
@@ -516,13 +549,13 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
 
       {/* New Routine Modal */}
       {isNewRoutineModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
               <h3 className="font-bold text-white text-base">Crear Nueva Rutina</h3>
               <button
                 onClick={() => setIsNewRoutineModalOpen(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-zinc-400 hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -530,24 +563,24 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Nombre de la Rutina</label>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1">Nombre de la Rutina</label>
                 <input
                   type="text"
                   placeholder="ej. Torso Pierna Frecuencia 2"
                   value={newRoutineName}
                   onChange={(e) => setNewRoutineName(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Descripción / Objetivo</label>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1">Descripción / Objetivo</label>
                 <textarea
                   placeholder="ej. Enfoque en hipertrofia y fuerza de tren superior..."
                   value={newRoutineDesc}
                   onChange={(e) => setNewRoutineDesc(e.target.value)}
                   rows={3}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500"
                 />
               </div>
             </div>
@@ -555,13 +588,13 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
             <div className="flex justify-end space-x-2 pt-2">
               <button
                 onClick={() => setIsNewRoutineModalOpen(false)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleCreateRoutine}
-                className="px-5 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold"
+                className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-md shadow-red-600/20"
               >
                 Crear y Diseñar Días
               </button>
@@ -572,16 +605,16 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
 
       {/* Add Exercise Modal (Catalog & Custom Form) */}
       {isAddExerciseModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl flex flex-col max-h-[85vh]">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
               <div>
                 <h3 className="font-bold text-white text-base">Catálogo de Ejercicios</h3>
-                <p className="text-xs text-slate-400">Selecciona un ejercicio o añade uno personalizado</p>
+                <p className="text-xs text-zinc-400">Selecciona un ejercicio o añade uno personalizado</p>
               </div>
               <button
                 onClick={() => setIsAddExerciseModalOpen(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-zinc-400 hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -590,13 +623,13 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
             {/* Search and Filters */}
             <div className="my-3 space-y-2">
               <div className="relative">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
+                <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Buscar por nombre..."
                   value={catalogSearch}
                   onChange={(e) => setCatalogSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                  className="w-full pl-9 pr-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-red-500"
                 />
               </div>
 
@@ -607,8 +640,8 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
                     onClick={() => setMuscleFilter(m)}
                     className={`px-2.5 py-1 rounded-lg capitalize whitespace-nowrap font-medium transition ${
                       muscleFilter === m
-                        ? 'bg-sky-500 text-slate-950 font-bold'
-                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                        ? 'bg-red-600 text-white font-bold'
+                        : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
                     }`}
                   >
                     {m === 'all' ? 'Todos' : m}
@@ -623,23 +656,23 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
                 <div
                   key={item.id}
                   onClick={() => handleAddExerciseToCurrentDay(item)}
-                  className="p-3 rounded-2xl bg-slate-950/50 hover:bg-slate-800 border border-slate-800/80 hover:border-sky-500/40 cursor-pointer flex items-center justify-between group transition"
+                  className="p-3 rounded-2xl bg-zinc-950/50 hover:bg-zinc-800 border border-zinc-800/80 hover:border-red-500/40 cursor-pointer flex items-center justify-between group transition"
                 >
                   <div>
-                    <div className="text-sm font-bold text-slate-200 group-hover:text-sky-300 transition">
+                    <div className="text-sm font-bold text-zinc-200 group-hover:text-red-400 transition">
                       {item.name}
                     </div>
                     <div className="flex items-center space-x-2 mt-1">
-                      <span className="text-[10px] font-semibold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full capitalize">
+                      <span className="text-[10px] font-semibold text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full capitalize">
                         {item.primaryMuscle}
                       </span>
-                      <span className="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded-full capitalize">
+                      <span className="text-[10px] text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded-full capitalize">
                         {item.category}
                       </span>
                     </div>
                   </div>
 
-                  <div className="p-1.5 rounded-xl bg-slate-900 group-hover:bg-sky-500 group-hover:text-slate-950 text-slate-400 transition">
+                  <div className="p-1.5 rounded-xl bg-zinc-900 group-hover:bg-red-600 group-hover:text-white text-zinc-400 transition">
                     <Plus className="w-4 h-4" />
                   </div>
                 </div>
@@ -647,20 +680,20 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
             </div>
 
             {/* Custom Exercise Section */}
-            <div className="pt-3 border-t border-slate-800 bg-slate-950/40 -mx-6 -mb-6 p-4 rounded-b-3xl space-y-2">
-              <span className="text-xs font-bold text-slate-300">¿No encuentras tu ejercicio? Crear personalizado:</span>
+            <div className="pt-3 border-t border-zinc-800 bg-zinc-950/40 -mx-6 -mb-6 p-4 rounded-b-3xl space-y-2">
+              <span className="text-xs font-bold text-zinc-300">¿No encuentras tu ejercicio? Crear personalizado:</span>
               <div className="flex flex-wrap items-center gap-2">
                 <input
                   type="text"
                   placeholder="Nombre del ejercicio..."
                   value={customExerciseName}
                   onChange={(e) => setCustomExerciseName(e.target.value)}
-                  className="flex-1 min-w-[140px] bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500"
+                  className="flex-1 min-w-[140px] bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-red-500"
                 />
                 <select
                   value={customExerciseMuscle}
                   onChange={(e) => setCustomExerciseMuscle(e.target.value as MuscleGroup)}
-                  className="bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none"
+                  className="bg-zinc-900 border border-zinc-700 rounded-xl px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none"
                 >
                   <option value="pecho">Pecho</option>
                   <option value="espalda">Espalda</option>
@@ -675,7 +708,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
                 <select
                   value={customExerciseCat}
                   onChange={(e) => setCustomExerciseCat(e.target.value as Exercise['category'])}
-                  className="bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none"
+                  className="bg-zinc-900 border border-zinc-700 rounded-xl px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none"
                 >
                   <option value="mancuerna">Mancuerna</option>
                   <option value="barra">Barra</option>
@@ -685,7 +718,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
                 </select>
                 <button
                   onClick={handleCreateAndAddCustomExercise}
-                  className="px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition"
+                  className="px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition"
                 >
                   Crear y Agregar
                 </button>

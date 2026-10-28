@@ -8,7 +8,8 @@ import {
   Flame,
   ArrowRight,
   Sparkles,
-  Layers
+  Layers,
+  Save
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import {
@@ -453,10 +454,10 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
 
   if (!routine || !workoutDay) {
     return (
-      <div className="text-center py-20 bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-lg mx-auto">
-        <Dumbbell className="w-14 h-14 text-slate-600 mx-auto mb-4" />
+      <div className="text-center py-20 bg-zinc-900/80 border border-zinc-800 rounded-3xl p-8 max-w-lg mx-auto">
+        <Dumbbell className="w-14 h-14 text-zinc-500 mx-auto mb-4" />
         <h3 className="text-xl font-bold text-white">No hay rutina activa</h3>
-        <p className="text-sm text-slate-400 mt-2">
+        <p className="text-sm text-zinc-400 mt-2">
           Crea o selecciona una rutina desde el catálogo para iniciar tu entrenamiento.
         </p>
       </div>
@@ -473,15 +474,15 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
     <div className="space-y-6 pb-44 animate-in fade-in duration-300">
       {/* Draft Restored Banner */}
       {draftRestoredNotification && (
-        <div className="p-3.5 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-between text-xs text-sky-300 shadow-md">
+        <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-between text-xs text-red-300 shadow-md">
           <div className="flex items-center space-x-2">
-            <span className="text-base">💾</span>
+            <Save className="w-4 h-4 text-red-400 shrink-0" />
             <span className="font-bold">Sesión en curso recuperada automáticamente:</span>
             <span>Tus series previas se restauraron tras el reinicio de la página.</span>
           </div>
           <button
             onClick={() => setDraftRestoredNotification(false)}
-            className="p-1 text-slate-400 hover:text-white"
+            className="p-1 text-zinc-400 hover:text-white"
           >
             ✕
           </button>
@@ -505,40 +506,52 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       )}
 
       {/* 1. Header & Quick Day Switcher */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="text-xs font-mono font-bold text-sky-400 uppercase tracking-widest">
-              {routine.name}
-            </span>
-            <span className="text-slate-600">•</span>
-            <span className="text-xs font-mono text-emerald-400 font-bold">
-              {exercisesWithCompletedSetsCount}/{totalExercisesCount} ejercicios iniciados
-            </span>
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-start space-x-3.5">
+          {(() => {
+            const lower = workoutDay.name.toLowerCase();
+            const badge = lower.includes('push') || lower.includes('empuje') ? '/brand/push.jpg'
+              : lower.includes('pull') || lower.includes('tracci') || lower.includes('espalda') ? '/brand/pull.jpg'
+              : lower.includes('leg') || lower.includes('pierna') ? '/brand/legs.jpg'
+              : null;
+            return badge ? (
+              <img src={badge} alt={workoutDay.name} className="w-14 h-14 rounded-2xl object-cover border border-red-500/30 shadow-lg shadow-red-500/10 shrink-0 hidden sm:block" />
+            ) : null;
+          })()}
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-mono font-bold text-red-500 uppercase tracking-widest">
+                {routine.name}
+              </span>
+              <span className="text-zinc-600">•</span>
+              <span className="text-xs font-mono text-emerald-400 font-bold">
+                {exercisesWithCompletedSetsCount}/{totalExercisesCount} ejercicios iniciados
+              </span>
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1">
+              {workoutDay.name}
+            </h1>
+
+            {workoutDay.description && (
+              <p className="text-xs text-zinc-400 mt-1 max-w-2xl leading-relaxed">
+                {workoutDay.description}
+              </p>
+            )}
           </div>
-
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1">
-            {workoutDay.name}
-          </h1>
-
-          {workoutDay.description && (
-            <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-              {workoutDay.description}
-            </p>
-          )}
         </div>
 
         {/* Change Day Dropdown */}
         {routine.days && routine.days.length > 1 && (
-          <div className="flex items-center space-x-2.5 self-start md:self-auto bg-slate-950 px-3 py-2 rounded-2xl border border-slate-800">
-            <label className="text-xs text-slate-400 font-bold whitespace-nowrap">Día:</label>
+          <div className="flex items-center space-x-2.5 self-start md:self-auto bg-zinc-950 px-3 py-2 rounded-2xl border border-zinc-800">
+            <label className="text-xs text-zinc-400 font-bold whitespace-nowrap">Día:</label>
             <select
               value={selectedDayId}
               onChange={(e) => handleSelectDay(e.target.value)}
-              className="bg-transparent text-xs font-black text-slate-200 focus:outline-none cursor-pointer"
+              className="bg-transparent text-xs font-black text-zinc-200 focus:outline-none cursor-pointer"
             >
               {routine.days.map((d) => (
-                <option key={d.id} value={d.id} className="bg-slate-900 text-white">
+                <option key={d.id} value={d.id} className="bg-zinc-900 text-white">
                   {d.name}
                 </option>
               ))}
@@ -566,21 +579,21 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
               }}
               className={`flex items-center space-x-2 px-3.5 py-2 rounded-2xl border transition-all shrink-0 text-xs font-bold select-none touch-manipulation ${
                 isSelected
-                  ? 'bg-sky-500 text-slate-950 border-sky-400 shadow-md shadow-sky-500/20'
+                  ? 'bg-red-600 text-white border-red-500 shadow-md shadow-red-600/20'
                   : setsCount > 0
-                  ? 'bg-slate-900 text-emerald-400 border-emerald-500/40 hover:bg-slate-800'
-                  : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-850'
+                  ? 'bg-zinc-900 text-emerald-400 border-emerald-500/40 hover:bg-zinc-800'
+                  : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white hover:bg-zinc-800'
               }`}
             >
               <span className={`w-5 h-5 rounded-lg flex items-center justify-center font-mono text-[10px] font-black ${
-                isSelected ? 'bg-slate-950 text-sky-400' : 'bg-slate-800 text-slate-300'
+                isSelected ? 'bg-black text-white' : 'bg-zinc-800 text-zinc-300'
               }`}>
                 {exIdx + 1}
               </span>
               <span className="truncate max-w-[120px] sm:max-w-[180px]">{ex.name}</span>
               {setsCount > 0 && (
                 <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
-                  isSelected ? 'bg-slate-950 text-emerald-400 font-black' : 'bg-emerald-500/15 text-emerald-400'
+                  isSelected ? 'bg-black text-emerald-400 font-black' : 'bg-emerald-500/15 text-emerald-400'
                 }`}>
                   {setsCount}s
                 </span>
@@ -624,14 +637,14 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       </div>
 
       {/* 4. Floating Sticky Bottom Bar for Session Completion */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 p-4 bg-slate-950/85 backdrop-blur-xl border-t border-slate-800/80 shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 z-40 p-4 bg-zinc-950/85 backdrop-blur-xl border-t border-zinc-800/80 shadow-2xl">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-sky-400 font-mono font-black text-sm">
+            <div className="w-10 h-10 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-red-500 font-mono font-black text-sm">
               {totalSetsCompleted}
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
                 Progreso Sesión
               </div>
               <div className="text-sm font-black font-mono text-white">
@@ -644,9 +657,9 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
             type="button"
             onClick={handleFinishDayWorkout}
             disabled={totalSetsCompleted === 0}
-            className="flex items-center space-x-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none select-none touch-manipulation"
+            className="flex items-center space-x-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-black text-sm shadow-xl shadow-emerald-500/25 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none select-none touch-manipulation"
           >
-            <CheckCircle2 className="w-5 h-5 fill-slate-950 text-emerald-400" />
+            <CheckCircle2 className="w-5 h-5 fill-black text-emerald-400" />
             <span>Finalizar Sesión</span>
           </button>
         </div>

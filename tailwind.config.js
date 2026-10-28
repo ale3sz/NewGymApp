@@ -9,14 +9,14 @@ export default {
     extend: {
       colors: {
         gym: {
-          dark: '#0f172a',
-          card: '#1e293b',
-          border: '#334155',
-          primary: '#38bdf8',
-          accent: '#22c55e',
+          dark: '#09090b',
+          card: '#121215',
+          border: '#27272a',
+          primary: '#ef4444',
+          accent: '#dc2626',
           warning: '#f59e0b',
-          danger: '#ef4444',
-          muted: '#94a3b8'
+          danger: '#b91c1c',
+          muted: '#a1a1aa'
         }
       }
     },

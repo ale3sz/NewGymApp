@@ -16,7 +16,7 @@ export const EvidenceGuideModal: React.FC<EvidenceGuideModalProps> = ({
     {
       title: '1. Sobrecarga Progresiva Real (Doble Progresión)',
       icon: TrendingUp,
-      color: 'text-sky-400 bg-sky-500/10 border-sky-500/20',
+      color: 'text-red-400 bg-red-500/10 border-red-500/20',
       description: 'No agregues peso en cada serie sin sentido. Primero alcanza el tope del rango de repeticiones (ej. 8-12) en todas las series manteniendo técnica estricta y RIR 1-2. Solo entonces sube la carga al siguiente escalón.'
     },
     {
@@ -40,7 +40,7 @@ export const EvidenceGuideModal: React.FC<EvidenceGuideModalProps> = ({
     {
       title: '5. Solapamiento de Músculos Sinergistas',
       icon: CheckCircle,
-      color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
+      color: 'text-red-400 bg-red-500/10 border-red-500/20',
       description: 'Los tríceps ya reciben trabajo pesado en todos los presses de pecho y hombro. Los bíceps reciben estímulo en todos los remos y jalones. No programes 15 series directas de brazos si ya acumulas 20 series de torso.'
     },
     {
@@ -64,22 +64,22 @@ export const EvidenceGuideModal: React.FC<EvidenceGuideModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
+            <div className="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500">
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-base font-bold text-white">Guía de Evidencia Científica</h3>
-              <p className="text-xs text-slate-400">Fundamentos aplicados en los algoritmos de la app</p>
+              <p className="text-xs text-zinc-400">Fundamentos aplicados en los algoritmos de la app</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition"
           >
             <X className="w-4 h-4" />
           </button>
@@ -92,15 +92,15 @@ export const EvidenceGuideModal: React.FC<EvidenceGuideModalProps> = ({
             return (
               <div
                 key={idx}
-                className="p-4 rounded-2xl bg-slate-950/50 border border-slate-800 hover:border-slate-700 transition"
+                className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800 hover:border-zinc-700 transition"
               >
                 <div className="flex items-center space-x-3 mb-2">
                   <div className={`p-2 rounded-xl border ${p.color}`}>
                     <Icon className="w-4 h-4" />
                   </div>
-                  <h4 className="font-bold text-slate-200 text-sm">{p.title}</h4>
+                  <h4 className="font-bold text-zinc-200 text-sm">{p.title}</h4>
                 </div>
-                <p className="text-xs text-slate-400 leading-relaxed pl-11">
+                <p className="text-xs text-zinc-400 leading-relaxed pl-11">
                   {p.description}
                 </p>
               </div>
@@ -108,10 +108,10 @@ export const EvidenceGuideModal: React.FC<EvidenceGuideModalProps> = ({
           })}
         </div>
 
-        <div className="pt-3 border-t border-slate-800 flex justify-end">
+        <div className="pt-3 border-t border-zinc-800 flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition"
+            className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition shadow-md shadow-red-600/25"
           >
             Entendido
           </button>

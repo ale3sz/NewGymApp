@@ -147,21 +147,21 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
     saveRoutines(updated);
     setActiveRoutineId(generatedResult.routine.id);
     onRoutineActivated();
-    alert('¡Rutina generada guardada y activada exitosamente! 🎉');
+    alert('¡Rutina generada guardada y activada exitosamente!');
     onNavigate('dashboard');
   };
 
   return (
     <div className="space-y-6 pb-32 max-w-4xl mx-auto">
       {/* Wizard Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-            <Sparkles className="w-5 h-5" />
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl flex items-center justify-between">
+        <div className="flex items-center space-x-3.5">
+          <div className="w-12 h-12 rounded-2xl overflow-hidden border border-amber-500/30 shrink-0 shadow-lg shadow-amber-500/10">
+            <img src="/brand/ai-coach.jpg" alt="AI Coach" className="w-full h-full object-cover" />
           </div>
           <div>
             <h1 className="text-xl font-black text-white">Generador IA de Rutinas Científicas</h1>
-            <p className="text-xs text-slate-400">Basado en volumen, fatiga neuromuscular y biomecánica adaptativa</p>
+            <p className="text-xs text-zinc-400">Basado en volumen, fatiga neuromuscular y biomecánica adaptativa</p>
           </div>
         </div>
 
@@ -171,7 +171,7 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
               <div
                 key={s}
                 className={`w-6 h-1.5 rounded-full transition-all ${
-                  step === s ? 'bg-amber-400 w-8' : step > s ? 'bg-emerald-400' : 'bg-slate-800'
+                  step === s ? 'bg-amber-400 w-8' : step > s ? 'bg-emerald-400' : 'bg-zinc-800'
                 }`}
               />
             ))}
@@ -181,14 +181,14 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
 
       {/* Step 1: Goal & Level */}
       {step === 1 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl space-y-6">
           <div className="space-y-1">
             <h2 className="text-lg font-bold text-white">Paso 1: Tu Objetivo & Experiencia</h2>
-            <p className="text-xs text-slate-400">Selecciona el propósito de tu entrenamiento y tu nivel actual.</p>
+            <p className="text-xs text-zinc-400">Selecciona el propósito de tu entrenamiento y tu nivel actual.</p>
           </div>
 
           <div className="space-y-3">
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Objetivo Principal</label>
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">Objetivo Principal</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
                 { id: 'hipertrofia' as TrainingGoal, title: 'Hipertrofia Muscular', desc: 'Máximo crecimiento muscular (8-12 reps, RIR 1-2)' },
@@ -202,18 +202,18 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
                   className={`p-4 rounded-2xl border cursor-pointer transition ${
                     goal === opt.id
                       ? 'bg-amber-500/10 border-amber-500/50 shadow-lg text-white ring-1 ring-amber-500/30'
-                      : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700'
+                      : 'bg-zinc-950/40 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                   }`}
                 >
-                  <div className="font-bold text-sm text-slate-200">{opt.title}</div>
-                  <div className="text-xs text-slate-400 mt-1">{opt.desc}</div>
+                  <div className="font-bold text-sm text-zinc-200">{opt.title}</div>
+                  <div className="text-xs text-zinc-400 mt-1">{opt.desc}</div>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="space-y-3">
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Nivel de Experiencia</label>
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">Nivel de Experiencia</label>
             <div className="grid grid-cols-3 gap-3">
               {[
                 { id: 'principiante' as ExperienceLevel, title: 'Principiante', sub: '< 1 año constante' },
@@ -226,20 +226,20 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
                   className={`p-3.5 rounded-2xl border text-center transition ${
                     level === opt.id
                       ? 'bg-amber-500/10 border-amber-500/50 text-white font-bold'
-                      : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700'
+                      : 'bg-zinc-950/40 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                   }`}
                 >
-                  <div className="text-xs font-bold text-slate-200">{opt.title}</div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">{opt.sub}</div>
+                  <div className="text-xs font-bold text-zinc-200">{opt.title}</div>
+                  <div className="text-[10px] text-zinc-500 mt-0.5">{opt.sub}</div>
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-slate-800">
+          <div className="flex justify-end pt-4 border-t border-zinc-800">
             <button
               onClick={() => setStep(2)}
-              className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition"
+              className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition"
             >
               <span>Siguiente: Frecuencia & Tiempo</span>
               <ArrowRight className="w-4 h-4" />
@@ -250,14 +250,14 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
 
       {/* Step 2: Frequency & Time */}
       {step === 2 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl space-y-6">
           <div className="space-y-1">
             <h2 className="text-lg font-bold text-white">Paso 2: Días & Disponibilidad Semanal</h2>
-            <p className="text-xs text-slate-400">Selecciona los días exactos que asistirás al gimnasio.</p>
+            <p className="text-xs text-zinc-400">Selecciona los días exactos que asistirás al gimnasio.</p>
           </div>
 
           <div className="space-y-3">
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">
               Días de Entrenamiento ({selectedDays.length} días seleccionados)
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
@@ -269,8 +269,8 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
                     onClick={() => handleToggleWeekDay(d)}
                     className={`py-3 px-2 rounded-2xl border text-center transition ${
                       isSelected
-                        ? 'bg-amber-500 text-slate-950 font-black border-amber-400 shadow-md shadow-amber-500/20'
-                        : 'bg-slate-950/40 text-slate-400 border-slate-800 hover:border-slate-700'
+                        ? 'bg-amber-500 text-black font-black border-amber-400 shadow-md shadow-amber-500/20'
+                        : 'bg-zinc-950/40 text-zinc-400 border-zinc-800 hover:border-zinc-700'
                     }`}
                   >
                     <span className="text-xs">{d}</span>
@@ -281,7 +281,7 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
           </div>
 
           <div className="space-y-3">
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">
               Tiempo Disponible por Sesión
             </label>
             <div className="grid grid-cols-5 gap-2">
@@ -292,7 +292,7 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
                   className={`py-3 rounded-2xl border text-center transition ${
                     timeMin === t
                       ? 'bg-amber-500/10 border-amber-500/50 text-white font-bold'
-                      : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700'
+                      : 'bg-zinc-950/40 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                   }`}
                 >
                   <span className="text-xs font-mono">{t} min</span>
@@ -301,17 +301,17 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
             <button
               onClick={() => setStep(1)}
-              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white text-xs font-semibold"
+              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl text-zinc-400 hover:text-white text-xs font-semibold"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Atrás</span>
             </button>
             <button
               onClick={() => setStep(3)}
-              className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition"
+              className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition"
             >
               <span>Siguiente: Equipamiento</span>
               <ArrowRight className="w-4 h-4" />
@@ -322,10 +322,10 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
 
       {/* Step 3: Equipment */}
       {step === 3 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl space-y-6">
           <div className="space-y-1">
             <h2 className="text-lg font-bold text-white">Paso 3: Equipamiento Disponible</h2>
-            <p className="text-xs text-slate-400">El algoritmo filtrará únicamente los ejercicios que puedes ejecutar.</p>
+            <p className="text-xs text-zinc-400">El algoritmo filtrará únicamente los ejercicios que puedes ejecutar.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -341,26 +341,26 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
                 className={`p-4 rounded-2xl border cursor-pointer transition ${
                   equipment === opt.id
                     ? 'bg-amber-500/10 border-amber-500/50 shadow-lg text-white ring-1 ring-amber-500/30'
-                    : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700'
+                    : 'bg-zinc-950/40 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                 }`}
               >
-                <div className="font-bold text-sm text-slate-200">{opt.title}</div>
-                <div className="text-xs text-slate-400 mt-1">{opt.desc}</div>
+                <div className="font-bold text-sm text-zinc-200">{opt.title}</div>
+                <div className="text-xs text-zinc-400 mt-1">{opt.desc}</div>
               </div>
             ))}
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
             <button
               onClick={() => setStep(2)}
-              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white text-xs font-semibold"
+              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl text-zinc-400 hover:text-white text-xs font-semibold"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Atrás</span>
             </button>
             <button
               onClick={() => setStep(4)}
-              className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition"
+              className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition"
             >
               <span>Siguiente: Énfasis & Lesiones</span>
               <ArrowRight className="w-4 h-4" />
@@ -371,14 +371,14 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
 
       {/* Step 4: Muscle Focus & Limitations */}
       {step === 4 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl space-y-6">
           <div className="space-y-1">
             <h2 className="text-lg font-bold text-white">Paso 4: Énfasis Muscular & Cuidado Articular</h2>
-            <p className="text-xs text-slate-400">Prioriza grupos rezagados y protege articulaciones sensibles.</p>
+            <p className="text-xs text-zinc-400">Prioriza grupos rezagados y protege articulaciones sensibles.</p>
           </div>
 
           <div className="space-y-3">
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Énfasis Muscular</label>
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">Énfasis Muscular</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {[
                 { id: 'balanceado' as MuscleFocus, label: 'Equilibrado Total' },
@@ -394,7 +394,7 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
                   className={`p-3 rounded-2xl border text-xs font-bold transition ${
                     primaryFocus === opt.id
                       ? 'bg-amber-500/10 border-amber-500 text-white'
-                      : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700'
+                      : 'bg-zinc-950/40 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                   }`}
                 >
                   {opt.label}
@@ -404,7 +404,7 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
           </div>
 
           <div className="space-y-3">
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">
               Molestias o Limitaciones Articulares
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -423,7 +423,7 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
                     className={`p-3 rounded-2xl border text-xs font-bold transition ${
                       isSelected
                         ? 'bg-rose-500/10 border-rose-500 text-rose-300'
-                        : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700'
+                        : 'bg-zinc-950/40 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                     }`}
                   >
                     {opt.label}
@@ -433,10 +433,10 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
             <button
               onClick={() => setStep(3)}
-              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white text-xs font-semibold"
+              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl text-zinc-400 hover:text-white text-xs font-semibold"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Atrás</span>
@@ -445,9 +445,9 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
             <button
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="flex items-center space-x-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-emerald-400 hover:opacity-95 text-slate-950 font-black text-xs shadow-xl shadow-amber-500/25 transition"
+              className="flex items-center space-x-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-emerald-400 hover:opacity-95 text-black font-black text-xs shadow-xl shadow-amber-500/25 transition"
             >
-              <Sparkles className="w-4 h-4 fill-slate-950" />
+              <Sparkles className="w-4 h-4 fill-black" />
               <span>{isGenerating ? 'Generando Algoritmo...' : 'Generar Mi Rutina Científica'}</span>
             </button>
           </div>
@@ -458,8 +458,8 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
       {step === 5 && generatedResult && (
         <div className="space-y-6">
           {/* Result Card */}
-          <div className="bg-slate-900 border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div className="bg-zinc-900 border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800">
               <div>
                 <span className="text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">
                   {generatedResult.splitType}
@@ -471,7 +471,7 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
 
               <button
                 onClick={handleSaveAndActivate}
-                className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-sky-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/25 hover:opacity-95 transition"
+                className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-black text-xs shadow-lg shadow-red-600/25 hover:opacity-95 transition"
               >
                 <CheckCircle2 className="w-4 h-4 fill-current" />
                 <span>Guardar y Activar Rutina</span>
@@ -479,12 +479,12 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
             </div>
 
             {/* Coach Explanation */}
-            <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2">
+            <div className="p-4 rounded-2xl bg-zinc-950/70 border border-zinc-800 space-y-2">
               <div className="flex items-center space-x-2 text-xs font-bold text-amber-400">
                 <Sparkles className="w-4 h-4" />
                 <span>Justificación Científica del Entrenador</span>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className="text-xs text-zinc-300 leading-relaxed">
                 {generatedResult.coachExplanation}
               </p>
             </div>
@@ -492,14 +492,14 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
             {/* Weekly Volume Summary */}
             {generatedResult.weeklyVolumeSummary && (
               <div className="space-y-2">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
                   Volumen Semanal Ponderado por Grupo Muscular
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(generatedResult.weeklyVolumeSummary).map(([m, sets]) => (
                     <span
                       key={m}
-                      className="text-xs bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl font-mono text-slate-300"
+                      className="text-xs bg-zinc-950 border border-zinc-800 px-3 py-1.5 rounded-xl font-mono text-zinc-300"
                     >
                       <strong className="text-amber-400 capitalize">{m}: </strong>
                       {sets} series/sem
@@ -511,7 +511,7 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
 
             {/* Generated Days Accordion */}
             <div className="space-y-3">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
                 Días de Entrenamiento Generados ({generatedResult.routine.days.length})
               </span>
 
@@ -520,34 +520,34 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
                 return (
                   <div
                     key={day.id}
-                    className="rounded-2xl border border-slate-800 bg-slate-950/60 overflow-hidden"
+                    className="rounded-2xl border border-zinc-800 bg-zinc-950/60 overflow-hidden"
                   >
                     <div
                       onClick={() => setExpandedDays(prev => ({ ...prev, [day.id]: !prev[day.id] }))}
-                      className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-900 transition"
+                      className="p-4 flex items-center justify-between cursor-pointer hover:bg-zinc-900 transition"
                     >
                       <div>
                         <div className="text-sm font-bold text-white">{day.name}</div>
-                        <div className="text-xs text-slate-400 mt-0.5">{day.description}</div>
+                        <div className="text-xs text-zinc-400 mt-0.5">{day.description}</div>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <span className="text-xs font-mono text-slate-400">{day.exercises.length} ejercicios</span>
-                        {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                        <span className="text-xs font-mono text-zinc-400">{day.exercises.length} ejercicios</span>
+                        {isExpanded ? <ChevronUp className="w-4 h-4 text-zinc-400" /> : <ChevronDown className="w-4 h-4 text-zinc-400" />}
                       </div>
                     </div>
 
                     {isExpanded && (
-                      <div className="p-4 pt-0 space-y-2 divide-y divide-slate-800/60">
+                      <div className="p-4 pt-0 space-y-2 divide-y divide-zinc-800/60">
                         {day.exercises.map((ex, exIdx) => (
                           <div key={ex.id || exIdx} className="pt-2 flex items-center justify-between text-xs">
                             <div className="flex items-center space-x-2">
-                              <span className="font-mono text-slate-500 font-bold">#{exIdx + 1}</span>
-                              <span className="font-bold text-slate-200">{ex.name}</span>
-                              <span className="text-[10px] text-sky-400 bg-sky-500/10 px-2 py-0.2 rounded-full capitalize">
+                              <span className="font-mono text-zinc-500 font-bold">#{exIdx + 1}</span>
+                              <span className="font-bold text-zinc-200">{ex.name}</span>
+                              <span className="text-[10px] text-red-400 bg-red-500/10 px-2 py-0.2 rounded-full capitalize">
                                 {ex.primaryMuscle}
                               </span>
                             </div>
-                            <div className="font-mono text-slate-400">
+                            <div className="font-mono text-zinc-400">
                               {ex.targetRepsMin}-{ex.targetRepsMax} reps @ RIR {ex.targetRIR}
                             </div>
                           </div>
@@ -561,12 +561,12 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
           </div>
 
           {/* Natural Language Modification Chat Box */}
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl space-y-4">
             <div className="flex items-center space-x-2">
-              <Sparkles className="w-4 h-4 text-sky-400" />
+              <Sparkles className="w-4 h-4 text-red-500" />
               <h3 className="text-sm font-bold text-white">Pedir Ajustes al Entrenador IA</h3>
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-zinc-400">
               Escribe qué deseas modificar o selecciona una sugerencia rápida:
             </p>
 
@@ -583,7 +583,7 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
                   key={prompt}
                   onClick={() => handleApplyModification(prompt)}
                   disabled={isModifying}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition"
+                  className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition"
                 >
                   {prompt}
                 </button>
@@ -600,12 +600,12 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleApplyModification(customPrompt);
                 }}
-                className="flex-1 bg-slate-950 border border-slate-800 rounded-2xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                className="flex-1 bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-red-500"
               />
               <button
                 onClick={() => handleApplyModification(customPrompt)}
                 disabled={isModifying || !customPrompt.trim()}
-                className="px-4 py-2.5 rounded-2xl bg-sky-500 hover:bg-sky-400 disabled:opacity-50 text-slate-950 font-bold text-xs flex items-center space-x-1.5 transition"
+                className="px-4 py-2.5 rounded-2xl bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-bold text-xs flex items-center space-x-1.5 transition shadow-md shadow-red-600/20"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>{isModifying ? 'Ajustando...' : 'Aplicar'}</span>
