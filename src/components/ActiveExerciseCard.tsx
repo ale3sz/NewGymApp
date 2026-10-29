@@ -408,6 +408,12 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
                     <span>CONSOLIDAR TÉCNICA ({recommendation.recommendedReps} reps)</span>
                   </span>
                 )}
+                {recommendation.type === 'INFERRED_LOAD' && (
+                  <span className="inline-flex items-center space-x-1 text-xs font-black text-sky-300 bg-sky-500/20 border border-sky-500/40 px-2.5 py-1 rounded-xl">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>CARGA DEDUCIDA POR IA: {recommendation.recommendedWeightKg} kg</span>
+                  </span>
+                )}
                 {recommendation.progressionStrategy && (
                   <span className="text-[10px] font-mono font-bold text-red-300 bg-red-950/80 border border-red-800/80 px-2 py-0.5 rounded-lg uppercase">
                     {recommendation.progressionStrategy.replace(/_/g, ' ')}

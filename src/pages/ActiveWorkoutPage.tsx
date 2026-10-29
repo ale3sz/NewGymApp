@@ -48,6 +48,10 @@ import {
   calculateAcuteSessionFatigue,
   calculateCrossExerciseMuscleFatigueFactor
 } from '../engine/bayesianFatigueEngine';
+import {
+  inferWeightFromUserHistory,
+  buildInferredRecommendationResult
+} from '../engine/strengthTransferEngine';
 import { RestTimer } from '../components/RestTimer';
 import { ExerciseSubstituteModal } from '../components/ExerciseSubstituteModal';
 import { ActiveExerciseCard } from '../components/ActiveExerciseCard';
@@ -196,11 +200,22 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
         };
       } else {
         const prescription = prescribeExerciseParameters(ex.name, ex.category, ex.primaryMuscle);
-        newInputs[ex.id] = {
-          weight: ex.category === 'corporal' ? '0' : '',
-          reps: prescription.targetRepsMin.toString(),
-          rir: prescription.targetRIR.toString(),
-        };
+        const inferredPred = inferWeightFromUserHistory(ex, allLogs, completedSets, day.exercises);
+        if (inferredPred) {
+          const inferredRec = buildInferredRecommendationResult(inferredPred);
+          newRecs[ex.id] = inferredRec;
+          newInputs[ex.id] = {
+            weight: inferredRec.recommendedWeightKg.toString(),
+            reps: inferredRec.recommendedReps.toString(),
+            rir: inferredRec.recommendedRIR.toString(),
+          };
+        } else {
+          newInputs[ex.id] = {
+            weight: ex.category === 'corporal' ? '0' : '',
+            reps: prescription.targetRepsMin.toString(),
+            rir: prescription.targetRIR.toString(),
+          };
+        }
       }
 
       // Stagnation evaluation
@@ -306,6 +321,37 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
     const updated = [...curSets, newSet];
     const updatedAllSets = { ...completedSets, [exercise.id]: updated };
     setCompletedSets(updatedAllSets);
+
+    // Actualizar en tiempo real las cargas deducidas por IA en ejercicios posteriores sin historial propio
+    if (!isWarmup && workoutDay) {
+      const allLogs = getAllWorkoutLogs();
+      workoutDay.exercises.forEach((otherEx) => {
+        if (otherEx.id === exercise.id) return;
+        const hasPrevHistory = previousLogs[otherEx.id] && previousLogs[otherEx.id].length > 0;
+        const hasCurrentSets = updatedAllSets[otherEx.id] && updatedAllSets[otherEx.id].length > 0;
+        if (!hasPrevHistory && !hasCurrentSets) {
+          const inferred = inferWeightFromUserHistory(otherEx, allLogs, updatedAllSets, workoutDay.exercises);
+          if (inferred) {
+            const inferredRec = buildInferredRecommendationResult(inferred);
+            setRecommendations((prevRecs) => ({ ...prevRecs, [otherEx.id]: inferredRec }));
+            setInputs((prevInputs) => {
+              const curWeight = prevInputs[otherEx.id]?.weight;
+              if (!curWeight || curWeight === '' || recommendations[otherEx.id]?.type === 'INFERRED_LOAD') {
+                return {
+                  ...prevInputs,
+                  [otherEx.id]: {
+                    weight: inferredRec.recommendedWeightKg.toString(),
+                    reps: inferredRec.recommendedReps.toString(),
+                    rir: inferredRec.recommendedRIR.toString(),
+                  },
+                };
+              }
+              return prevInputs;
+            });
+          }
+        }
+      });
+    }
 
     // Si hubo extensión de descanso por fatiga en serie efectiva, alertar y confirmar la medición
     if (!isWarmup && extensionRatio >= 1.25) {

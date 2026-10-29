@@ -28,6 +28,7 @@ import {
   calculateAcuteSessionFatigue,
 } from '../bayesianFatigueEngine';
 import { generateAIRoutine, AIUserProfile } from '../aiRoutineGenerator';
+import { predictWeightFromReferenceLift, inferWeightFromUserHistory } from '../strengthTransferEngine';
 import { Exercise, GymEquipmentProfile, SetLog, Routine, UserFatigueProfile } from '../../types';
 
 function assert(condition: boolean, message: string) {
@@ -821,6 +822,86 @@ assert(
 assert(
   allSeniorExercises.every(ex => ex.category !== 'barra'),
   'En adultos de 70-85+ años con gimnasio completo se deben priorizar máquinas guiadas, poleas y mancuernas sin barras libres compresivas'
+);
+
+// ==========================================
+// 11. PILAR 11: DEDUCCIÓN BIOMECÁNICA DE CARGAS ENTRE EJERCICIOS (CROSS-EXERCISE STRENGTH TRANSFER)
+// ==========================================
+console.log('\n--- Pilar 11: Deducción IA de Peso Equivalente entre Ejercicios (Ej. 100kg Banca -> Aperturas) ---');
+
+const dbFlyExercise: Exercise = {
+  id: 'aperturas_mancuernas',
+  name: 'Aperturas con mancuernas',
+  primaryMuscle: 'pecho',
+  category: 'mancuerna',
+  targetRepsMin: 10,
+  targetRepsMax: 12,
+  targetRIR: 1,
+};
+
+const cableFlyExercise: Exercise = {
+  id: 'aperturas_polea',
+  name: 'Aperturas en polea',
+  primaryMuscle: 'pecho',
+  category: 'polea',
+  targetRepsMin: 10,
+  targetRepsMax: 12,
+  targetRIR: 1,
+};
+
+// Test 44: Si levanta 100kg x 1 rep @ RIR 0 en Press Banca, deducir Aperturas con Mancuernas (~12-16kg c/u)
+const dbFlyFrom100Bench = predictWeightFromReferenceLift(
+  benchPressExercise,
+  100,
+  1,
+  0,
+  dbFlyExercise,
+  10,
+  12,
+  1
+);
+assert(
+  dbFlyFrom100Bench.recommendedWorkingWeightKg >= 12 && dbFlyFrom100Bench.recommendedWorkingWeightKg <= 16,
+  `Con 100kg en Press Banca, Aperturas con mancuernas para 10-12 reps debe deducir ~12-16 kg por mancuerna (obtenido ${dbFlyFrom100Bench.recommendedWorkingWeightKg} kg)`
+);
+assert(
+  dbFlyFrom100Bench.unitLabel.includes('mancuerna'),
+  `Debe especificar que la carga es por mancuerna (obtenido "${dbFlyFrom100Bench.unitLabel}")`
+);
+
+// Test 45: Si levanta 100kg en Press Banca, deducir Aperturas en Polea (~12.5-17.5kg por lado)
+const cableFlyFrom100Bench = predictWeightFromReferenceLift(
+  benchPressExercise,
+  100,
+  1,
+  0,
+  cableFlyExercise,
+  10,
+  12,
+  1
+);
+assert(
+  cableFlyFrom100Bench.recommendedWorkingWeightKg >= 12.5 && cableFlyFrom100Bench.recommendedWorkingWeightKg <= 17.5,
+  `Con 100kg en Press Banca, Aperturas en polea para 10-12 reps debe deducir ~12.5-17.5 kg por lado (obtenido ${cableFlyFrom100Bench.recommendedWorkingWeightKg} kg)`
+);
+
+// Test 46: Inferencia automática desde el historial guardado del usuario cuando abre un ejercicio nuevo
+const mockHistorySessions = [
+  {
+    id: 'hist_bench_1',
+    date: new Date().toISOString(),
+    exerciseId: 'press_plano_barra',
+    sets: [{ setNumber: 1, weightKg: 80, repsCompleted: 8, rirLogged: 0 }], // e1RM ~101 kg
+  },
+];
+const autoInferredIncline = inferWeightFromUserHistory(inclineDumbbellExercise, mockHistorySessions);
+assert(autoInferredIncline !== null, 'Debe inferir automáticamente la carga para Press Inclinado con Mancuernas desde Press Plano');
+assert(
+  (autoInferredIncline?.recommendedWorkingWeightKg || 0) >= 22 && (autoInferredIncline?.recommendedWorkingWeightKg || 0) <= 30,
+  `Para ~101kg 1RM en banca, Press Inclinado con mancuernas (8-10 reps) debe inferir ~24-26kg c/u (obtenido ${autoInferredIncline?.recommendedWorkingWeightKg} kg)`
+);
+console.log(
+  `    Caso 100kg Banca -> Aperturas Banco: ${dbFlyFrom100Bench.recommendedWorkingWeightKg} kg (${dbFlyFrom100Bench.unitLabel}) | Polea: ${cableFlyFrom100Bench.recommendedWorkingWeightKg} kg (${cableFlyFrom100Bench.unitLabel}) | Inclinado Manc.: ${autoInferredIncline?.recommendedWorkingWeightKg} kg`
 );
 
 console.log('\n======================================================');

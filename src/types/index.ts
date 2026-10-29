@@ -77,7 +77,8 @@ export type RecommendationType =
   | 'TEMPO_ADJUSTMENT' 
   | 'DELOAD_SUGGESTION' 
   | 'MAINTAIN'
-  | 'CONSOLIDATING';
+  | 'CONSOLIDATING'
+  | 'INFERRED_LOAD';
 
 export interface RecommendationResult {
   type: RecommendationType;
