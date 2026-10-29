@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Play,
@@ -8,7 +8,8 @@ import {
   Activity,
   CheckCircle2,
   Info,
-  Dumbbell
+  Dumbbell,
+  WifiOff
 } from 'lucide-react';
 import { CatalogExercise } from '../types';
 import { getExerciseMedia } from '../data/exerciseMedia';
@@ -26,6 +27,32 @@ export const ExerciseTechniqueModal: React.FC<ExerciseTechniqueModalProps> = ({
 }) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<'demo' | 'instructions'>('demo');
+  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [mediaLoadError, setMediaLoadError] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      setMediaLoadError(false);
+    };
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Si al abrir la app estamos offline, priorizar la guía biomecánica offline
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      setIsOnline(false);
+      setActiveTab('instructions');
+    } else {
+      setMediaLoadError(false);
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [exercise?.id, isOpen]);
 
   if (!isOpen || !exercise) return null;
 
@@ -86,7 +113,14 @@ export const ExerciseTechniqueModal: React.FC<ExerciseTechniqueModalProps> = ({
             }`}
           >
             <Play className="w-3.5 h-3.5 fill-current" />
-            <span>Demostración Visual</span>
+            <span>Video Demo</span>
+            <span
+              className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold uppercase ${
+                activeTab === 'demo' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-amber-300'
+              }`}
+            >
+              WiFi
+            </span>
           </button>
           <button
             type="button"
@@ -99,6 +133,13 @@ export const ExerciseTechniqueModal: React.FC<ExerciseTechniqueModalProps> = ({
           >
             <Info className="w-3.5 h-3.5" />
             <span>Guía Biomecánica</span>
+            <span
+              className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold uppercase ${
+                activeTab === 'instructions' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-emerald-400'
+              }`}
+            >
+              Offline
+            </span>
           </button>
         </div>
 
@@ -106,34 +147,57 @@ export const ExerciseTechniqueModal: React.FC<ExerciseTechniqueModalProps> = ({
         <div className="p-4 sm:p-5 overflow-y-auto space-y-4 scrollbar-thin">
           {activeTab === 'demo' ? (
             <div className="space-y-4">
-              {/* Video / Animated Demonstration Player */}
-              <div className="relative rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center min-h-[260px] max-h-[340px]">
-                {media ? (
-                  <img
-                    src={isPlaying ? media.videoUrl : media.previewUrl}
-                    alt={`Demostración técnica de ${exercise.name}`}
-                    className="w-full h-full object-contain max-h-[340px] select-none"
-                    loading="eager"
-                  />
-                ) : (
-                  <div className="text-center p-8 space-y-2">
-                    <Activity className="w-10 h-10 text-slate-600 mx-auto animate-pulse" />
-                    <p className="text-xs text-slate-400">Demostración en preparación para este ejercicio.</p>
+              {/* Video / Animated Demonstration Player or Clean Offline Fallback */}
+              {!isOnline || mediaLoadError ? (
+                <div className="text-center p-6 sm:p-8 space-y-4 bg-slate-950/90 rounded-2xl border border-slate-800 flex flex-col items-center justify-center min-h-[260px]">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-lg shadow-amber-500/10">
+                    <WifiOff className="w-7 h-7" />
                   </div>
-                )}
-
-                {/* Floating pause/play toggle */}
-                {media && (
+                  <div className="space-y-1.5 max-w-sm">
+                    <h4 className="text-sm font-bold text-white">Demostración en video disponible con WiFi</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Estás en modo offline. Toda la guía biomecánica con pasos técnicos y activación muscular está 100% disponible sin conexión.
+                    </p>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    className="absolute bottom-3 right-3 p-2.5 rounded-xl bg-slate-950/80 backdrop-blur-md border border-slate-700 text-slate-200 hover:text-white hover:bg-slate-900 transition active:scale-95"
-                    title={isPlaying ? 'Pausar animación' : 'Reanudar animación'}
+                    onClick={() => setActiveTab('instructions')}
+                    className="px-4 py-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 font-bold text-xs flex items-center space-x-1.5 transition active:scale-95"
                   >
-                    {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
+                    <Info className="w-3.5 h-3.5" />
+                    <span>Ver Guía Técnica Paso a Paso (Offline)</span>
                   </button>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="relative rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center min-h-[260px] max-h-[340px]">
+                  {media ? (
+                    <img
+                      src={isPlaying ? media.videoUrl : media.previewUrl}
+                      alt={`Demostración técnica de ${exercise.name}`}
+                      className="w-full h-full object-contain max-h-[340px] select-none"
+                      loading="eager"
+                      onError={() => setMediaLoadError(true)}
+                    />
+                  ) : (
+                    <div className="text-center p-8 space-y-2">
+                      <Activity className="w-10 h-10 text-slate-600 mx-auto animate-pulse" />
+                      <p className="text-xs text-slate-400">Demostración en preparación para este ejercicio.</p>
+                    </div>
+                  )}
+
+                  {/* Floating pause/play toggle */}
+                  {media && (
+                    <button
+                      type="button"
+                      onClick={() => setIsPlaying(!isPlaying)}
+                      className="absolute bottom-3 right-3 p-2.5 rounded-xl bg-slate-950/80 backdrop-blur-md border border-slate-700 text-slate-200 hover:text-white hover:bg-slate-900 transition active:scale-95"
+                      title={isPlaying ? 'Pausar animación' : 'Reanudar animación'}
+                    >
+                      {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* Anatomy & Muscles Targeted Chips */}
               <div className="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800 space-y-2">

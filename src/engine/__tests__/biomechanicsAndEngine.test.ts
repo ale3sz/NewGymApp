@@ -712,6 +712,117 @@ assert(chestCrossFatigue.priorDirectSets === 3, `Debe detectar 3 series previas 
 assert(chestCrossFatigue.factor < 1.0, `El factor de fatiga para el 2do ejercicio de pecho debe ser < 1.0 (obtenido ${chestCrossFatigue.factor})`);
 assert(tricepsSynergistFatigue.priorSynergistSets === 3, `Debe detectar 3 series previas sinergistas sobre tríceps (obtenido ${tricepsSynergistFatigue.priorSynergistSets})`);
 
+// ==========================================
+// 10. PILAR 10: DEMOGRAFÍA CIENTÍFICA (MUJER RELOJ DE ARENA, NIÑO 11 AÑOS, MASTER 50, SENIOR 75)
+// ==========================================
+console.log('\n--- Pilar 10: Personalización por Sexo Biológico (Foco Femenino) y Etapas de Edad (10 a 85+ años) ---');
+
+// Test 40: Perfil Femenino (Glúteos, Piernas & Reloj de Arena) en 4 y 5 días
+const femaleProfile5Days: AIUserProfile = {
+  biologicalProfile: 'femenino',
+  ageGroup: 'jovenes_adultos',
+  goal: 'hipertrofia',
+  level: 'intermedio',
+  daysPerWeek: 5,
+  selectedWeekDays: ['Lunes', 'Martes', 'Miércoles', 'Viernes', 'Sábado'],
+  timePerSessionMin: 60,
+  equipment: 'gym_completo',
+  primaryFocus: 'gluteos_piernas',
+  limitations: ['ninguna'],
+  distributionStrategy: 'gluteos_reloj_arena',
+};
+const femaleResult = generateAIRoutine(femaleProfile5Days);
+const fVol = femaleResult.weeklyVolumeSummary;
+assert(
+  fVol.gluteos >= 16,
+  `El perfil femenino Reloj de Arena debe priorizar glúteos con ≥16 series semanales (obtenido ${fVol.gluteos})`
+);
+assert(
+  fVol.cuadriceps >= 12 && fVol.femorales >= 10,
+  `El perfil femenino debe asegurar alto volumen en cuádriceps (${fVol.cuadriceps}) y femorales (${fVol.femorales})`
+);
+assert(
+  fVol.gluteos > (fVol.pecho || 0),
+  `En el perfil femenino Reloj de Arena, glúteos (${fVol.gluteos}) debe superar ampliamente a pecho (${fVol.pecho || 0})`
+);
+
+// Test 41: Niño de 11 años (ninos_adolescentes — NSCA Youth Resistance Training)
+const kid11Profile: AIUserProfile = {
+  biologicalProfile: 'masculino',
+  ageGroup: 'ninos_adolescentes',
+  goal: 'rendimiento',
+  level: 'principiante',
+  daysPerWeek: 3,
+  selectedWeekDays: ['Lunes', 'Miércoles', 'Viernes'],
+  timePerSessionMin: 45,
+  equipment: 'gym_completo',
+  primaryFocus: 'balanceado',
+  limitations: ['ninguna'],
+};
+const kidResult = generateAIRoutine(kid11Profile);
+const allKidExercises = kidResult.routine.days.flatMap(d => d.exercises);
+assert(
+  allKidExercises.every(ex => ex.targetRIR >= 3),
+  'En niños de 10-15 años TODAS las series deben tener RIR >= 3 (cero fallo muscular para proteger placas de crecimiento)'
+);
+assert(
+  allKidExercises.every(ex => ex.targetRepsMin >= 10),
+  'En niños de 10-15 años el rango de repeticiones debe ser >= 10 reps orientadas a control motor'
+);
+assert(
+  allKidExercises.every(ex => !ex.name.toLowerCase().includes('sentadilla con barra') && !ex.name.toLowerCase().includes('peso muerto convencional')),
+  'En niños de 10-15 años no debe incluirse sentadilla con barra trasnuca ni peso muerto convencional pesado'
+);
+
+// Test 42: Adulto Master de 50 años (master_45_59 — Protección tendinosa y articular)
+const master50Profile: AIUserProfile = {
+  biologicalProfile: 'masculino',
+  ageGroup: 'master_45_59',
+  goal: 'hipertrofia',
+  level: 'intermedio',
+  daysPerWeek: 4,
+  selectedWeekDays: ['Lunes', 'Martes', 'Jueves', 'Viernes'],
+  timePerSessionMin: 60,
+  equipment: 'gym_completo',
+  primaryFocus: 'balanceado',
+  limitations: ['ninguna'],
+  distributionStrategy: 'powerbuilding',
+};
+const masterResult = generateAIRoutine(master50Profile);
+const allMasterExercises = masterResult.routine.days.flatMap(d => d.exercises);
+assert(
+  allMasterExercises.every(ex => ex.targetRepsMin >= 6),
+  'En etapa Master (45-59 años) no deben prescribirse cargas ultra-pesadas de <6 reps para proteger tendones y entesis'
+);
+
+// Test 43: Adulto Mayor de 75 años (longevidad_70_plus — Antidinapenia, Prevención de Caídas y Salud Ósea)
+const senior75Profile: AIUserProfile = {
+  biologicalProfile: 'masculino',
+  ageGroup: 'longevidad_70_plus',
+  goal: 'salud_longevidad',
+  level: 'principiante',
+  daysPerWeek: 3,
+  selectedWeekDays: ['Lunes', 'Miércoles', 'Viernes'],
+  timePerSessionMin: 45,
+  equipment: 'gym_completo',
+  primaryFocus: 'balanceado',
+  limitations: ['ninguna'],
+};
+const seniorResult = generateAIRoutine(senior75Profile);
+const allSeniorExercises = seniorResult.routine.days.flatMap(d => d.exercises);
+assert(
+  allSeniorExercises.every(ex => ex.targetRIR >= 3),
+  'En adultos de 70-85+ años TODAS las series deben prescribir RIR >= 3 (evitando maniobra de Valsalva intensa y fallo)'
+);
+assert(
+  allSeniorExercises.every(ex => (ex.targetSets || 3) <= 3),
+  'En adultos de 70-85+ años el volumen por ejercicio debe ser dosificado (2-3 series)'
+);
+assert(
+  allSeniorExercises.every(ex => ex.category !== 'barra'),
+  'En adultos de 70-85+ años con gimnasio completo se deben priorizar máquinas guiadas, poleas y mancuernas sin barras libres compresivas'
+);
+
 console.log('\n======================================================');
 console.log('✅ TODOS LOS TESTS DE AUDITORÍA CIENTÍFICA COMPLETADOS');
 console.log('======================================================\n');

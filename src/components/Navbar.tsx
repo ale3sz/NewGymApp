@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   Flame,
   Dumbbell,
@@ -10,7 +10,9 @@ import {
   Upload,
   Play,
   RotateCcw,
-  Smartphone
+  Smartphone,
+  WifiOff,
+  HardDrive
 } from 'lucide-react';
 import { AppTab } from '../types';
 import { exportBackupData, importBackupData, resetAllData } from '../storage/storage';
@@ -32,6 +34,20 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenInstallModal
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const handleExportBackup = () => {
     const jsonStr = exportBackupData();
@@ -106,6 +122,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span className="bg-red-500/10 text-red-400 border border-red-500/30 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
                     Web
                   </span>
+                  {!isOnline ? (
+                    <span
+                      title="Modo sin conexión activo: tus series y rutinas se guardan con total seguridad en la memoria de tu celular"
+                      className="flex items-center space-x-1 bg-amber-500/15 text-amber-300 border border-amber-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    >
+                      <WifiOff className="w-2.5 h-2.5" />
+                      <span>Offline</span>
+                    </span>
+                  ) : (
+                    <span
+                      title="Almacenamiento en el dispositivo: 100% privado y sin requerir cuentas"
+                      className="hidden sm:flex items-center space-x-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-medium px-2 py-0.5 rounded-full"
+                    >
+                      <HardDrive className="w-2.5 h-2.5" />
+                      <span className="hidden md:inline">Local-First</span>
+                    </span>
+                  )}
                 </div>
                 <p className="text-[11px] text-zinc-400 -mt-1 hidden sm:block">Entrenamiento Basado en Evidencia</p>
               </div>
