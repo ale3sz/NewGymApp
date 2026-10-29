@@ -85,13 +85,17 @@ export function evaluateNextSetObjective(
   completedSets: SetLog[],
   targetSetsCount: number = 3,
   equipment?: GymEquipmentProfile,
-  acuteModifier: number = 1.0
+  acuteModifier: number = 1.0,
+  restSeconds: number = 90,
+  crossMuscleFatigueFactor?: number
 ): NextSetObjective {
-  const currentSetCount = completedSets.length;
+  const workingSets = completedSets.filter((s) => !s.isWarmup);
+  const currentSetCount = workingSets.length;
   const nextSetNumber = currentSetCount + 1;
+  const effectiveTargetSets = targetSetsCount || exercise.targetSets || 3;
 
-  // 1. Caso: Sin series previas registradas (Objetivo para Serie 1)
-  if (currentSetCount === 0) {
+  // 1. Caso: Sin series registradas aún
+  if (completedSets.length === 0) {
     return {
       nextSetNumber: 1,
       action: 'MAINTAIN',
@@ -108,8 +112,27 @@ export function evaluateNextSetObjective(
     };
   }
 
-  const lastSet = completedSets[completedSets.length - 1];
-  const firstSet = completedSets[0];
+  // 1b. Caso: Solo se registraron series de aproximación / calentamiento (0 series efectivas aún)
+  if (workingSets.length === 0) {
+    const lastWarmup = completedSets[completedSets.length - 1];
+    const suggestedWorkWeight = Math.round((lastWarmup.weightKg / 0.75) / 2.5) * 2.5;
+    return {
+      nextSetNumber: 1,
+      action: 'INCREASE_WEIGHT',
+      recommendedWeightKg: Math.max(getNextHigherWeight(lastWarmup.weightKg, exercise.category, equipment), suggestedWorkWeight),
+      targetRepsMin: exercise.targetRepsMin,
+      targetRepsMax: exercise.targetRepsMax,
+      targetReps: exercise.targetRepsMin,
+      targetRIR: exercise.targetRIR,
+      badgeLabel: 'CALENTAMIENTO LISTO • INICIAR SERIE 1 EFECTIVA',
+      badgeColor: 'emerald',
+      headline: 'Potenciación neuronal completada (0 fatiga acumulada)',
+      advice: `Registraste ${completedSets.length} ${completedSets.length === 1 ? 'serie' : 'series'} de aproximación (última con ${lastWarmup.weightKg} kg). Estas series no descuentan de tus ${effectiveTargetSets} series de trabajo. Carga ahora tu peso efectivo para la Serie 1.`,
+      isDeloadDrop: false,
+    };
+  }
+
+  const lastSet = workingSets[workingSets.length - 1];
   const currentWeight = lastSet.weightKg;
 
   const nextHigher = getNextHigherWeight(currentWeight, exercise.category, equipment);
@@ -134,12 +157,14 @@ export function evaluateNextSetObjective(
   const isFatigueCollapse = (lastSet.rirLogged === 0 && lastSet.repsCompleted < exercise.targetRepsMin) ||
     lastSet.repsCompleted < Math.max(1, exercise.targetRepsMin - 1);
 
+  const safeRest = Math.max(45, restSeconds || 90);
+
   // 2. CASO: VOLUMEN DE SERIES PRESCRITO COMPLETADO (ej. 3 de 3 series)
-  if (currentSetCount >= targetSetsCount) {
+  if (currentSetCount >= effectiveTargetSets) {
     if (isTooLight) {
       const solved = solveOptimalNextSetWeight(
         exercise,
-        completedSets,
+        workingSets,
         exercise.targetRepsMax,
         exercise.targetRIR,
         120,
@@ -148,7 +173,7 @@ export function evaluateNextSetObjective(
         acuteModifier
       );
       const recommendedWeight = Math.max(nextHigher, solved.calculatedWeightKg);
-      const pred = predictNextSetReps(exercise, completedSets, recommendedWeight, 120);
+      const pred = predictNextSetReps(exercise, workingSets, recommendedWeight, 120, 0, acuteModifier, undefined, crossMuscleFatigueFactor);
       return {
         nextSetNumber,
         action: 'COMPLETED',
@@ -160,7 +185,7 @@ export function evaluateNextSetObjective(
         badgeLabel: `SERIE SUPERADA: SUBIR A ${recommendedWeight} KG`,
         badgeColor: 'emerald',
         headline: '¡Excelente! Has superado ampliamente esta carga',
-        advice: `En la Serie ${lastSet.setNumber} registraste ${lastSet.repsCompleted} reps con RIR ${lastSet.rirLogged} (superaste ampliamente el rango de ${exercise.targetRepsMin}-${exercise.targetRepsMax} reps). Para tu próxima sesión, sube a ${recommendedWeight} kg para situarte en tu ventana objetivo. (Predicción: lograrás ~${pred.predictedReps} reps @ RIR ${exercise.targetRIR}).`,
+        advice: `En la Serie ${lastSet.setNumber} registraste ${lastSet.repsCompleted} reps con RIR ${lastSet.rirLogged} (superaste ampliamente el rango de ${exercise.targetRepsMin}-${exercise.targetRepsMax} reps). Para tu próxima sesión (o si sumas una serie extra hoy), sube a ${recommendedWeight} kg. (Predicción: lograrás ~${pred.predictedReps} reps @ RIR ${exercise.targetRIR}).`,
         isDeloadDrop: false,
         predictedReps: pred.predictedReps,
         confidencePercent: pred.confidencePercent,
@@ -169,7 +194,7 @@ export function evaluateNextSetObjective(
     }
 
     if (isFatigueCollapse) {
-      const pred = predictNextSetReps(exercise, completedSets, nextLower, 150);
+      const pred = predictNextSetReps(exercise, workingSets, nextLower, 150, 0, acuteModifier, undefined, crossMuscleFatigueFactor);
       return {
         nextSetNumber,
         action: 'COMPLETED',
@@ -181,7 +206,7 @@ export function evaluateNextSetObjective(
         badgeLabel: 'VOLUMEN COMPLETADO CON FATIGA',
         badgeColor: 'rose',
         headline: 'Volumen completado (Rendimiento al límite)',
-        advice: `Completaste las ${targetSetsCount} series, pero en la última caíste a ${lastSet.repsCompleted} reps @ RIR ${lastSet.rirLogged}. Has alcanzado el estímulo efectivo; pasa al siguiente ejercicio y disipa la fatiga neuromuscular.`,
+        advice: `Completaste las ${effectiveTargetSets} series efectivas, pero en la última caíste a ${lastSet.repsCompleted} reps @ RIR ${lastSet.rirLogged}. Has alcanzado el estímulo efectivo; pasa al siguiente ejercicio y disipa la fatiga neuromuscular.`,
         isDeloadDrop: true,
         predictedReps: pred.predictedReps,
         confidencePercent: pred.confidencePercent,
@@ -190,7 +215,7 @@ export function evaluateNextSetObjective(
     }
 
     // Completado óptimo estándar
-    const pred = predictNextSetReps(exercise, completedSets, currentWeight, 120);
+    const pred = predictNextSetReps(exercise, workingSets, currentWeight, 120, 0, acuteModifier, undefined, crossMuscleFatigueFactor);
     return {
       nextSetNumber,
       action: 'COMPLETED',
@@ -201,8 +226,8 @@ export function evaluateNextSetObjective(
       targetRIR: exercise.targetRIR,
       badgeLabel: 'EJERCICIO COMPLETADO',
       badgeColor: 'emerald',
-      headline: `¡Objetivo de ${targetSetsCount} series alcanzado!`,
-      advice: `Has completado el volumen efectivo para ${exercise.name} en ${currentWeight} kg. Pasa al siguiente ejercicio para permitir que este grupo muscular recupere tono y reservas de fosfocreatina.`,
+      headline: `¡Objetivo de ${effectiveTargetSets} series alcanzado!`,
+      advice: `Has completado el volumen efectivo para ${exercise.name} en ${currentWeight} kg. Pasa al siguiente ejercicio o añade una serie extra si hoy te sientes con energía superior.`,
       isDeloadDrop: false,
       predictedReps: pred.predictedReps,
       confidencePercent: pred.confidencePercent,
@@ -214,20 +239,18 @@ export function evaluateNextSetObjective(
 
   // Subcaso A: La carga está demasiado ligera (SUBIR PESO INMEDIATAMENTE AL RANGO OBJETIVO)
   if (isTooLight) {
-    // Si el atleta hizo muchas más reps de las programadas (ej. 16 reps en rango 8-10 con RIR 3),
-    // calcular el peso real para situarlo en targetRepsMax (ej. 10 reps)
     const solved = solveOptimalNextSetWeight(
       exercise,
-      completedSets,
+      workingSets,
       exercise.targetRepsMax,
       exercise.targetRIR,
-      90,
+      safeRest,
       equipment,
       0,
       acuteModifier
     );
     const recommendedWeight = Math.max(nextHigher, solved.calculatedWeightKg);
-    const pred = predictNextSetReps(exercise, completedSets, recommendedWeight, 90, 0, acuteModifier);
+    const pred = predictNextSetReps(exercise, workingSets, recommendedWeight, safeRest, 0, acuteModifier, undefined, crossMuscleFatigueFactor);
     return {
       nextSetNumber,
       action: 'INCREASE_WEIGHT',
@@ -249,7 +272,7 @@ export function evaluateNextSetObjective(
 
   // Subcaso B: Colapso por fatiga (BAJAR PESO / BACK-OFF SET)
   if (isFatigueCollapse && currentWeight > 0) {
-    const pred = predictNextSetReps(exercise, completedSets, nextLower, 120, 0, acuteModifier);
+    const pred = predictNextSetReps(exercise, workingSets, nextLower, Math.max(120, safeRest), 0, acuteModifier, undefined, crossMuscleFatigueFactor);
     return {
       nextSetNumber,
       action: 'DROP_WEIGHT',
@@ -269,20 +292,20 @@ export function evaluateNextSetObjective(
     };
   }
 
-  // Subcaso C: Evaluación de repeticiones proyectadas
-  const pred = predictNextSetReps(exercise, completedSets, currentWeight, 90, 0, acuteModifier);
+  // Subcaso C: Evaluación de repeticiones proyectadas considerando el descanso real / extendido
+  const pred = predictNextSetReps(exercise, workingSets, currentWeight, safeRest, 0, acuteModifier, undefined, crossMuscleFatigueFactor);
 
   // Si la fatiga acumulada (ej. por RIR 0 o fallo) proyecta que en la siguiente serie
   // las repeticiones van a caer por debajo del mínimo hipertrófico (pred.predictedReps < targetRepsMin),
   // NO debemos decirle que mantenga el peso para sacar solo 3 o 4 reps, sino prescribir
-  // un Back-off Set táctico reduciendo la carga para rescatar el rango 6-8 reps.
+  // un Back-off Set táctico reduciendo la carga para rescatar el rango objetivo.
   if (pred.predictedReps < exercise.targetRepsMin && currentWeight > 0) {
     const solved = solveOptimalNextSetWeight(
       exercise,
-      completedSets,
+      workingSets,
       exercise.targetRepsMin,
       exercise.targetRIR,
-      120,
+      Math.max(120, safeRest),
       equipment,
       0,
       acuteModifier
@@ -298,7 +321,7 @@ export function evaluateNextSetObjective(
       recommendedWeight = nextLower;
     }
 
-    const backoffPred = predictNextSetReps(exercise, completedSets, recommendedWeight, 120, 0, acuteModifier);
+    const backoffPred = predictNextSetReps(exercise, workingSets, recommendedWeight, Math.max(120, safeRest), 0, acuteModifier, undefined, crossMuscleFatigueFactor);
     const targetRepsPrescribed = Math.max(exercise.targetRepsMin, backoffPred.predictedReps);
 
     return {
@@ -331,7 +354,7 @@ export function evaluateNextSetObjective(
     badgeLabel: `MANTENER PESO (${currentWeight} KG)`,
     badgeColor: 'emerald',
     headline: `Excelente control: Mantén la carga para Serie ${nextSetNumber}`,
-    advice: `Mantén los ${currentWeight} kg. El modelo de fatiga proyecta ~${pred.predictedReps} repeticiones con RIR ${exercise.targetRIR} tras descansar adecuadamente.${
+    advice: `Mantén los ${currentWeight} kg. El modelo de fatiga proyecta ~${pred.predictedReps} repeticiones con RIR ${exercise.targetRIR} tras ${safeRest}s de descanso.${
       lastSet.restExtensionRatio && lastSet.restExtensionRatio >= 1.20
         ? ` (Registrado descanso extendido de ${lastSet.actualRestSeconds}s, +${Math.round((lastSet.restExtensionRatio - 1) * 100)}% por fatiga).`
         : ''

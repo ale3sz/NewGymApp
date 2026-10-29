@@ -197,7 +197,7 @@ export function calculatePlatesPerSide(
   const perSideKg = Math.round(((totalWeightKg - baseKg) / 2) * 100) / 100;
   if (perSideKg <= 0) return null;
 
-  const standardPlates = [25, 20, 15, 10, 5, 2.5, 1.25];
+  const standardPlates = [20, 15, 10, 5, 2.5, 1.25];
   let remaining = perSideKg;
   const platesList: { weight: number; count: number }[] = [];
 

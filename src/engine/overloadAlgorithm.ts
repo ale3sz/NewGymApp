@@ -37,8 +37,9 @@ export function calculateNextSession(
     };
   }
 
-  // Filtrar series válidas
-  const validSets = lastSetLogs.filter(s => s.repsCompleted > 0);
+  // Filtrar series efectivas de trabajo (excluyendo series de calentamiento/aproximación)
+  const nonWarmupSets = lastSetLogs.filter(s => s.repsCompleted > 0 && !s.isWarmup);
+  const validSets = nonWarmupSets.length > 0 ? nonWarmupSets : lastSetLogs.filter(s => s.repsCompleted > 0);
   if (validSets.length === 0) {
     return {
       type: 'CONSOLIDATING',
@@ -220,8 +221,12 @@ export function calculateNextSession(
   }
 
   // 7. CASO BARRAS, MÁQUINAS Y POLEAS
-  const increment = exercise.category === 'barra' ? smallestDisc * 2 : smallestDisc;
-  const nextWeight = Math.round((currentWeight + increment) * 10) / 10;
+  const increment = currentWeight >= 100
+    ? 5
+    : exercise.category === 'barra'
+    ? smallestDisc * 2
+    : Math.max(2.5, smallestDisc * 2);
+  const nextWeight = Math.round((currentWeight + increment) * 2) / 2;
   const jumpPercent = currentWeight > 0 ? (increment / currentWeight) * 100 : 0;
 
   // Si en barra el incremento de 2 discos mínimos representa > 10% del peso total (ej. peso bajo en militar):

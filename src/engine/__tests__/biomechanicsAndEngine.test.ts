@@ -5,6 +5,8 @@ import {
   estimateAutoregulated1RM,
   calculateEffectiveReps,
   calculateOptimalMicroIncrement,
+  calculatePlatesPerSide,
+  calculateWarmupRamp,
   rpeToRir,
   rirToRpe
 } from '../../utils/formulas';
@@ -17,6 +19,7 @@ import {
   POPULATION_DECAY_RATES,
   calculateRestRecoveryFactor,
   calculateSessionOrderFatigueFactor,
+  calculateCrossExerciseMuscleFatigueFactor,
   getBayesianDecayRate,
   predictNextSetReps,
   solveOptimalNextSetWeight,
@@ -640,6 +643,74 @@ assert(
   wpVol.pantorrillas > bVol.pantorrillas,
   `Puntos débiles debe incrementar volumen de pantorrillas respecto al baseline (${wpVol.pantorrillas} vs ${bVol.pantorrillas})`
 );
+
+// ==========================================
+// 9. PILAR 9: 10 MEJORAS CIENTÍFICAS Y PRÁCTICAS DE CAMPO
+// ==========================================
+console.log('\n--- Pilar 9: RIR Sincronizado, Calentamiento PAP, Discos, Pre-fatiga y Fuerza Pesada ---');
+
+// Test 33: Series de calentamiento (isWarmup) tienen 0 reps efectivas y no consumen series efectivas
+const warmupEff = calculateEffectiveReps(8, 3, true);
+assert(warmupEff === 0, `Una serie de calentamiento debe sumar 0 reps efectivas (obtenido ${warmupEff})`);
+
+// Test 34: Cargas pesadas (≥85% 1RM / ≤5 reps virtuales) reclutan al 100% desde la Rep 1
+const heavyEff = calculateEffectiveReps(4, 1, false); // 4 reps @ RIR 1 = 5 reps al fallo (~86% 1RM)
+assert(heavyEff === 4, `Con 4 reps @ RIR 1 (carga ≥85% 1RM) las 4 reps ejecutadas son 100% efectivas (obtenido ${heavyEff})`);
+
+// Test 35: Calculadora de discos por lado (100 kg en barra olímpica = 40 kg por lado = 2 discos de 20 kg)
+const plates100 = calculatePlatesPerSide(100, 'barra', 20);
+assert(plates100 !== null, 'Debe calcular discos para barra olímpica de 100 kg');
+assert(plates100?.perSideKg === 40, `Peso por lado para 100 kg debe ser 40 kg (obtenido ${plates100?.perSideKg})`);
+assert(plates100?.platesText.includes('2×20') === true, `Debe indicar 2×20 kg por lado (obtenido ${plates100?.platesText})`);
+
+// Test 36: Rampa científica de calentamiento PAP (50%, 72%, 88%)
+const warmupRamp100 = calculateWarmupRamp(100, 'barra');
+assert(warmupRamp100.length === 3, `La rampa para 100 kg debe tener 3 series de aproximación (obtenido ${warmupRamp100.length})`);
+assert(warmupRamp100[2].weightKg >= 85 && warmupRamp100[2].weightKg <= 90, `La 3ra serie PAP debe estar al ~88% (obtenido ${warmupRamp100[2].weightKg} kg)`);
+
+// Test 37: Predicción en vivo sincronizada con RIR elegido por el usuario (RIR 2 vs RIR 0)
+const predRir0 = predictNextSetReps(legExtensionExercise, legExtensionSets, 30, 90, 0, undefined, 0);
+const predRir2 = predictNextSetReps(legExtensionExercise, legExtensionSets, 30, 90, 0, undefined, 2);
+assert(
+  predRir0.predictedReps > predRir2.predictedReps,
+  `La predicción a RIR 0 (${predRir0.predictedReps}) debe ser mayor que dejando 2 en recámara RIR 2 (${predRir2.predictedReps})`
+);
+assert(predRir2.predictedRIR === 2, `El predictedRIR devuelto debe coincidir con el RIR 2 seleccionado (obtenido ${predRir2.predictedRIR})`);
+
+// Test 38: El Coach en Vivo no consume series de trabajo cuando se registran series de calentamiento
+const warmupOnlySets: SetLog[] = [
+  { setNumber: 1, weightKg: 50, repsCompleted: 8, rirLogged: 4, isWarmup: true },
+  { setNumber: 2, weightKg: 70, repsCompleted: 4, rirLogged: 4, isWarmup: true },
+];
+const afterWarmupCoach = evaluateNextSetObjective(benchPressExercise, warmupOnlySets, 3, equipment);
+assert(
+  afterWarmupCoach.badgeLabel.includes('CALENTAMIENTO'),
+  `Tras registrar calentamientos, el coach debe indicar que comienza la Serie Efectiva #1 (obtenido "${afterWarmupCoach.badgeLabel}")`
+);
+
+// Test 39: Fatiga muscular cruzada (Pre-fatiga de mismo músculo y sinergistas en la sesión)
+const sessionExercisesList: Exercise[] = [benchPressExercise, inclineDumbbellExercise];
+const sessionLogsMap: Record<string, SetLog[]> = {
+  [benchPressExercise.id]: [
+    { setNumber: 1, weightKg: 80, repsCompleted: 8, rirLogged: 1 },
+    { setNumber: 2, weightKg: 80, repsCompleted: 8, rirLogged: 1 },
+    { setNumber: 3, weightKg: 80, repsCompleted: 7, rirLogged: 0 },
+  ],
+};
+const tricepsIsoExercise: Exercise = {
+  id: 'extension_triceps_polea',
+  name: 'Extensión de tríceps en polea',
+  primaryMuscle: 'triceps',
+  category: 'polea',
+  targetRepsMin: 10,
+  targetRepsMax: 12,
+  targetRIR: 1,
+};
+const chestCrossFatigue = calculateCrossExerciseMuscleFatigueFactor(inclineDumbbellExercise, sessionLogsMap, sessionExercisesList);
+const tricepsSynergistFatigue = calculateCrossExerciseMuscleFatigueFactor(tricepsIsoExercise, sessionLogsMap, sessionExercisesList);
+assert(chestCrossFatigue.priorDirectSets === 3, `Debe detectar 3 series previas directas de pecho (obtenido ${chestCrossFatigue.priorDirectSets})`);
+assert(chestCrossFatigue.factor < 1.0, `El factor de fatiga para el 2do ejercicio de pecho debe ser < 1.0 (obtenido ${chestCrossFatigue.factor})`);
+assert(tricepsSynergistFatigue.priorSynergistSets === 3, `Debe detectar 3 series previas sinergistas sobre tríceps (obtenido ${tricepsSynergistFatigue.priorSynergistSets})`);
 
 console.log('\n======================================================');
 console.log('✅ TODOS LOS TESTS DE AUDITORÍA CIENTÍFICA COMPLETADOS');

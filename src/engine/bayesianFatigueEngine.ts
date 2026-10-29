@@ -1,6 +1,7 @@
 import { MuscleGroup, Exercise, SetLog, GymEquipmentProfile, UserFatigueProfile, MuscleFatigueCalibration, FatiguePredictionResult } from '../types';
 import { estimateAutoregulated1RM } from '../utils/formulas';
 import { getUserFatigueProfile, saveUserFatigueProfile } from '../storage/storage';
+import { getSecondaryMuscles } from './trainerEngine';
 
 /**
  * MOTOR DE FATIGA BAYESIANO Y PREDICCIÓN INDIVIDUALIZADA (Dr. Marcus Vance, CSCS)
@@ -51,6 +52,72 @@ export function calculateSessionOrderFatigueFactor(exerciseIndexInSession: numbe
     case 3: return 0.88; // 12% de fatiga
     default: return 0.85; // 15% fatiga máxima acumulada
   }
+}
+
+/**
+ * Calcula la fatiga cruzada real acumulada en el músculo objetivo (y sus sinergistas)
+ * por los ejercicios previos completados hoy en la misma sesión.
+ * - Hacer Tríceps después de 6 series de Pecho hereda fatiga periférica real (0.5x por serie de press).
+ * - Hacer un segundo o tercer ejercicio del mismo grupo muscular hereda 1.0x por serie previa.
+ */
+export function calculateCrossExerciseMuscleFatigueFactor(
+  exercise: Exercise,
+  completedSetsMap?: Record<string, SetLog[]>,
+  dayExercises?: Exercise[],
+  exerciseIndexInSession: number = 0
+): {
+  factor: number;
+  priorDirectSets: number;
+  priorSynergistSets: number;
+} {
+  if (!completedSetsMap || !dayExercises || dayExercises.length === 0) {
+    return {
+      factor: calculateSessionOrderFatigueFactor(exerciseIndexInSession),
+      priorDirectSets: 0,
+      priorSynergistSets: 0,
+    };
+  }
+
+  let priorDirectSets = 0;
+  let priorSynergistSets = 0;
+  let totalOtherWorkingSets = 0;
+
+  const targetSecondary = getSecondaryMuscles(exercise.name, exercise.primaryMuscle, exercise.category);
+
+  for (const otherEx of dayExercises) {
+    if (otherEx.id === exercise.id) continue;
+    const sets = (completedSetsMap[otherEx.id] || []).filter((s) => !s.isWarmup && s.repsCompleted > 0);
+    if (sets.length === 0) continue;
+
+    totalOtherWorkingSets += sets.length;
+    const otherSecondaries = getSecondaryMuscles(otherEx.name, otherEx.primaryMuscle, otherEx.category);
+
+    // 1. Mismo músculo primario (ej. Press Inclinado después de Press Plano)
+    if (otherEx.primaryMuscle === exercise.primaryMuscle) {
+      priorDirectSets += sets.length;
+    }
+    // 2. El ejercicio previo fatigó de forma indirecta al músculo primario actual (ej. Press Plano fatigó Tríceps)
+    else if (otherSecondaries.includes(exercise.primaryMuscle)) {
+      priorSynergistSets += sets.length;
+    }
+    // 3. El ejercicio previo fatigó directamente un músculo sinergista que el ejercicio actual necesita
+    else if (targetSecondary.includes(otherEx.primaryMuscle)) {
+      priorSynergistSets += sets.length * 0.7;
+    }
+  }
+
+  // Penalización periférica específica (2.2% por serie directa previa + 1.1% por serie sinergista previa)
+  const localMusclePenalty = priorDirectSets * 0.022 + priorSynergistSets * 0.011;
+  // Penalización central sistémica (SNC) suave por el volumen general de otros músculos (0.4% por serie)
+  const centralPenalty = totalOtherWorkingSets * 0.004;
+
+  const factor = Math.max(0.78, Math.min(1.0, Math.round((1.0 - localMusclePenalty - centralPenalty) * 100) / 100));
+
+  return {
+    factor,
+    priorDirectSets: Math.round(priorDirectSets),
+    priorSynergistSets: Math.round(priorSynergistSets * 10) / 10,
+  };
 }
 
 // Multiplicador de fatiga de la serie previa según su proximidad al fallo (RIR)
@@ -258,7 +325,8 @@ export function recordObservedFatigue(
   restSeconds: number = 90
 ): UserFatigueProfile {
   const profile = getUserFatigueProfile();
-  if (completedSets.length < 2) return profile;
+  const workingSets = completedSets.filter((s) => !s.isWarmup && s.repsCompleted > 0);
+  if (workingSets.length < 2) return profile;
 
   const muscle = exercise.primaryMuscle;
   const prevCalibration = profile.muscleCalibrations[muscle] || {
@@ -270,16 +338,16 @@ export function recordObservedFatigue(
     averageRestExtensionRatio: 1.0,
   };
 
-  // Calcular decaimientos observados entre series consecutivas al mismo peso
+  // Calcular decaimientos observados entre series consecutivas de trabajo al mismo peso
   let observedSum = 0;
   let count = 0;
   let restTimeSum = 0;
   let restCount = 0;
   let extensionRatioSum = 0;
 
-  for (let i = 0; i < completedSets.length - 1; i++) {
-    const s1 = completedSets[i];
-    const s2 = completedSets[i + 1];
+  for (let i = 0; i < workingSets.length - 1; i++) {
+    const s1 = workingSets[i];
+    const s2 = workingSets[i + 1];
 
     const actualRest = s2.actualRestSeconds || restSeconds;
     const prescribedRest = s2.prescribedRestSeconds || restSeconds;
@@ -362,18 +430,25 @@ export function predictNextSetReps(
   proposedWeightKg: number,
   restSeconds: number = 90,
   exerciseIndexInSession: number = 0,
-  acuteModifier: number = 1.0
+  acuteModifier: number = 1.0,
+  customTargetRir?: number,
+  crossMuscleFatigueFactor?: number
 ): FatiguePredictionResult {
   const profile = getUserFatigueProfile();
   const muscle = exercise.primaryMuscle;
   const { decayRate, userWeightPercent, confidenceScore } = getBayesianDecayRate(muscle, profile);
 
-  if (completedSets.length === 0) {
-    // Serie 1: Sin fatiga acumulada previa en este ejercicio
-    const targetVirtual = exercise.targetRepsMin + exercise.targetRIR;
+  const workingSets = completedSets.filter((s) => !s.isWarmup && s.repsCompleted > 0);
+  const targetRir =
+    customTargetRir !== undefined && !isNaN(customTargetRir)
+      ? Math.max(0, customTargetRir)
+      : exercise.targetRIR;
+
+  if (workingSets.length === 0) {
+    // Serie 1 efectiva: Sin fatiga intra-ejercicio acumulada
     return {
       predictedReps: exercise.targetRepsMin,
-      predictedRIR: exercise.targetRIR,
+      predictedRIR: targetRir,
       confidencePercent: Math.round(confidenceScore * 100),
       fatigueDecayPercent: 0,
       recoveryPercent: 100,
@@ -381,13 +456,13 @@ export function predictNextSetReps(
     };
   }
 
-  const lastSet = completedSets[completedSets.length - 1];
+  const lastSet = workingSets[workingSets.length - 1];
   const e1rmLast = estimateAutoregulated1RM(lastSet.weightKg, lastSet.repsCompleted, lastSet.rirLogged).e1rm;
 
   if (e1rmLast <= 0 || proposedWeightKg <= 0) {
     return {
       predictedReps: exercise.targetRepsMin,
-      predictedRIR: exercise.targetRIR,
+      predictedRIR: targetRir,
       confidencePercent: 50,
       fatigueDecayPercent: 0,
       recoveryPercent: 100,
@@ -403,7 +478,10 @@ export function predictNextSetReps(
   const pcrRate = calibration?.pcrRecoveryRate || 1.0;
   const restFactor = calculateRestRecoveryFactor(restSeconds, pcrRate); // 0.25 a 1.0
   const rirPenalty = calculatePriorRirPenalty(lastSet.rirLogged ?? 1); // 0.55 a 1.55
-  const sessionOrder = calculateSessionOrderFatigueFactor(exerciseIndexInSession); // 0.85 a 1.0
+  const sessionOrder =
+    crossMuscleFatigueFactor !== undefined
+      ? crossMuscleFatigueFactor
+      : calculateSessionOrderFatigueFactor(exerciseIndexInSession); // 0.78 a 1.0
 
   // 3. Tasa de decaimiento de repeticiones ajustada
   // Normalizado para que a 90s de descanso y RIR 2 en ejercicio fresco sea la tasa base
@@ -432,8 +510,7 @@ export function predictNextSetReps(
     }
   }
 
-  // 6. Predecir repeticiones netas asumiendo targetRIR
-  const targetRir = exercise.targetRIR;
+  // 6. Predecir repeticiones netas asumiendo el targetRir (el seleccionado por el usuario o el prescrito)
   const predictedReps = Math.max(1, Math.round(expectedVirtualReps - targetRir));
 
   const decayPercent = Math.round(repDecayFactor * 100);
@@ -474,11 +551,12 @@ export function solveOptimalNextSetWeight(
   exerciseIndexInSession: number = 0,
   acuteModifier: number = 1.0
 ): { calculatedWeightKg: number; exactRawWeight: number; isDropRecommended: boolean } {
-  if (completedSets.length === 0) {
+  const workingSets = completedSets.filter((s) => !s.isWarmup && s.repsCompleted > 0);
+  if (workingSets.length === 0) {
     return { calculatedWeightKg: 0, exactRawWeight: 0, isDropRecommended: false };
   }
 
-  const lastSet = completedSets[completedSets.length - 1];
+  const lastSet = workingSets[workingSets.length - 1];
   const vLast = Math.max(1, lastSet.repsCompleted + (lastSet.rirLogged ?? 1));
 
   const profile = getUserFatigueProfile();

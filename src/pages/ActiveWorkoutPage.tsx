@@ -31,7 +31,9 @@ import {
   getEquipmentProfile,
   saveActiveWorkoutDraft,
   getActiveWorkoutDraft,
-  clearActiveWorkoutDraft
+  clearActiveWorkoutDraft,
+  getAllExerciseSetupNotes,
+  saveExerciseSetupNote
 } from '../storage/storage';
 import { calculateNextSession } from '../engine/overloadAlgorithm';
 import { getMusclesInDay, getSmartWorkoutRecommendation } from '../engine/smartScheduleEngine';
@@ -43,7 +45,8 @@ import { getWorkoutDayBadge } from '../constants/brandAssets';
 import {
   recordObservedFatigue,
   getPrescribedOptimalRest,
-  calculateAcuteSessionFatigue
+  calculateAcuteSessionFatigue,
+  calculateCrossExerciseMuscleFatigueFactor
 } from '../engine/bayesianFatigueEngine';
 import { RestTimer } from '../components/RestTimer';
 import { ExerciseSubstituteModal } from '../components/ExerciseSubstituteModal';
@@ -79,11 +82,19 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   const [previousLogs, setPreviousLogs] = useState<Record<string, SetLog[]>>({});
   // Stagnation analysis per exercise
   const [stagnationData, setStagnationData] = useState<Record<string, StagnationAnalysisResult>>({});
+  // Setup notes per exercise (Asiento, Pin, Polea)
+  const [setupNotes, setSetupNotes] = useState<Record<string, string>>(getAllExerciseSetupNotes());
+  // Dynamic target sets per exercise (permite añadir +1 Serie Extra en vivo)
+  const [customTargetSets, setCustomTargetSets] = useState<Record<string, number>>({});
+  // Active rest seconds per exercise (sincronizado con extensiones del temporizador)
+  const [activeRestByExercise, setActiveRestByExercise] = useState<Record<string, number>>({});
 
   // Rest Timer State
   const [timerOpen, setTimerOpen] = useState<boolean>(false);
   const [timerSeconds, setTimerSeconds] = useState<number>(90);
   const [timerExerciseName, setTimerExerciseName] = useState<string>('');
+  const [timerExerciseId, setTimerExerciseId] = useState<string>('');
+  const [timerTriggerKey, setTimerTriggerKey] = useState<number>(0);
   const [lastSetTimestamps, setLastSetTimestamps] = useState<Record<string, number>>({});
   const [acuteFeedback, setAcuteFeedback] = useState<string | null>(null);
 
@@ -226,7 +237,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
     }));
   };
 
-  const handleAddSet = (exercise: Exercise, exerciseIndex: number) => {
+  const handleAddSet = (exercise: Exercise, exerciseIndex: number, isWarmup: boolean = false) => {
     const cur = inputs[exercise.id];
     const isBodyweight = exercise.category === 'corporal';
     const weightVal = cur?.weight ?? '';
@@ -262,43 +273,51 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
     const prescribedRestInfo = getPrescribedOptimalRest(exercise, undefined, acuteAnalysis.acuteModifier);
 
     let actualRest = prescribedRestInfo.optimalSeconds;
-    if (lastTimestamp && curSets.length > 0) {
+    const prevWorkingSetsCount = curSets.filter((s) => !s.isWarmup).length;
+    if (lastTimestamp && prevWorkingSetsCount > 0 && !isWarmup) {
       const elapsed = Math.round((now - lastTimestamp) / 1000);
       if (elapsed >= 15 && elapsed <= 900) {
         actualRest = elapsed;
       }
     }
-    const extensionRatio = curSets.length === 0 ? 1.0 : Math.round((actualRest / prescribedRestInfo.optimalSeconds) * 100) / 100;
+    const extensionRatio =
+      prevWorkingSetsCount === 0 || isWarmup
+        ? 1.0
+        : Math.round((actualRest / prescribedRestInfo.optimalSeconds) * 100) / 100;
 
     const newSet: SetLog = {
       setNumber: curSets.length + 1,
       weightKg: weightNum,
       repsCompleted: repsNum,
       rirLogged: rirNum,
+      isWarmup,
       estimated1RM: autoreg.e1rm,
-      effectiveReps: calculateEffectiveReps(repsNum, rirNum),
-      actualRestSeconds: curSets.length === 0 ? undefined : actualRest,
-      prescribedRestSeconds: prescribedRestInfo.optimalSeconds,
+      effectiveReps: calculateEffectiveReps(repsNum, rirNum, isWarmup),
+      actualRestSeconds: prevWorkingSetsCount === 0 || isWarmup ? undefined : actualRest,
+      prescribedRestSeconds: isWarmup ? 60 : prescribedRestInfo.optimalSeconds,
       restExtensionRatio: extensionRatio,
       completedAt: new Date().toISOString(),
     };
 
-    setLastSetTimestamps((prev) => ({ ...prev, [exercise.id]: now }));
+    if (!isWarmup) {
+      setLastSetTimestamps((prev) => ({ ...prev, [exercise.id]: now }));
+    }
 
     const updated = [...curSets, newSet];
     const updatedAllSets = { ...completedSets, [exercise.id]: updated };
     setCompletedSets(updatedAllSets);
 
-    // Si hubo extensión de descanso por fatiga, alertar y confirmar la medición
-    if (extensionRatio >= 1.25) {
+    // Si hubo extensión de descanso por fatiga en serie efectiva, alertar y confirmar la medición
+    if (!isWarmup && extensionRatio >= 1.25) {
       setAcuteFeedback(
         `Descanso extendido (${actualRest}s, +${Math.round((extensionRatio - 1) * 100)}% extra). Registrado por el sistema para autorregular los siguientes ejercicios.`
       );
       setTimeout(() => setAcuteFeedback(null), 6000);
     }
 
-    // Retroalimentar el motor de fatiga bayesiano con el tiempo real medido
-    if (updated.length >= 2) {
+    // Retroalimentar el motor de fatiga bayesiano con el tiempo real medido (solo series efectivas)
+    const updatedWorkingSets = updated.filter((s) => !s.isWarmup);
+    if (!isWarmup && updatedWorkingSets.length >= 2) {
       try {
         recordObservedFatigue(exercise, updated, actualRest);
       } catch (err) {
@@ -309,10 +328,31 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
     // Actualizar análisis de fatiga aguda y determinar el descanso óptimo para el timer
     const updatedAcute = calculateAcuteSessionFatigue(updatedAllSets);
     const nextRestInfo = getPrescribedOptimalRest(exercise, undefined, updatedAcute.acuteModifier);
+    const restForNextSet = isWarmup ? 60 : nextRestInfo.optimalSeconds;
+
+    setActiveRestByExercise((prev) => ({ ...prev, [exercise.id]: restForNextSet }));
+
+    // Calcular fatiga cruzada entre músculos de la sesión
+    const crossInfo = calculateCrossExerciseMuscleFatigueFactor(
+      exercise,
+      updatedAllSets,
+      workoutDay?.exercises || [],
+      exerciseIndex
+    );
+
+    const targetSetsForEx = customTargetSets[exercise.id] || exercise.targetSets || 3;
 
     // Seguimiento constante automático: Pre-cargar objetivo de la siguiente serie en los inputs
-    const nextObj = evaluateNextSetObjective(exercise, updated, 3, equipment, updatedAcute.acuteModifier);
-    if (nextObj.action !== 'COMPLETED') {
+    const nextObj = evaluateNextSetObjective(
+      exercise,
+      updated,
+      targetSetsForEx,
+      equipment,
+      updatedAcute.acuteModifier,
+      restForNextSet,
+      crossInfo.factor
+    );
+    if (nextObj.action !== 'COMPLETED' && nextObj.recommendedWeightKg > 0) {
       setInputs((prev) => ({
         ...prev,
         [exercise.id]: {
@@ -326,9 +366,43 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
     setActiveExerciseIndex(exerciseIndex);
 
     // Trigger non-intrusive rest timer con descanso óptimo adaptado y autorregulado
-    setTimerSeconds(nextRestInfo.optimalSeconds);
+    setTimerSeconds(restForNextSet);
     setTimerExerciseName(exercise.name);
+    setTimerExerciseId(exercise.id);
+    setTimerTriggerKey((prev) => prev + 1);
     setTimerOpen(true);
+  };
+
+  const handleUpdateSet = (exerciseId: string, setIndex: number, updatedFields: Partial<SetLog>) => {
+    const curSets = completedSets[exerciseId] || [];
+    const updated = curSets.map((s, idx) => (idx === setIndex ? { ...s, ...updatedFields } : s));
+    const updatedAll = { ...completedSets, [exerciseId]: updated };
+    setCompletedSets(updatedAll);
+
+    const exObj = workoutDay?.exercises.find((e) => e.id === exerciseId);
+    if (exObj) {
+      const targetSetsForEx = customTargetSets[exerciseId] || exObj.targetSets || 3;
+      const updatedAcute = calculateAcuteSessionFatigue(updatedAll);
+      const activeRest = activeRestByExercise[exerciseId] || 90;
+      const nextObj = evaluateNextSetObjective(
+        exObj,
+        updated,
+        targetSetsForEx,
+        equipment,
+        updatedAcute.acuteModifier,
+        activeRest
+      );
+      if (nextObj.action !== 'COMPLETED' && nextObj.recommendedWeightKg > 0) {
+        setInputs((prev) => ({
+          ...prev,
+          [exerciseId]: {
+            weight: nextObj.recommendedWeightKg.toString(),
+            reps: nextObj.targetReps.toString(),
+            rir: nextObj.targetRIR.toString(),
+          },
+        }));
+      }
+    }
   };
 
   const handleDeleteSet = (exerciseId: string, setIndex: number) => {
@@ -340,6 +414,22 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
     setCompletedSets((prev) => ({
       ...prev,
       [exerciseId]: updated,
+    }));
+  };
+
+  const handleSaveSetupNote = (exerciseId: string, note: string) => {
+    saveExerciseSetupNote(exerciseId, note);
+    setSetupNotes(getAllExerciseSetupNotes());
+  };
+
+  const handleAddExtraTargetSet = (exercise: Exercise) => {
+    const curSets = completedSets[exercise.id] || [];
+    const workingCount = curSets.filter((s) => !s.isWarmup).length;
+    const currentTarget = customTargetSets[exercise.id] || exercise.targetSets || 3;
+    const nextTarget = Math.max(currentTarget + 1, workingCount + 1);
+    setCustomTargetSets((prev) => ({
+      ...prev,
+      [exercise.id]: nextTarget,
     }));
   };
 
@@ -485,14 +575,19 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
 
   const totalExercisesCount = workoutDay.exercises.length;
   const completedExercisesCount = workoutDay.exercises.filter((ex) => {
-    const sets = completedSets[ex.id] || [];
-    return sets.length >= (ex.targetSets || 3);
+    const sets = (completedSets[ex.id] || []).filter((s) => !s.isWarmup);
+    const targetSets = customTargetSets[ex.id] || ex.targetSets || 3;
+    return sets.length >= targetSets;
   }).length;
   const exercisesWithCompletedSetsCount = workoutDay.exercises.filter(
     (ex) => (completedSets[ex.id]?.length || 0) > 0
   ).length;
   const remainingExercisesCount = Math.max(0, totalExercisesCount - completedExercisesCount);
-  const totalSetsCompleted = Object.values(completedSets).reduce((sum, s) => sum + s.length, 0);
+  const totalSetsCompleted = Object.values(completedSets).reduce(
+    (sum, s) => sum + s.filter((item) => !item.isWarmup).length,
+    0
+  );
+  const currentAcuteSessionFatigue = calculateAcuteSessionFatigue(completedSets);
 
   return (
     <div className="space-y-6 pb-44 animate-in fade-in duration-300">
@@ -594,9 +689,9 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       {/* 2. Quick Jump Carousel / Exercise Tabs (Thumb-Friendly for Gym) */}
       <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin max-w-full touch-pan-x">
         {workoutDay.exercises.map((ex, exIdx) => {
-          const sets = completedSets[ex.id] || [];
+          const sets = (completedSets[ex.id] || []).filter((s) => !s.isWarmup);
           const setsCount = sets.length;
-          const targetSets = ex.targetSets || 3;
+          const targetSets = customTargetSets[ex.id] || ex.targetSets || 3;
           const isFinished = setsCount >= targetSets;
           const isSelected = activeExerciseIndex === exIdx;
 
@@ -656,6 +751,16 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
           const sets = completedSets[exercise.id] || [];
           const stag = stagnationData[exercise.id];
           const isActive = activeExerciseIndex === index;
+          const targetSetsForEx = customTargetSets[exercise.id] || exercise.targetSets || 3;
+          const activeRest =
+            activeRestByExercise[exercise.id] ||
+            getPrescribedOptimalRest(exercise, undefined, currentAcuteSessionFatigue.acuteModifier).optimalSeconds;
+          const crossMuscleInfo = calculateCrossExerciseMuscleFatigueFactor(
+            exercise,
+            completedSets,
+            workoutDay.exercises,
+            index
+          );
 
           return (
             <div id={`exercise-card-${index}`} key={exercise.id || index}>
@@ -669,12 +774,24 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
                 recommendation={rec}
                 stagnation={stag}
                 equipment={equipment}
-                onAddSet={() => handleAddSet(exercise, index)}
+                onAddSet={(isWarmup) => handleAddSet(exercise, index, isWarmup)}
+                onUpdateSet={(sIdx, updatedFields) => handleUpdateSet(exercise.id, sIdx, updatedFields)}
                 onDeleteSet={(sIdx) => handleDeleteSet(exercise.id, sIdx)}
                 onOpenSubstitute={() => handleOpenSubstitute(exercise)}
                 onOpenTechnique={() => setTechniqueExercise(exercise)}
                 onAutoFill={(r) => handleAutoFill(exercise.id, r)}
                 isActiveFocus={isActive}
+                activeRestSeconds={activeRest}
+                acuteModifier={currentAcuteSessionFatigue.acuteModifier}
+                crossMuscleFatigueFactor={crossMuscleInfo.factor}
+                priorMuscleSetsInfo={{
+                  priorDirectSets: crossMuscleInfo.priorDirectSets,
+                  priorSynergistSets: crossMuscleInfo.priorSynergistSets,
+                }}
+                targetSetsCount={targetSetsForEx}
+                onAddExtraTargetSet={() => handleAddExtraTargetSet(exercise)}
+                setupNote={setupNotes[exercise.id] || ''}
+                onSaveSetupNote={(note) => handleSaveSetupNote(exercise.id, note)}
               />
             </div>
           );
@@ -695,7 +812,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
                   : '¡Rutina completada!'}
               </div>
               <div className="text-xs sm:text-sm font-black font-mono text-white truncate">
-                {completedExercisesCount}/{totalExercisesCount} ej. • {totalSetsCompleted} {totalSetsCompleted === 1 ? 'serie' : 'series'}
+                {completedExercisesCount}/{totalExercisesCount} ej. • {totalSetsCompleted} {totalSetsCompleted === 1 ? 'serie efectiva' : 'series efectivas'}
               </div>
             </div>
           </div>
@@ -703,7 +820,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
           <button
             type="button"
             onClick={handleFinishDayWorkout}
-            disabled={totalSetsCompleted === 0}
+            disabled={Object.values(completedSets).reduce((sum, s) => sum + s.length, 0) === 0}
             className="flex items-center space-x-1.5 sm:space-x-2 px-3.5 py-2.5 sm:px-6 sm:py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-black text-xs sm:text-sm shadow-xl shadow-emerald-500/25 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none select-none touch-manipulation shrink-0"
           >
             <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 fill-black text-emerald-400 shrink-0" />
@@ -717,11 +834,14 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
         initialSeconds={timerSeconds}
         exerciseName={timerExerciseName}
         isOpen={timerOpen}
+        triggerKey={timerTriggerKey}
         onClose={() => setTimerOpen(false)}
         onTimerExtension={(added, newTotal) => {
-          setTimerSeconds(newTotal);
+          if (timerExerciseId) {
+            setActiveRestByExercise((prev) => ({ ...prev, [timerExerciseId]: newTotal }));
+          }
           setAcuteFeedback(
-            `Has añadido +${added}s de descanso (${newTotal}s en total). Esta fatiga extra está siendo medida y se compensará en los siguientes ejercicios.`
+            `Has añadido +${added}s de descanso (${newTotal}s en total). La predicción de repeticiones se actualizó considerando tu mayor resíntesis de PCr.`
           );
           setTimeout(() => setAcuteFeedback(null), 5000);
         }}

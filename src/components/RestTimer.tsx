@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Timer, Play, Pause, Plus, Minus, X, Maximize2, Minimize2, SkipForward } from 'lucide-react';
 import { playTimerCompleteSound, playTickSound } from '../utils/audio';
 
@@ -8,6 +8,7 @@ interface RestTimerProps {
   isOpen: boolean;
   onClose: (restSummary?: { actualRestedSeconds: number; wasExtended: boolean; extensionSeconds: number }) => void;
   onTimerExtension?: (addedSeconds: number, newTotalSeconds: number) => void;
+  triggerKey?: number; // Se incrementa al confirmar una nueva serie para reiniciar limpiamente
 }
 
 export const RestTimer: React.FC<RestTimerProps> = ({
@@ -16,6 +17,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
   isOpen,
   onClose,
   onTimerExtension,
+  triggerKey = 0,
 }) => {
   const [secondsLeft, setSecondsLeft] = useState<number>(initialSeconds);
   const [totalSeconds, setTotalSeconds] = useState<number>(initialSeconds);
@@ -23,39 +25,66 @@ export const RestTimer: React.FC<RestTimerProps> = ({
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [soundPlayed, setSoundPlayed] = useState<boolean>(false);
 
+  // Reloj real inmune a bloqueo de pantalla o segundo plano (Spotify / WhatsApp)
+  const endTimeRef = useRef<number>(Date.now() + initialSeconds * 1000);
+  const pausedRemainingRef = useRef<number>(initialSeconds);
+  const lastTickSecondRef = useRef<number>(-1);
+
+  // Reiniciar únicamente cuando se abre el timer o se registra una nueva serie (triggerKey)
   useEffect(() => {
+    if (!isOpen) return;
+    endTimeRef.current = Date.now() + initialSeconds * 1000;
+    pausedRemainingRef.current = initialSeconds;
+    lastTickSecondRef.current = -1;
     setSecondsLeft(initialSeconds);
     setTotalSeconds(initialSeconds);
     setIsRunning(true);
     setSoundPlayed(false);
-    setIsExpanded(false); // ALWAYS start in non-intrusive floating mode
-  }, [initialSeconds, isOpen]);
+    setIsExpanded(false);
+  }, [isOpen, triggerKey]);
 
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | null = null;
+    if (!isOpen || !isRunning) return;
 
-    if (isRunning && secondsLeft > 0 && isOpen) {
-      interval = setInterval(() => {
-        setSecondsLeft((prev) => {
-          if (prev <= 4 && prev > 1) {
-            playTickSound();
+    const syncWithWallClock = () => {
+      const remaining = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
+      setSecondsLeft(remaining);
+      pausedRemainingRef.current = remaining;
+
+      if (remaining <= 3 && remaining >= 1 && lastTickSecondRef.current !== remaining) {
+        lastTickSecondRef.current = remaining;
+        playTickSound();
+      }
+
+      if (remaining === 0 && !soundPlayed) {
+        playTimerCompleteSound();
+        try {
+          if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            navigator.vibrate([250, 120, 250]);
           }
-          if (prev <= 1) {
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else if (secondsLeft === 0 && !soundPlayed && isOpen) {
-      playTimerCompleteSound();
-      setSoundPlayed(true);
-      setIsRunning(false);
-    }
+        } catch (e) {
+          // Ignore vibration errors on unsupported browsers
+        }
+        setSoundPlayed(true);
+        setIsRunning(false);
+      }
+    };
+
+    syncWithWallClock();
+    const interval = setInterval(syncWithWallClock, 250);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        syncWithWallClock();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      if (interval) clearInterval(interval);
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isRunning, secondsLeft, soundPlayed, isOpen]);
+  }, [isRunning, soundPlayed, isOpen]);
 
   if (!isOpen) return null;
 
@@ -71,19 +100,39 @@ export const RestTimer: React.FC<RestTimerProps> = ({
     e.stopPropagation();
     const newSecondsLeft = secondsLeft + 30;
     const newTotal = Math.max(totalSeconds + 30, newSecondsLeft);
+    endTimeRef.current = Date.now() + newSecondsLeft * 1000;
+    pausedRemainingRef.current = newSecondsLeft;
     setSecondsLeft(newSecondsLeft);
     setTotalSeconds(newTotal);
+    if (soundPlayed) {
+      setSoundPlayed(false);
+      setIsRunning(true);
+    }
     onTimerExtension?.(30, newTotal);
   };
 
   const handleSub30s = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setSecondsLeft((prev) => Math.max(0, prev - 30));
+    const nextLeft = Math.max(0, secondsLeft - 30);
+    endTimeRef.current = Date.now() + nextLeft * 1000;
+    pausedRemainingRef.current = nextLeft;
+    setSecondsLeft(nextLeft);
   };
 
   const handleToggleRunning = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsRunning(!isRunning);
+    if (isRunning) {
+      pausedRemainingRef.current = secondsLeft;
+      setIsRunning(false);
+    } else {
+      const toResume = secondsLeft > 0 ? secondsLeft : initialSeconds;
+      endTimeRef.current = Date.now() + toResume * 1000;
+      if (secondsLeft === 0) {
+        setSecondsLeft(initialSeconds);
+        setSoundPlayed(false);
+      }
+      setIsRunning(true);
+    }
   };
 
   const handleSkip = (e: React.MouseEvent) => {
