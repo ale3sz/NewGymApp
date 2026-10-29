@@ -42,17 +42,17 @@ export function getSecondaryMuscles(name: string, primaryMuscle: MuscleGroup, ca
   }
 
   if (primaryMuscle === 'espalda') {
-    // Tracción horizontal (remos, face pull, pajaros) involucra deltoide posterior y bíceps.
-    // Tracción vertical pura (jalón, dominadas) activa dorsal mayor y bíceps sin sobrecargar deltoide posterior.
+    // Tracción horizontal (remos, face pull, pajaros) involucra deltoide posterior, bíceps y antebrazos por agarre isométrico.
+    // Tracción vertical pura (jalón, dominadas) activa dorsal mayor, bíceps y flexores de dedos/antebrazo.
     if (
       lowerName.includes('remo') ||
       lowerName.includes('face pull') ||
       lowerName.includes('pajaro') ||
       lowerName.includes('deltoide')
     ) {
-      return ['biceps', 'hombros'];
+      return ['biceps', 'hombros', 'antebrazos'];
     }
-    return ['biceps'];
+    return ['biceps', 'antebrazos'];
   }
 
   if (primaryMuscle === 'hombros') {
@@ -69,13 +69,13 @@ export function getSecondaryMuscles(name: string, primaryMuscle: MuscleGroup, ca
       lowerName.includes('hack') ||
       lowerName.includes('bulgara')
     ) {
-      return ['gluteos'];
+      return ['gluteos', 'aductores'];
     }
   }
 
   if (primaryMuscle === 'femorales') {
     if (lowerName.includes('peso muerto') || lowerName.includes('rdl') || lowerName.includes('hip thrust')) {
-      return ['gluteos', 'espalda'];
+      return ['gluteos', 'espalda', 'antebrazos'];
     }
   }
 
