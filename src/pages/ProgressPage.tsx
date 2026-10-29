@@ -26,6 +26,7 @@ import {
   predictWeightFromReferenceLift,
   inferWeightFromUserHistory,
 } from '../engine/strengthTransferEngine';
+import { getSecondaryMuscles } from '../engine/trainerEngine';
 import { AppTab, MuscleGroup } from '../types';
 
 interface ProgressPageProps {
@@ -42,6 +43,8 @@ const MUSCLE_LIST: { id: MuscleGroup; label: string; emoji: string }[] = [
   { id: 'biceps', label: 'Bíceps', emoji: '💪' },
   { id: 'triceps', label: 'Tríceps', emoji: '🔱' },
   { id: 'pantorrillas', label: 'Pantorrillas', emoji: '🦶' },
+  { id: 'antebrazos', label: 'Antebrazos', emoji: '✊' },
+  { id: 'aductores', label: 'Aductores', emoji: '🧲' },
   { id: 'abdomen', label: 'Abdomen', emoji: '🔥' },
 ];
 
@@ -375,29 +378,66 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
       });
   }, [rawLogs]);
 
-  // Resumen global de los 10 grupos musculares
+  // Resumen global de los grupos musculares (incluye trabajo directo al 100% y sinergista/asistencia al 50%)
   const muscleOverviewStats = useMemo(() => {
     const stats: Record<
       string,
-      { sets: number; tonnage: number; peak1RM: number; bestExerciseName: string }
+      {
+        sets: number;
+        directSets: number;
+        secondarySets: number;
+        tonnage: number;
+        peak1RM: number;
+        bestExerciseName: string;
+      }
     > = {};
     MUSCLE_LIST.forEach((m) => {
-      stats[m.id] = { sets: 0, tonnage: 0, peak1RM: 0, bestExerciseName: '' };
+      stats[m.id] = {
+        sets: 0,
+        directSets: 0,
+        secondarySets: 0,
+        tonnage: 0,
+        peak1RM: 0,
+        bestExerciseName: '',
+      };
     });
 
     for (const log of rawLogs) {
       const cat = EXERCISE_CATALOG.find((c) => c.id === log.exerciseId);
-      const muscle = cat?.primaryMuscle;
-      if (!muscle || !stats[muscle]) continue;
+      if (!cat) continue;
 
       const workingSets = (log.sets || []).filter((s) => !s.isWarmup && s.repsCompleted > 0);
-      for (const s of workingSets) {
-        stats[muscle].sets += 1;
-        stats[muscle].tonnage += s.weightKg * s.repsCompleted;
-        const e1 = estimateAutoregulated1RM(s.weightKg, s.repsCompleted, s.rirLogged).e1rm;
-        if (e1 > stats[muscle].peak1RM) {
-          stats[muscle].peak1RM = e1;
-          stats[muscle].bestExerciseName = cat?.name || log.exerciseId;
+      if (workingSets.length === 0) continue;
+
+      const primary = cat.primaryMuscle;
+      const secondaries = getSecondaryMuscles(cat.name, cat.primaryMuscle, cat.category);
+
+      // 1. Músculo Principal (100% de crédito de volumen)
+      if (primary && stats[primary]) {
+        for (const s of workingSets) {
+          stats[primary].directSets += 1;
+          stats[primary].sets += 1;
+          stats[primary].tonnage += s.weightKg * s.repsCompleted;
+          const e1 = estimateAutoregulated1RM(s.weightKg, s.repsCompleted, s.rirLogged).e1rm;
+          if (e1 > stats[primary].peak1RM) {
+            stats[primary].peak1RM = e1;
+            stats[primary].bestExerciseName = cat.name;
+          }
+        }
+      }
+
+      // 2. Músculos Secundarios / Sinergistas (0.5 series efectivas según consenso científico)
+      for (const sec of secondaries) {
+        if (!stats[sec]) continue;
+        for (const s of workingSets) {
+          stats[sec].secondarySets += 1;
+          stats[sec].sets += 0.5;
+          stats[sec].tonnage += s.weightKg * s.repsCompleted * 0.5;
+          const e1 = estimateAutoregulated1RM(s.weightKg, s.repsCompleted, s.rirLogged).e1rm;
+          if (stats[sec].directSets === 0 && e1 > stats[sec].peak1RM) {
+            stats[sec].peak1RM = e1;
+            stats[sec].bestExerciseName = `${cat.name} (Sinergista)`;
+          }
         }
       }
     }
@@ -409,30 +449,50 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
     const byDate = new Map<string, { peak1RM: number; bestEx: string; sets: number; tonnage: number }>();
     const loggedExercisesMap = new Map<
       string,
-      { id: string; name: string; peak1RM: number; lastWeight: number; lastReps: number; sessions: number }
+      {
+        id: string;
+        name: string;
+        peak1RM: number;
+        lastWeight: number;
+        lastReps: number;
+        sessions: number;
+        isSecondary: boolean;
+      }
     >();
 
     for (const log of rawLogs) {
       const cat = EXERCISE_CATALOG.find((c) => c.id === log.exerciseId);
-      if (!cat || cat.primaryMuscle !== selectedMuscle) continue;
+      if (!cat) continue;
+
+      const isPrimary = cat.primaryMuscle === selectedMuscle;
+      const secondaries = getSecondaryMuscles(cat.name, cat.primaryMuscle, cat.category);
+      const isSecondary = !isPrimary && secondaries.includes(selectedMuscle);
+
+      if (!isPrimary && !isSecondary) continue;
 
       const workingSets = (log.sets || []).filter((s) => !s.isWarmup && s.repsCompleted > 0);
       if (workingSets.length === 0) continue;
 
       const dateKey = (log.date || '').slice(0, 10) || 'Sesión';
-      const dayEntry = byDate.get(dateKey) || { peak1RM: 0, bestEx: cat.name, sets: 0, tonnage: 0 };
+      const dayEntry = byDate.get(dateKey) || {
+        peak1RM: 0,
+        bestEx: isSecondary ? `${cat.name} (Sinergista)` : cat.name,
+        sets: 0,
+        tonnage: 0,
+      };
 
       let sessionBest1RM = 0;
       let sessionLastW = 0;
       let sessionLastR = 0;
+      const setFactor = isSecondary ? 0.5 : 1;
 
       for (const s of workingSets) {
-        dayEntry.sets += 1;
-        dayEntry.tonnage += s.weightKg * s.repsCompleted;
+        dayEntry.sets += setFactor;
+        dayEntry.tonnage += s.weightKg * s.repsCompleted * setFactor;
         const e1 = estimateAutoregulated1RM(s.weightKg, s.repsCompleted, s.rirLogged).e1rm;
         if (e1 > dayEntry.peak1RM) {
           dayEntry.peak1RM = e1;
-          dayEntry.bestEx = cat.name;
+          dayEntry.bestEx = isSecondary ? `${cat.name} (Sinergista)` : cat.name;
         }
         if (e1 > sessionBest1RM) sessionBest1RM = e1;
         sessionLastW = s.weightKg;
@@ -442,11 +502,12 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
 
       const exInfo = loggedExercisesMap.get(cat.id) || {
         id: cat.id,
-        name: cat.name,
+        name: isSecondary ? `${cat.name} (Sinergista)` : cat.name,
         peak1RM: 0,
         lastWeight: 0,
         lastReps: 0,
         sessions: 0,
+        isSecondary,
       };
       exInfo.sessions += 1;
       exInfo.lastWeight = sessionLastW;
@@ -460,12 +521,17 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
       .map(([d, info]) => ({
         label: d.length >= 10 ? d.slice(5) : d,
         value: Math.round(info.peak1RM * 10) / 10,
-        secondaryText: `${info.bestEx} (${info.sets} series)`,
+        secondaryText: `${info.bestEx} (${info.sets % 1 === 0 ? info.sets : info.sets.toFixed(1)} series)`,
       }));
 
     // Cargas deducidas por IA para variantes de este músculo que el usuario aún NO probó
     const unloggedMuscleCatalog = EXERCISE_CATALOG.filter(
-      (c) => c.primaryMuscle === selectedMuscle && !loggedExercisesMap.has(c.id) && c.category !== 'corporal' && c.category !== 'banda'
+      (c) =>
+        (c.primaryMuscle === selectedMuscle ||
+          getSecondaryMuscles(c.name, c.primaryMuscle, c.category).includes(selectedMuscle)) &&
+        !loggedExercisesMap.has(c.id) &&
+        c.category !== 'corporal' &&
+        c.category !== 'banda'
     ).slice(0, 6);
 
     const inferredUnlogged = unloggedMuscleCatalog
@@ -704,7 +770,17 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
                       {m.emoji} {m.label}
                     </span>
                     <span className="font-mono text-zinc-400">
-                      <strong className="text-white">{st.sets}</strong> series
+                      <strong className="text-white">
+                        {st.sets % 1 === 0 ? st.sets : st.sets.toFixed(1)}
+                      </strong>{' '}
+                      series
+                      {st.secondarySets > 0 && (
+                        <span className="text-[10px] text-zinc-500 ml-1">
+                          {st.directSets > 0
+                            ? `(${st.directSets}d + ${st.secondarySets}s)`
+                            : `(${st.secondarySets} sin.)`}
+                        </span>
+                      )}
                       {st.peak1RM > 0 && (
                         <span className="text-emerald-400 ml-1.5">
                           • Pico {Math.round(st.peak1RM)}kg
@@ -739,11 +815,12 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
           </p>
         </div>
 
-        {/* Selector de los 10 Músculos */}
+        {/* Selector de los Músculos */}
         <div className="flex flex-wrap gap-2">
           {MUSCLE_LIST.map((m) => {
             const active = selectedMuscle === m.id;
             const count = muscleOverviewStats[m.id]?.sets || 0;
+            const displayCount = count % 1 === 0 ? count : count.toFixed(1);
             return (
               <button
                 key={m.id}
@@ -763,7 +840,7 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
                       active ? 'bg-black/20 text-black' : 'bg-zinc-800 text-zinc-400'
                     }`}
                   >
-                    {count}
+                    {displayCount}
                   </span>
                 )}
               </button>
@@ -804,9 +881,16 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
                   className="p-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 hover:border-emerald-500/40 cursor-pointer transition flex items-center justify-between"
                 >
                   <div>
-                    <div className="text-xs font-bold text-white">{ex.name}</div>
+                    <div className="flex items-center space-x-1.5">
+                      <span className="text-xs font-bold text-white">{ex.name}</span>
+                      {ex.isSecondary && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold">
+                          Sinergista
+                        </span>
+                      )}
+                    </div>
                     <div className="text-[11px] text-zinc-400 font-mono mt-0.5">
-                      Último: {ex.lastWeight} kg × {ex.lastReps} reps • {ex.sessions} sesiones
+                      Último: {ex.lastWeight} kg × {ex.lastReps} reps • {ex.sessions} {ex.sessions === 1 ? 'sesión' : 'sesiones'}
                     </div>
                   </div>
                   <div className="text-right">
