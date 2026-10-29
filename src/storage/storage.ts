@@ -414,3 +414,33 @@ export function getUserFatigueProfile(): UserFatigueProfile {
 export function saveUserFatigueProfile(profile: UserFatigueProfile): void {
   safeSetItem(USER_FATIGUE_PROFILE_KEY, JSON.stringify(profile));
 }
+
+// ==================== NOTAS DE CONFIGURACIÓN DE MÁQUINA / SETUP POR EJERCICIO ====================
+
+const EXERCISE_SETUP_NOTES_KEY = 'gymscience_exercise_setup_notes';
+
+export function getAllExerciseSetupNotes(): Record<string, string> {
+  const data = safeGetItem(EXERCISE_SETUP_NOTES_KEY);
+  if (!data) return {};
+  try {
+    return JSON.parse(data);
+  } catch (e) {
+    return {};
+  }
+}
+
+export function getExerciseSetupNote(exerciseId: string): string {
+  const all = getAllExerciseSetupNotes();
+  return all[exerciseId] || '';
+}
+
+export function saveExerciseSetupNote(exerciseId: string, note: string): void {
+  const all = getAllExerciseSetupNotes();
+  if (!note.trim()) {
+    delete all[exerciseId];
+  } else {
+    all[exerciseId] = note.trim();
+  }
+  safeSetItem(EXERCISE_SETUP_NOTES_KEY, JSON.stringify(all));
+}
+

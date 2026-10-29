@@ -106,6 +106,7 @@ export interface SetLog {
   rpeLogged?: number;
   estimated1RM?: number;
   effectiveReps?: number;
+  isWarmup?: boolean;             // Si es serie de calentamiento / aproximación (no cuenta como serie efectiva ni sesga progresión)
   actualRestSeconds?: number;     // Segundos reales de descanso tomados antes de esta serie
   prescribedRestSeconds?: number; // Segundos óptimos prescritos por el sistema
   restExtensionRatio?: number;    // actual / prescribed (>1.0 indica fatiga aguda acumulada)
@@ -139,6 +140,7 @@ export interface CatalogExercise {
 }
 
 export interface Exercise extends CatalogExercise {
+  targetSets?: number;
   targetRepsMin: number;
   targetRepsMax: number;
   targetRIR: number;

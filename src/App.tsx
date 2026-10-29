@@ -74,6 +74,20 @@ export const App: React.FC = () => {
       setGuideModalOpen(true);
       return;
     }
+
+    // Si el usuario presiona "Entrenar" y no hay un día explícito fijado,
+    // preseleccionar automáticamente el día siguiente según el último entrenamiento realizado
+    if (tab === 'active-workout' && !workoutDayId) {
+      const activeRoutine = routines.find((r) => r.id === (workoutRoutineId || activeRoutineId)) || globalActiveRoutine;
+      if (activeRoutine && activeRoutine.days && activeRoutine.days.length > 0) {
+        const logs = getCompletedDaysLogs();
+        const smartRec = getSmartWorkoutRecommendation(activeRoutine, logs);
+        if (smartRec?.recommendedDayId) {
+          setWorkoutDayId(smartRec.recommendedDayId);
+        }
+      }
+    }
+
     window.location.hash = tab;
     setCurrentTab(tab);
   };

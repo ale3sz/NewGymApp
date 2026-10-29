@@ -26,6 +26,7 @@ import {
   saveWorkoutSession,
   getLastSessionLogs,
   saveCompletedDayLog,
+  getCompletedDaysLogs,
   getAllWorkoutLogs,
   getEquipmentProfile,
   saveActiveWorkoutDraft,
@@ -33,7 +34,7 @@ import {
   clearActiveWorkoutDraft
 } from '../storage/storage';
 import { calculateNextSession } from '../engine/overloadAlgorithm';
-import { getMusclesInDay } from '../engine/smartScheduleEngine';
+import { getMusclesInDay, getSmartWorkoutRecommendation } from '../engine/smartScheduleEngine';
 import { prescribeExerciseParameters } from '../engine/trainerEngine';
 import { analyzeExerciseStagnation } from '../engine/stagnationEngine';
 import { estimateAutoregulated1RM, calculateEffectiveReps } from '../utils/formulas';
@@ -105,7 +106,20 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   useEffect(() => {
     if (!routine || !routine.days || routine.days.length === 0) return;
 
-    const dayToLoad = routine.days.find((d) => d.id === (initialDayId || selectedDayId)) || routine.days[0];
+    // Determinar qué día cargar:
+    // 1. initialDayId explícito si fue pasado
+    // 2. selectedDayId si ya estaba en el estado
+    // 3. Recomendación inteligente basada en el último entrenamiento completado en el historial
+    let targetDayId = initialDayId || selectedDayId;
+    if (!targetDayId) {
+      const logs = getCompletedDaysLogs();
+      const smartRec = getSmartWorkoutRecommendation(routine, logs);
+      if (smartRec?.recommendedDayId) {
+        targetDayId = smartRec.recommendedDayId;
+      }
+    }
+
+    const dayToLoad = routine.days.find((d) => d.id === targetDayId) || routine.days[0];
     if (dayToLoad) {
       setSelectedDayId(dayToLoad.id);
       setWorkoutDay(dayToLoad);
@@ -470,9 +484,14 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   }
 
   const totalExercisesCount = workoutDay.exercises.length;
+  const completedExercisesCount = workoutDay.exercises.filter((ex) => {
+    const sets = completedSets[ex.id] || [];
+    return sets.length >= (ex.targetSets || 3);
+  }).length;
   const exercisesWithCompletedSetsCount = workoutDay.exercises.filter(
     (ex) => (completedSets[ex.id]?.length || 0) > 0
   ).length;
+  const remainingExercisesCount = Math.max(0, totalExercisesCount - completedExercisesCount);
   const totalSetsCompleted = Object.values(completedSets).reduce((sum, s) => sum + s.length, 0);
 
   return (
@@ -528,8 +547,17 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
               </span>
               <span className="text-zinc-600 hidden xs:inline">•</span>
               <span className="text-xs font-mono text-emerald-400 font-bold">
-                {exercisesWithCompletedSetsCount}/{totalExercisesCount} ejercicios iniciados
+                {completedExercisesCount}/{totalExercisesCount} ejercicios completados
               </span>
+              {remainingExercisesCount > 0 ? (
+                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  Faltan {remainingExercisesCount} {remainingExercisesCount === 1 ? 'ejercicio' : 'ejercicios'}
+                </span>
+              ) : (
+                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                  ¡Todos los ejercicios completados!
+                </span>
+              )}
             </div>
 
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight mt-1 break-words">
@@ -566,7 +594,10 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       {/* 2. Quick Jump Carousel / Exercise Tabs (Thumb-Friendly for Gym) */}
       <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin max-w-full touch-pan-x">
         {workoutDay.exercises.map((ex, exIdx) => {
-          const setsCount = completedSets[ex.id]?.length || 0;
+          const sets = completedSets[ex.id] || [];
+          const setsCount = sets.length;
+          const targetSets = ex.targetSets || 3;
+          const isFinished = setsCount >= targetSets;
           const isSelected = activeExerciseIndex === exIdx;
 
           return (
@@ -583,22 +614,32 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
               className={`flex items-center space-x-2 px-3.5 py-2 rounded-2xl border transition-all shrink-0 text-xs font-bold select-none touch-manipulation ${
                 isSelected
                   ? 'bg-red-600 text-white border-red-500 shadow-md shadow-red-600/20'
+                  : isFinished
+                  ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/50 hover:bg-emerald-900/40'
                   : setsCount > 0
-                  ? 'bg-zinc-900 text-emerald-400 border-emerald-500/40 hover:bg-zinc-800'
+                  ? 'bg-zinc-900 text-amber-300 border-amber-500/40 hover:bg-zinc-800'
                   : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white hover:bg-zinc-800'
               }`}
             >
               <span className={`w-5 h-5 rounded-lg flex items-center justify-center font-mono text-[10px] font-black ${
-                isSelected ? 'bg-black text-white' : 'bg-zinc-800 text-zinc-300'
+                isSelected
+                  ? 'bg-black text-white'
+                  : isFinished
+                  ? 'bg-emerald-500 text-black'
+                  : 'bg-zinc-800 text-zinc-300'
               }`}>
-                {exIdx + 1}
+                {isFinished ? '✓' : exIdx + 1}
               </span>
               <span className="truncate max-w-[120px] sm:max-w-[180px]">{ex.name}</span>
               {setsCount > 0 && (
                 <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
-                  isSelected ? 'bg-black text-emerald-400 font-black' : 'bg-emerald-500/15 text-emerald-400'
+                  isSelected
+                    ? 'bg-black text-emerald-400 font-black'
+                    : isFinished
+                    ? 'bg-emerald-500/20 text-emerald-300 font-black'
+                    : 'bg-amber-500/15 text-amber-300'
                 }`}>
-                  {setsCount}s
+                  {setsCount}/{targetSets}s
                 </span>
               )}
             </button>
@@ -649,10 +690,12 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
             </div>
             <div className="min-w-0">
               <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-zinc-400 truncate">
-                Progreso Sesión
+                {remainingExercisesCount > 0
+                  ? `Faltan ${remainingExercisesCount} ${remainingExercisesCount === 1 ? 'ejercicio' : 'ejercicios'}`
+                  : '¡Rutina completada!'}
               </div>
               <div className="text-xs sm:text-sm font-black font-mono text-white truncate">
-                {totalSetsCompleted} {totalSetsCompleted === 1 ? 'serie' : 'series'}
+                {completedExercisesCount}/{totalExercisesCount} ej. • {totalSetsCompleted} {totalSetsCompleted === 1 ? 'serie' : 'series'}
               </div>
             </div>
           </div>

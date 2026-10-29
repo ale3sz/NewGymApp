@@ -117,19 +117,174 @@ export function estimate1RM(weightKg: number, reps: number, rir: number = 0): nu
 /**
  * Principio de Reclutamiento de Unidades Motoras de Henneman:
  * Repeticiones Efectivas por serie.
- * Solo las reps ejecutadas dentro del umbral de fatiga (RIR <= 4) imponen tensión
- * mecánica suficiente para reclutar las fibras glucolíticas tipo II de alto umbral.
+ * 1. Si es serie de calentamiento / aproximación (isWarmup = true), retorna 0.
+ * 2. En cargas pesadas de fuerza (virtualReps <= 5 con RIR <= 3, equivalente a >= 85% 1RM),
+ *    el reclutamiento de unidades motoras de alto umbral es máximo desde la repetición 1,
+ *    por lo que todas las repeticiones completadas son efectivas.
+ * 3. En rangos moderados/altos (> 5 reps virtuales), solo las últimas ~5 repeticiones previas
+ *    al fallo concéntrico (RIR <= 4) imponen la caída de velocidad necesaria para máxima tensión mecánica.
  */
-export function calculateEffectiveReps(repsCompleted: number, rirLogged: number): number {
-  if (repsCompleted <= 0) return 0;
+export function calculateEffectiveReps(
+  repsCompleted: number,
+  rirLogged: number,
+  isWarmup: boolean = false
+): number {
+  if (isWarmup || repsCompleted <= 0) return 0;
   const safeRir = Math.max(0, rirLogged);
   if (safeRir > 4) {
     // Estímulo hipertrófico subumbral (RIR 5+ solo acumula fatiga sin reclutamiento pico)
     return 0;
   }
-  // En una serie al fallo (RIR 0) típicamente las últimas ~5 repeticiones son las efectivas
+  const virtualReps = repsCompleted + safeRir;
+  // Cargas de fuerza máxima (>= 85% 1RM, <= 5 reps virtuales con RIR <= 3): reclutamiento completo desde rep 1
+  if (virtualReps <= 5 && safeRir <= 3) {
+    return repsCompleted;
+  }
+  // En una serie convencional al fallo (RIR 0) las últimas ~5 repeticiones son las efectivas
   const effectiveInSet = Math.max(0, 5 - safeRir);
   return Math.min(repsCompleted, effectiveInSet);
+}
+
+/**
+ * Devuelve una explicación fisiológica concisa de las repeticiones efectivas calculadas
+ */
+export function getEffectiveRepsExplanation(
+  repsCompleted: number,
+  rirLogged: number,
+  isWarmup: boolean = false
+): string {
+  if (isWarmup) return 'Serie de aproximación (sin fatiga efectiva)';
+  if (repsCompleted <= 0) return 'Sin repeticiones';
+  const safeRir = Math.max(0, rirLogged);
+  if (safeRir > 4) return 'Estímulo subumbral (RIR ≥ 5)';
+  const virtualReps = repsCompleted + safeRir;
+  if (virtualReps <= 5 && safeRir <= 3) {
+    return 'Carga ≥85% 1RM: reclutamiento total desde rep 1';
+  }
+  const eff = Math.min(repsCompleted, Math.max(0, 5 - safeRir));
+  return `Últimas ${eff} reps de máxima tensión (RIR ${safeRir})`;
+}
+
+/**
+ * Calculadora de Discos por Lado (Plate Calculator) para barra olímpica, multipower y prensa
+ */
+export function calculatePlatesPerSide(
+  totalWeightKg: number,
+  category: EquipmentCategory,
+  barWeightKg: number = 20
+): {
+  baseWeightKg: number;
+  perSideKg: number;
+  platesText: string;
+  platesList: { weight: number; count: number }[];
+} | null {
+  if (isNaN(totalWeightKg) || totalWeightKg <= 0) return null;
+
+  let baseKg = 0;
+  if (category === 'barra') {
+    if (totalWeightKg <= barWeightKg) return null;
+    baseKg = barWeightKg;
+  } else if (category === 'smith') {
+    baseKg = totalWeightKg > 20 ? 20 : 0;
+    if (totalWeightKg <= baseKg) return null;
+  } else if (category === 'maquina' && totalWeightKg >= 60) {
+    // Ej. Prensa de piernas / Hack cargada con discos
+    baseKg = 0;
+  } else {
+    return null;
+  }
+
+  const perSideKg = Math.round(((totalWeightKg - baseKg) / 2) * 100) / 100;
+  if (perSideKg <= 0) return null;
+
+  const standardPlates = [25, 20, 15, 10, 5, 2.5, 1.25];
+  let remaining = perSideKg;
+  const platesList: { weight: number; count: number }[] = [];
+
+  for (const plate of standardPlates) {
+    if (remaining >= plate - 0.01) {
+      const count = Math.floor((remaining + 0.01) / plate);
+      if (count > 0) {
+        platesList.push({ weight: plate, count });
+        remaining = Math.round((remaining - count * plate) * 100) / 100;
+      }
+    }
+  }
+
+  if (platesList.length === 0) return null;
+
+  const platesText = platesList
+    .map((p) => (p.count > 1 ? `${p.count}×${p.weight}` : `${p.weight}`))
+    .join(' + ') + ' kg';
+
+  return {
+    baseWeightKg: baseKg,
+    perSideKg,
+    platesText,
+    platesList,
+  };
+}
+
+/**
+ * Generador Científico de Series de Aproximación (Warm-up Ramp)
+ * Diseñado para activar el SNC (Potenciación Post-Activación - PAP) y lubricar cápsulas
+ * articulares sin acumular lactato ni fatiga antes de la Serie 1 efectiva.
+ */
+export function calculateWarmupRamp(
+  workingWeightKg: number,
+  category: EquipmentCategory
+): {
+  step: number;
+  percent: number;
+  weightKg: number;
+  reps: number;
+  purpose: string;
+}[] {
+  if (isNaN(workingWeightKg) || workingWeightKg < 25) return [];
+
+  const roundToGymLoad = (raw: number): number => {
+    if (category === 'mancuerna') {
+      return Math.max(2, Math.round(raw / 2) * 2);
+    }
+    const step = raw >= 100 ? 5 : 2.5;
+    return Math.max(category === 'barra' ? 20 : 5, Math.round(raw / step) * step);
+  };
+
+  const w1 = roundToGymLoad(workingWeightKg * 0.5);
+  const w2 = roundToGymLoad(workingWeightKg * 0.72);
+  const w3 = roundToGymLoad(workingWeightKg * 0.88);
+
+  const ramp: { step: number; percent: number; weightKg: number; reps: number; purpose: string }[] = [
+    {
+      step: 1,
+      percent: 50,
+      weightKg: w1,
+      reps: 8,
+      purpose: 'Temperatura articular y patrón motor (RIR 5+)',
+    },
+  ];
+
+  if (w2 > w1) {
+    ramp.push({
+      step: 2,
+      percent: 72,
+      weightKg: w2,
+      reps: 4,
+      purpose: 'Transición de reclutamiento neural sin acidosis',
+    });
+  }
+
+  if (w3 > w2 && w3 < workingWeightKg) {
+    ramp.push({
+      step: ramp.length + 1,
+      percent: 88,
+      weightKg: w3,
+      reps: 1,
+      purpose: 'Potenciación Post-Activación (PAP) — 1 rep explosiva',
+    });
+  }
+
+  return ramp;
 }
 
 /**
@@ -182,27 +337,29 @@ export function evaluateSessionStimulus(sets: SetLog[]): {
     };
   }
 
-  const totalSets = sets.length;
+  const workingSets = sets.filter(s => !s.isWarmup);
+  const activePool = workingSets.length > 0 ? workingSets : sets;
+  const totalSets = activePool.length;
   let effectiveSets = 0;
   let totalEffectiveReps = 0;
   let totalVolumeKg = 0;
   let sumRIR = 0;
 
-  sets.forEach(s => {
+  activePool.forEach(s => {
     const rir = s.rirLogged ?? 1;
     sumRIR += rir;
-    if (rir <= 3) effectiveSets++;
-    totalEffectiveReps += calculateEffectiveReps(s.repsCompleted, rir);
+    if (!s.isWarmup && rir <= 3) effectiveSets++;
+    totalEffectiveReps += calculateEffectiveReps(s.repsCompleted, rir, s.isWarmup);
     totalVolumeKg += s.weightKg * s.repsCompleted;
   });
 
   const avgRIR = Math.round((sumRIR / totalSets) * 10) / 10;
 
-  // Caída de rendimiento del Set 1 vs último Set
+  // Caída de rendimiento del Set 1 efectivo vs último Set efectivo
   let fatigueIndexPercent = 0;
-  if (sets.length >= 2 && sets[0].weightKg > 0 && sets[0].repsCompleted > 0) {
-    const initialVolume = sets[0].weightKg * sets[0].repsCompleted;
-    const finalVolume = sets[sets.length - 1].weightKg * sets[sets.length - 1].repsCompleted;
+  if (activePool.length >= 2 && activePool[0].weightKg > 0 && activePool[0].repsCompleted > 0) {
+    const initialVolume = activePool[0].weightKg * activePool[0].repsCompleted;
+    const finalVolume = activePool[activePool.length - 1].weightKg * activePool[activePool.length - 1].repsCompleted;
     if (initialVolume > 0) {
       fatigueIndexPercent = Math.max(0, Math.round(((initialVolume - finalVolume) / initialVolume) * 100));
     }

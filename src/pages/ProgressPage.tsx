@@ -53,6 +53,24 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
     return analyzeExerciseStagnation(exId, exName, rawLogs);
   });
 
+  // Filter state for Stagnation Radar ('critical', 'all', 'stagnated', 'progressing')
+  const [radarFilter, setRadarFilter] = useState<'critical' | 'all' | 'progressing'>('critical');
+
+  const criticalCount = stagnationReports.filter(
+    r => r.status === 'STAGNATED' || r.status === 'FATIGUE_REGRESSION'
+  ).length;
+  const progressingCount = stagnationReports.filter(r => r.status === 'PROGRESSING').length;
+
+  const filteredReports = stagnationReports.filter(r => {
+    if (radarFilter === 'critical') {
+      return r.status === 'STAGNATED' || r.status === 'FATIGUE_REGRESSION';
+    }
+    if (radarFilter === 'progressing') {
+      return r.status === 'PROGRESSING';
+    }
+    return true; // 'all'
+  });
+
   // Selected exercise data
   const selectedCatalogItem = EXERCISE_CATALOG.find(c => c.id === selectedExerciseId);
   const selectedExName = selectedCatalogItem?.name || selectedExerciseId.replace(/_/g, ' ');
@@ -106,12 +124,54 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
 
       {/* Stagnation & Fatigue Radar Section */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl space-y-4">
-        <div className="flex items-center space-x-2">
-          <AlertTriangle className="w-5 h-5 text-amber-400" />
-          <h2 className="text-lg font-bold text-white">Radar de Estancamiento & Mesetas</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
+            <h2 className="text-lg font-bold text-white">Radar de Estancamiento & Mesetas</h2>
+          </div>
+
+          {/* Quick Filters to avoid endless exercise lists */}
+          {stagnationReports.length > 0 && (
+            <div className="flex items-center space-x-1.5 bg-zinc-950 p-1 rounded-2xl border border-zinc-800 self-start sm:self-auto text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setRadarFilter('critical')}
+                className={`px-3 py-1.5 rounded-xl transition ${
+                  radarFilter === 'critical'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Atención ({criticalCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setRadarFilter('progressing')}
+                className={`px-3 py-1.5 rounded-xl transition ${
+                  radarFilter === 'progressing'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Progresando ({progressingCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setRadarFilter('all')}
+                className={`px-3 py-1.5 rounded-xl transition ${
+                  radarFilter === 'all'
+                    ? 'bg-zinc-800 text-white border border-zinc-700'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Todos ({stagnationReports.length})
+              </button>
+            </div>
+          )}
         </div>
+
         <p className="text-xs text-zinc-400 leading-relaxed">
-          El sistema analiza tus últimas sesiones. Si detecta 3 o más sesiones consecutivas con la misma carga y repeticiones, o una caída prematura por fatiga acumulada, te prescribe una intervención inmediata.
+          El sistema analiza tus últimas sesiones. Filtra automáticamente los ejercicios que requieren atención (meseta o fatiga acumulada) para evitar listas infinitas en pantalla.
         </p>
 
         {stagnationReports.length === 0 ? (
@@ -131,9 +191,25 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
               <span>Iniciar Primer Entrenamiento</span>
             </button>
           </div>
+        ) : filteredReports.length === 0 ? (
+          <div className="text-center py-8 px-4 rounded-2xl bg-zinc-950/40 border border-zinc-800/60 space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+            <h3 className="text-sm font-bold text-white">
+              {radarFilter === 'critical'
+                ? '¡Excelente! Ningún ejercicio presenta estancamiento crítico actualmente'
+                : 'No hay ejercicios bajo este filtro'}
+            </h3>
+            <p className="text-xs text-zinc-400">
+              {radarFilter === 'critical'
+                ? 'Todas tus progresiones de carga están en ritmo óptimo o consolidando.'
+                : 'Prueba cambiando a la pestaña "Todos" para ver el catálogo registrado.'}
+            </p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {stagnationReports.map((report) => (
+            {filteredReports.map((report) => (
               <div
                 key={report.exerciseId}
                 onClick={() => setSelectedExerciseId(report.exerciseId)}
