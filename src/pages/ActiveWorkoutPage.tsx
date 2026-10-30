@@ -61,12 +61,14 @@ import { ExerciseTechniqueModal } from '../components/ExerciseTechniqueModal';
 interface ActiveWorkoutPageProps {
   routine: Routine | null;
   initialDayId?: string | null;
+  customDay?: WorkoutDay | null;
   onFinishWorkout: () => void;
 }
 
 export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   routine,
   initialDayId,
+  customDay,
   onFinishWorkout,
 }) => {
   const [selectedDayId, setSelectedDayId] = useState<string>(initialDayId || '');
@@ -114,11 +116,27 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   const [completionSummary, setCompletionSummary] = useState<WorkoutSummaryData | null>(null);
   const [draftRestoredNotification, setDraftRestoredNotification] = useState<boolean>(false);
 
+  const availableDays = React.useMemo(() => {
+    if (!routine) return customDay ? [customDay] : [];
+    const days = [...(routine.days || [])];
+    if (customDay && !days.some((d) => d.id === customDay.id)) {
+      days.unshift(customDay);
+    }
+    return days;
+  }, [routine, customDay]);
+
   useEffect(() => {
     setEquipment(getEquipmentProfile());
   }, []);
 
   useEffect(() => {
+    if (customDay) {
+      setSelectedDayId(customDay.id);
+      setWorkoutDay(customDay);
+      loadExerciseContexts(customDay);
+      return;
+    }
+
     if (!routine || !routine.days || routine.days.length === 0) return;
 
     // Determinar qué día cargar:
@@ -134,7 +152,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       }
     }
 
-    const dayToLoad = routine.days.find((d) => d.id === targetDayId) || routine.days[0];
+    const dayToLoad = availableDays.find((d) => d.id === targetDayId) || availableDays[0];
     if (dayToLoad) {
       setSelectedDayId(dayToLoad.id);
       setWorkoutDay(dayToLoad);
@@ -153,7 +171,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
         setDraftRestoredNotification(true);
       }
     }
-  }, [routine, initialDayId]);
+  }, [routine, initialDayId, customDay]);
 
   // Sincronización continua de borrador en vivo (Crash & Refresh Resilience)
   useEffect(() => {
@@ -170,8 +188,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   }, [completedSets, routine, workoutDay]);
 
   const handleSelectDay = (dayId: string) => {
-    if (!routine || !routine.days) return;
-    const targetDay = routine.days.find((d) => d.id === dayId);
+    const targetDay = availableDays.find((d) => d.id === dayId);
     if (targetDay) {
       setSelectedDayId(dayId);
       setWorkoutDay(targetDay);
@@ -714,7 +731,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
         </div>
 
         {/* Change Day Dropdown */}
-        {routine.days && routine.days.length > 1 && (
+        {availableDays && availableDays.length > 1 && (
           <div className="flex items-center space-x-2.5 self-stretch sm:self-start md:self-auto bg-zinc-950 px-3 py-2 rounded-2xl border border-zinc-800 w-full sm:w-auto max-w-full">
             <label className="text-xs text-zinc-400 font-bold whitespace-nowrap shrink-0">Día:</label>
             <select
@@ -722,7 +739,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
               onChange={(e) => handleSelectDay(e.target.value)}
               className="bg-transparent text-xs font-black text-zinc-200 focus:outline-none cursor-pointer truncate w-full sm:max-w-xs md:max-w-sm"
             >
-              {routine.days.map((d) => (
+              {availableDays.map((d) => (
                 <option key={d.id} value={d.id} className="bg-zinc-900 text-white">
                   {d.name}
                 </option>

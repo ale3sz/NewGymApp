@@ -24,7 +24,7 @@ interface SessionFusionModalProps {
   onClose: () => void;
   routine: Routine;
   weeklyAnalysis: WeeklyCycleAnalysis;
-  onStartFusionDay: (routineId: string, dayId: string) => void;
+  onStartFusionDay: (routineId: string, dayId: string, customDay?: WorkoutDay) => void;
 }
 
 const TIME_OPTIONS = [
@@ -69,11 +69,9 @@ export const SessionFusionModal: React.FC<SessionFusionModalProps> = ({
   if (!isOpen) return null;
 
   const handleConfirmAndStart = () => {
-    const success = injectFusionDayIntoRoutine(routine.id, generatedFusionDay);
-    if (success) {
-      onStartFusionDay(routine.id, generatedFusionDay.id);
-      onClose();
-    }
+    injectFusionDayIntoRoutine(routine.id, generatedFusionDay);
+    onStartFusionDay(routine.id, generatedFusionDay.id, generatedFusionDay);
+    onClose();
   };
 
   const totalWorkingSets = generatedFusionDay.exercises.reduce(

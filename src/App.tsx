@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AppTab, Routine, CompletedDayLog, ScheduleRecommendation } from './types';
+import { AppTab, Routine, CompletedDayLog, ScheduleRecommendation, WorkoutDay } from './types';
 import {
   getRoutines,
   getActiveRoutineId,
@@ -32,6 +32,7 @@ export const App: React.FC = () => {
   // Active workout session selection
   const [workoutRoutineId, setWorkoutRoutineId] = useState<string | null>(null);
   const [workoutDayId, setWorkoutDayId] = useState<string | null>(null);
+  const [customWorkoutDay, setCustomWorkoutDay] = useState<WorkoutDay | null>(null);
 
   // Guide Modal
   const [guideModalOpen, setGuideModalOpen] = useState<boolean>(false);
@@ -92,9 +93,12 @@ export const App: React.FC = () => {
     setCurrentTab(tab);
   };
 
-  const handleStartDayWorkout = (routineId: string, dayId: string) => {
+  const handleStartDayWorkout = (routineId: string, dayId: string, customDay?: WorkoutDay) => {
+    const loadedRoutines = getRoutines();
+    setRoutines(loadedRoutines);
     setWorkoutRoutineId(routineId);
     setWorkoutDayId(dayId);
+    setCustomWorkoutDay(customDay || null);
     window.location.hash = 'active-workout';
     setCurrentTab('active-workout');
   };
@@ -102,6 +106,7 @@ export const App: React.FC = () => {
   const handleFinishWorkout = () => {
     setWorkoutRoutineId(null);
     setWorkoutDayId(null);
+    setCustomWorkoutDay(null);
     refreshData();
     window.location.hash = 'dashboard';
     setCurrentTab('dashboard');
@@ -141,6 +146,7 @@ export const App: React.FC = () => {
           <ActiveWorkoutPage
             routine={currentWorkoutRoutine}
             initialDayId={workoutDayId}
+            customDay={customWorkoutDay}
             onFinishWorkout={handleFinishWorkout}
           />
         )}

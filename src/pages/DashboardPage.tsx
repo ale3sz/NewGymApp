@@ -21,7 +21,7 @@ import {
   HelpCircle,
   XCircle
 } from 'lucide-react';
-import { Routine, CompletedDayLog, ScheduleRecommendation, AppTab } from '../types';
+import { Routine, CompletedDayLog, ScheduleRecommendation, AppTab, WorkoutDay } from '../types';
 import { getCurrentWeekDays } from '../engine/smartScheduleEngine';
 import { evaluateSystemicFatigue } from '../engine/deloadDetector';
 import { getAllWorkoutLogs } from '../storage/storage';
@@ -38,7 +38,7 @@ interface DashboardPageProps {
   completedLogs: CompletedDayLog[];
   recommendation: ScheduleRecommendation | null;
   onNavigate: (tab: AppTab, params?: { dayId?: string; routineId?: string }) => void;
-  onStartDayWorkout: (routineId: string, dayId: string) => void;
+  onStartDayWorkout: (routineId: string, dayId: string, customDay?: WorkoutDay) => void;
   onOpenInstallModal?: () => void;
 }
 
