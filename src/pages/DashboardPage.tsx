@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Flame,
   Calendar,
@@ -15,7 +15,11 @@ import {
   Award,
   Activity,
   Download,
-  Smartphone
+  Smartphone,
+  ArrowRight,
+  Zap,
+  HelpCircle,
+  XCircle
 } from 'lucide-react';
 import { Routine, CompletedDayLog, ScheduleRecommendation, AppTab } from '../types';
 import { getCurrentWeekDays } from '../engine/smartScheduleEngine';
@@ -23,6 +27,11 @@ import { evaluateSystemicFatigue } from '../engine/deloadDetector';
 import { getAllWorkoutLogs } from '../storage/storage';
 import { downloadRoutineAsText } from '../utils/routineExport';
 import { aiCoachImg, getWorkoutDayBadge } from '../constants/brandAssets';
+import {
+  analyzeWeeklyTrainingState,
+  WeeklyCycleAnalysis,
+} from '../engine/sessionFusionEngine';
+import { SessionFusionModal } from '../components/SessionFusionModal';
 
 interface DashboardPageProps {
   activeRoutine: Routine | null;
@@ -41,9 +50,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   onStartDayWorkout,
   onOpenInstallModal
 }) => {
+  const [fusionModalOpen, setFusionModalOpen] = useState<boolean>(false);
   const weekDays = getCurrentWeekDays();
   const allWorkoutLogs = getAllWorkoutLogs();
   const deloadEval = evaluateSystemicFatigue(allWorkoutLogs, completedLogs);
+
+  // Análisis semanal consciente de la fecha de inicio del usuario
+  const weeklyAnalysis: WeeklyCycleAnalysis = useMemo(() => {
+    return analyzeWeeklyTrainingState(activeRoutine, completedLogs);
+  }, [activeRoutine, completedLogs]);
 
   // Calculate streak (consecutive days or active weeks)
   const totalWorkouts = completedLogs.length;
@@ -195,44 +210,194 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         </div>
       )}
 
-      {/* Weekly Calendar Tracker */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-xl">
-        <div className="flex items-center justify-between mb-4">
+      {/* Weekly Calendar Tracker (Consciente del Inicio del Usuario) */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center space-x-2">
             <Calendar className="w-4 h-4 text-red-500" />
-            <h3 className="text-sm font-bold text-zinc-200">Semana en Curso</h3>
+            <h3 className="text-sm font-bold text-zinc-200">Seguimiento Semanal</h3>
+            {weeklyAnalysis.hasStartedThisWeek && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 font-mono">
+                Ciclo iniciado el {weeklyAnalysis.cycleStartDateLabel}
+              </span>
+            )}
           </div>
-          <span className="text-xs text-zinc-400">
-            {weekDays.filter(d => completedDateKeys.has(d.dateKey)).length} de 7 días completados
-          </span>
+          <div className="flex items-center space-x-3 text-xs text-zinc-400 font-mono">
+            <span className="flex items-center space-x-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span>{weeklyAnalysis.completedCount} hecho</span>
+            </span>
+            {weeklyAnalysis.missedCount > 0 && (
+              <span className="flex items-center space-x-1 text-amber-400 font-bold">
+                <span className="w-2 h-2 rounded-full bg-amber-400" />
+                <span>{weeklyAnalysis.missedCount} saltado</span>
+              </span>
+            )}
+            <span className="flex items-center space-x-1 text-zinc-500">
+              <span className="w-2 h-2 rounded-full bg-zinc-600" />
+              <span>{weeklyAnalysis.pendingCount} pendiente</span>
+            </span>
+          </div>
         </div>
 
+        {/* Timeline Grid con estados reales */}
         <div className="grid grid-cols-7 gap-1 sm:gap-2">
-          {weekDays.map((d) => {
-            const isCompleted = completedDateKeys.has(d.dateKey);
+          {weeklyAnalysis.daysTimeline.map((d) => {
             return (
               <div
                 key={d.dateKey}
-                className={`flex flex-col items-center justify-center py-2 sm:py-3 px-0.5 sm:px-1 rounded-xl sm:rounded-2xl border transition-all ${
-                  d.isToday
-                    ? 'border-red-500/50 bg-red-500/10 text-white'
+                className={`flex flex-col items-center justify-between py-2 sm:py-2.5 px-0.5 sm:px-1.5 rounded-xl sm:rounded-2xl border transition-all min-h-[74px] sm:min-h-[82px] ${
+                  d.status === 'COMPLETED'
+                    ? 'border-emerald-500/40 bg-emerald-950/20 text-emerald-400'
+                    : d.status === 'MISSED'
+                    ? 'border-amber-500/40 bg-amber-950/20 text-amber-300'
+                    : d.isToday
+                    ? 'border-red-500/60 bg-red-500/10 text-white shadow-lg shadow-red-950/30'
+                    : d.status === 'BEFORE_START'
+                    ? 'border-zinc-900 bg-zinc-950/30 text-zinc-600'
                     : 'border-zinc-800/80 bg-zinc-950/40 text-zinc-400'
                 }`}
+                title={d.label}
               >
-                <span className="text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider">{d.dayName}</span>
-                <span className={`text-sm sm:text-base font-bold my-0.5 sm:my-1 font-mono ${d.isToday ? 'text-red-400' : 'text-zinc-300'}`}>
-                  {d.dayNumber}
+                <div className="w-full flex items-center justify-between px-1">
+                  <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">
+                    {d.dayName}
+                  </span>
+                  <span className={`text-[10px] font-mono ${d.isToday ? 'font-black text-red-400' : 'text-zinc-500'}`}>
+                    {d.dayNumber}
+                  </span>
+                </div>
+
+                <div className="my-1 flex items-center justify-center">
+                  {d.status === 'COMPLETED' ? (
+                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
+                  ) : d.status === 'MISSED' ? (
+                    <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+                  ) : d.isToday ? (
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-md shadow-red-500" />
+                  ) : d.status === 'BEFORE_START' ? (
+                    <span className="text-zinc-700 text-xs">—</span>
+                  ) : (
+                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-700" />
+                  )}
+                </div>
+
+                <span className="text-[8px] sm:text-[9px] font-medium text-center truncate max-w-full px-0.5 leading-tight">
+                  {d.status === 'COMPLETED'
+                    ? d.completedLog?.dayName.split('–')[1]?.trim() || 'Hecho'
+                    : d.status === 'MISSED'
+                    ? 'Saltado'
+                    : d.status === 'BEFORE_START'
+                    ? 'Previo'
+                    : d.isToday
+                    ? 'Hoy'
+                    : 'Pendiente'}
                 </span>
-                {isCompleted ? (
-                  <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 fill-emerald-400/20" />
-                ) : (
-                  <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${d.isToday ? 'bg-red-500 animate-ping' : 'bg-zinc-700'}`} />
-                )}
               </div>
             );
           })}
         </div>
+
+        {/* Diagnóstico Contextual */}
+        {weeklyAnalysis.missedCount > 0 && (
+          <div className="p-3 rounded-2xl bg-amber-950/20 border border-amber-500/30 flex items-start space-x-2.5 text-xs text-amber-300">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <span className="font-bold block">Desfase detectado en tu planificación semanal</span>
+              <p className="text-[11px] text-amber-200/80 leading-relaxed">
+                Iniciaste el {weeklyAnalysis.cycleStartDateLabel}. Al no haber ido el {weeklyAnalysis.daysTimeline.find(d => d.status === 'MISSED')?.dayName || 'día anterior'}, quedó pendiente {weeklyAnalysis.missedRoutineDays.map(d => d.name).join(', ') || 'una sesión'}. Abajo tienes dos opciones tácticas para resolverlo sin perder adaptaciones.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Decisión Táctica de la Semana (Seguir Rutina vs Mix Fusión) */}
+      {activeRoutine && weeklyAnalysis.canFuse && (
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-950 via-zinc-900 to-red-950/30 border border-red-500/40 p-5 sm:p-6 shadow-2xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold">
+                <Zap className="w-3.5 h-3.5" />
+                <span>Estrategia de Programación</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-white">
+                Decisión Táctica: ¿Cómo quieres resolver los días restantes?
+              </h3>
+              <p className="text-xs text-zinc-300">
+                {weeklyAnalysis.fusionReason}
+              </p>
+            </div>
+
+            <button
+              onClick={() => setFusionModalOpen(true)}
+              className="inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold text-xs shadow-lg shadow-red-600/25 transition self-start sm:self-auto shrink-0 transform active:scale-95"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Configurar Mix Táctico</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            {/* Opción 1: Seguir la Rutina Normal */}
+            <div className="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 hover:border-zinc-700 transition flex flex-col justify-between space-y-3">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold uppercase text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800">
+                    Opción A • Orden Normal
+                  </span>
+                  <span className="text-[11px] text-zinc-400">1 sesión completa</span>
+                </div>
+                <h4 className="text-sm font-bold text-white">
+                  Continuar con {weeklyAnalysis.pendingRoutineDays[0]?.name || activeRoutine.days[0]?.name} hoy
+                </h4>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  Corres el siguiente día ({weeklyAnalysis.pendingRoutineDays[1]?.name || 'la siguiente sesión'}) para mañana o tu próxima jornada. Cada entrenamiento mantiene su volumen y número de series íntegros.
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  const targetDay = weeklyAnalysis.pendingRoutineDays[0] || activeRoutine.days[0];
+                  if (targetDay) {
+                    onStartDayWorkout(activeRoutine.id, targetDay.id);
+                  }
+                }}
+                className="flex items-center justify-center space-x-2 w-full py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold transition"
+              >
+                <Play className="w-3.5 h-3.5" />
+                <span>Hacer {weeklyAnalysis.pendingRoutineDays[0]?.name?.split('–')[1]?.trim() || 'Sesión Normal'} Hoy</span>
+              </button>
+            </div>
+
+            {/* Opción 2: Fusión Táctica / Sesión Mix */}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-red-950/30 to-zinc-950 border border-red-500/40 hover:border-red-500/60 transition flex flex-col justify-between space-y-3 shadow-lg shadow-red-950/20">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold uppercase text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20">
+                    Opción B • Fusión Táctica
+                  </span>
+                  <span className="text-[11px] text-red-400 font-bold">Tiempo flexible (30–90 min)</span>
+                </div>
+                <h4 className="text-sm font-bold text-white flex items-center space-x-1.5">
+                  <span>🔥 {weeklyAnalysis.fusionName}</span>
+                </h4>
+                <p className="text-xs text-zinc-300 leading-relaxed">
+                  Sintetiza lo esencial de ambos días en una sola sesión de alta eficiencia. Eliges con cuánto tiempo cuentas y en qué grupo muscular prefieres hacer énfasis hoy.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setFusionModalOpen(true)}
+                className="flex items-center justify-center space-x-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs font-extrabold shadow-md shadow-red-600/30 transition transform active:scale-95"
+              >
+                <Sliders className="w-3.5 h-3.5" />
+                <span>Armar Mix Táctico Personalizado</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Smart Workout Recommendation (IA Coach) */}
       {recommendation && (
@@ -301,14 +466,25 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           </div>
 
           <div className="flex items-center space-x-2">
+            {activeRoutine && weeklyAnalysis.canFuse && (
+              <button
+                onClick={() => setFusionModalOpen(true)}
+                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold transition shadow-sm"
+                title="Fusionar dos días en una sesión de alta densidad"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Mix Táctico</span>
+              </button>
+            )}
+
             {activeRoutine && (
               <button
                 onClick={() => downloadRoutineAsText(activeRoutine)}
-                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold transition shadow-sm"
+                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-bold transition shadow-sm"
                 title="Descargar esta rutina como archivo de texto"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Descargar Rutina</span>
+                <span>Descargar</span>
               </button>
             )}
 
@@ -445,6 +621,17 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           <p className="text-xs text-zinc-400 mt-1">Guía completa de RIR, series efectivas y tiempos de descanso.</p>
         </div>
       </div>
+
+      {/* Modal de Sesión Fusión / Mix Táctico */}
+      {activeRoutine && (
+        <SessionFusionModal
+          isOpen={fusionModalOpen}
+          onClose={() => setFusionModalOpen(false)}
+          routine={activeRoutine}
+          weeklyAnalysis={weeklyAnalysis}
+          onStartFusionDay={onStartDayWorkout}
+        />
+      )}
     </div>
   );
 };

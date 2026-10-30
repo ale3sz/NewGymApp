@@ -146,6 +146,7 @@ export interface Exercise extends CatalogExercise {
   targetRepsMax: number;
   targetRIR: number;
   restSeconds?: number;
+  notes?: string;
 }
 
 // ==================== MATRIZ DE SUSTITUCIÓN BIOMECÁNICA ====================

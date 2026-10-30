@@ -29,7 +29,11 @@ import {
 } from '../bayesianFatigueEngine';
 import { generateAIRoutine, AIUserProfile } from '../aiRoutineGenerator';
 import { predictWeightFromReferenceLift, inferWeightFromUserHistory } from '../strengthTransferEngine';
-import { Exercise, GymEquipmentProfile, SetLog, Routine, UserFatigueProfile } from '../../types';
+import {
+  analyzeWeeklyTrainingState,
+  generateTacticalFusionWorkoutDay,
+} from '../sessionFusionEngine';
+import { Exercise, GymEquipmentProfile, SetLog, Routine, UserFatigueProfile, WorkoutDay, CompletedDayLog } from '../../types';
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -903,6 +907,120 @@ assert(
 console.log(
   `    Caso 100kg Banca -> Aperturas Banco: ${dbFlyFrom100Bench.recommendedWorkingWeightKg} kg (${dbFlyFrom100Bench.unitLabel}) | Polea: ${cableFlyFrom100Bench.recommendedWorkingWeightKg} kg (${cableFlyFrom100Bench.unitLabel}) | Inclinado Manc.: ${autoInferredIncline?.recommendedWorkingWeightKg} kg`
 );
+
+// ==========================================
+// 12. PILAR 12: REGISTRO SEMANAL DESDE EL INICIO DEL USUARIO Y SESIÓN FUSIÓN / MIX TÁCTICO
+// ==========================================
+console.log('\n--- Pilar 12: Registro Semanal Personalizado y Sesión Fusión / Mix Táctico ---');
+
+// Mock Routine (PPL): Día 1 Piernas, Día 2 Push, Día 3 Pull
+const mockPushDay: WorkoutDay = {
+  id: 'push_day',
+  name: 'Push 2 – Pecho, Hombro y Tríceps',
+  exercises: [
+    { id: 'press_plano', name: 'Press Banca Plano con Barra', primaryMuscle: 'pecho', category: 'barra', targetRepsMin: 6, targetRepsMax: 8, targetRIR: 2 },
+    { id: 'press_inc', name: 'Press Inclinado con Mancuernas', primaryMuscle: 'pecho', category: 'mancuerna', targetRepsMin: 8, targetRepsMax: 10, targetRIR: 1 },
+    { id: 'press_mil', name: 'Press Militar con Barra', primaryMuscle: 'hombros', category: 'barra', targetRepsMin: 8, targetRepsMax: 10, targetRIR: 1 },
+    { id: 'lat_raise', name: 'Elevaciones Laterales', primaryMuscle: 'hombros', category: 'mancuerna', targetRepsMin: 12, targetRepsMax: 15, targetRIR: 0 },
+    { id: 'triceps_rope', name: 'Extensión de Tríceps en Polea', primaryMuscle: 'triceps', category: 'polea', targetRepsMin: 10, targetRepsMax: 12, targetRIR: 0 },
+  ],
+};
+
+const mockPullDay: WorkoutDay = {
+  id: 'pull_day',
+  name: 'Pull 2 – Espalda y Bíceps',
+  exercises: [
+    { id: 'lat_pulldown', name: 'Jalón al Pecho en Polea', primaryMuscle: 'espalda', category: 'polea', targetRepsMin: 8, targetRepsMax: 10, targetRIR: 1 },
+    { id: 'barbell_row', name: 'Remo con Barra 45°', primaryMuscle: 'espalda', category: 'barra', targetRepsMin: 8, targetRepsMax: 10, targetRIR: 1 },
+    { id: 'face_pull', name: 'Face Pull con Cuerda', primaryMuscle: 'hombros', category: 'polea', targetRepsMin: 12, targetRepsMax: 15, targetRIR: 1 },
+    { id: 'biceps_curl', name: 'Curl de Bíceps con Barra Z', primaryMuscle: 'biceps', category: 'barra', targetRepsMin: 8, targetRepsMax: 10, targetRIR: 1 },
+    { id: 'hammer_curl', name: 'Curl Martillo con Mancuernas', primaryMuscle: 'biceps', category: 'mancuerna', targetRepsMin: 10, targetRepsMax: 12, targetRIR: 0 },
+  ],
+};
+
+const mockLegsDay: WorkoutDay = {
+  id: 'legs_day',
+  name: 'Legs 1 – Cuádriceps y Cadena Posterior',
+  exercises: [
+    { id: 'sentadilla', name: 'Sentadilla con Barra', primaryMuscle: 'cuadriceps', category: 'barra', targetRepsMin: 6, targetRepsMax: 8, targetRIR: 2 },
+  ],
+};
+
+const mockTestRoutine: Routine = {
+  id: 'test_ppl_routine',
+  name: 'PPL Optimizado',
+  days: [mockLegsDay, mockPushDay, mockPullDay],
+};
+
+// Simular el caso exacto del usuario:
+// Arrancó el Miércoles con Legs 1.
+// Jueves NO fue al gym (no hay log para jueves).
+const wednesdayDate = new Date();
+const currentDOW = wednesdayDate.getDay(); // 0 = Dom, 1 = Lun, 3 = Mié
+const distToWed = (currentDOW >= 3 ? 3 - currentDOW : -4); // Miércoles de esta semana
+wednesdayDate.setDate(wednesdayDate.getDate() + distToWed);
+
+const mockHistory: CompletedDayLog[] = [
+  {
+    id: 'completed_wed',
+    date: wednesdayDate.toISOString(),
+    dateKey: wednesdayDate.toISOString().slice(0, 10),
+    routineId: mockTestRoutine.id,
+    dayId: mockLegsDay.id,
+    dayName: mockLegsDay.name,
+    primaryMuscles: ['cuadriceps', 'gluteos'],
+    totalSets: 6,
+    completedExerciseIds: ['sentadilla'],
+  },
+];
+
+// Test 47: Análisis semanal consciente del día de inicio del usuario
+const weeklyState = analyzeWeeklyTrainingState(mockTestRoutine, mockHistory);
+assert(weeklyState.hasStartedThisWeek === true, 'Debe detectar que el usuario ya comenzó su ciclo esta semana');
+assert(weeklyState.canFuse === true, 'Debe detectar que hay al menos 2 días pendientes/saltados que se pueden fusionar');
+assert(weeklyState.fusionCandidateDays !== null, 'Debe encontrar candidatos a fusión (Push y Pull)');
+assert(
+  weeklyState.availableEmphasisOptions.some((o) => o.id === 'balanced'),
+  'Debe ofrecer opción de énfasis Equilibrado / Balanceado'
+);
+assert(
+  weeklyState.availableEmphasisOptions.some((o) => o.id === 'pecho'),
+  'Debe ofrecer opción de énfasis en Pecho'
+);
+assert(
+  weeklyState.availableEmphasisOptions.some((o) => o.id === 'espalda'),
+  'Debe ofrecer opción de énfasis en Espalda'
+);
+
+// Test 48: Generador de Fusión Táctica de 45 minutos (Conciso: 4-5 ejercicios)
+const fusion45Min = generateTacticalFusionWorkoutDay({
+  routine: mockTestRoutine,
+  dayA: mockPushDay,
+  dayB: mockPullDay,
+  availableMinutes: 45,
+  emphasisId: 'balanced',
+});
+assert(fusion45Min.exercises.length <= 5 && fusion45Min.exercises.length >= 3, `Para 45 min debe seleccionar 3 a 5 ejercicios clave (obtenido ${fusion45Min.exercises.length})`);
+assert(
+  fusion45Min.exercises.some((e) => e.primaryMuscle === 'pecho') && fusion45Min.exercises.some((e) => e.primaryMuscle === 'espalda'),
+  'El mix balanceado de 45 min debe contener tanto empuje como tracción'
+);
+
+// Test 49: Generador de Fusión Táctica de 60 minutos con Énfasis en Pecho
+const fusion60Chest = generateTacticalFusionWorkoutDay({
+  routine: mockTestRoutine,
+  dayA: mockPushDay,
+  dayB: mockPullDay,
+  availableMinutes: 60,
+  emphasisId: 'pecho',
+});
+assert(fusion60Chest.exercises.length === 6, `Para 60 min debe prescribir 6 ejercicios (obtenido ${fusion60Chest.exercises.length})`);
+const chestExercises = fusion60Chest.exercises.filter((e) => e.primaryMuscle === 'pecho');
+assert(chestExercises.length >= 2, `Con énfasis en pecho debe asignar al menos 2 ejercicios de pecho prioritarios (obtenido ${chestExercises.length})`);
+assert(Boolean(chestExercises[0] && (chestExercises[0].targetSets || 0) >= 3), 'Los ejercicios con énfasis deben recibir volumen reforzado (≥3 series)');
+
+console.log(`    Caso Usuario Resuelto: Fusión "${fusion45Min.name}" generó ${fusion45Min.exercises.length} ejercicios para 45 min.`);
+console.log(`    Caso Énfasis Pecho (60 min): ${fusion60Chest.exercises.length} ejercicios (${chestExercises.length} de pecho prioritarios con 3 series).`);
 
 console.log('\n======================================================');
 console.log('✅ TODOS LOS TESTS DE AUDITORÍA CIENTÍFICA COMPLETADOS');
