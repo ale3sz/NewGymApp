@@ -66,6 +66,7 @@ interface ActiveExerciseCardProps {
   companionExerciseNames?: string[];
   onOpenSuperset?: () => void;
   onRemoveExercise?: () => void;
+  isSimplifiedMode?: boolean;
 }
 
 export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
@@ -97,6 +98,7 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
   companionExerciseNames,
   onOpenSuperset,
   onRemoveExercise,
+  isSimplifiedMode = true,
 }) => {
   const [isWarmupMode, setIsWarmupMode] = useState<boolean>(false);
   const [showWarmupRamp, setShowWarmupRamp] = useState<boolean>(false);
@@ -119,6 +121,35 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
   const warmupSetsCount = completedSets.filter((s) => s.isWarmup).length;
   const currentWorkingSetNumber = workingSets.length + 1;
   const effectiveTargetSets = targetSetsCount || exercise.targetSets || 3;
+
+  // Cálculo directo de sobrecarga progresiva y delta de peso vs sesión previa
+  const lastWorkSet = previousLogs?.find((s) => !s.isWarmup) || previousLogs?.[0];
+  const lastWeight = lastWorkSet?.weightKg;
+  const lastReps = lastWorkSet?.repsCompleted;
+
+  const fallbackInitialWeight = isBodyweight ? 0 : (exercise.category === 'mancuerna' ? 14 : exercise.category === 'polea' ? 25 : 60);
+  const targetWeight = recommendation?.recommendedWeightKg ?? (lastWeight ?? (parseFloat(inputState.weight) || fallbackInitialWeight));
+  const targetReps = recommendation?.recommendedReps ?? (lastReps ?? (parseInt(inputState.reps, 10) || exercise.targetRepsMin || 8));
+
+  const hasPreviousSession = lastWeight !== undefined;
+  const weightDelta = hasPreviousSession ? Number((targetWeight - lastWeight).toFixed(2)) : 0;
+  const repsDelta = hasPreviousSession && lastReps !== undefined ? targetReps - lastReps : 0;
+
+  const stepperDeltaBadge = hasPreviousSession ? (
+    weightDelta > 0 ? (
+      <span className="text-[10px] font-black font-mono text-emerald-400 bg-emerald-500/20 border border-emerald-500/30 px-1.5 py-0.5 rounded">
+        +{weightDelta} kg
+      </span>
+    ) : weightDelta < 0 ? (
+      <span className="text-[10px] font-black font-mono text-rose-400 bg-rose-500/20 border border-rose-500/30 px-1.5 py-0.5 rounded">
+        {weightDelta} kg
+      </span>
+    ) : (
+      <span className="text-[10px] font-black font-mono text-zinc-400 bg-zinc-800 px-1.5 py-0.5 rounded">
+        = Mismo peso
+      </span>
+    )
+  ) : null;
 
   const hasLivePreview = (weightNum > 0 || isBodyweight) && repsNum > 0 && inputState.rir !== '';
   const liveAutoreg = hasLivePreview ? estimateAutoregulated1RM(weightNum, repsNum, rirNum) : null;
@@ -438,85 +469,100 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
                   {stagnation.consecutiveUnchangedSessions} sesiones sin progreso
                 </span>
               </div>
-              <p className="text-amber-300/90 leading-relaxed text-[11px]">
-                {stagnation.analysisNote}
-              </p>
+              {!isSimplifiedMode && stagnation.analysisNote && (
+                <p className="text-amber-300/90 leading-relaxed text-[11px]">
+                  {stagnation.analysisNote}
+                </p>
+              )}
             </div>
           </div>
         )}
 
-        {/* 3. High-Contrast Progressive Overload Prescription Banner */}
-        {recommendation && (
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-red-950/40 via-zinc-950/60 to-zinc-900 border border-red-500/30 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-lg">
-            <div className="space-y-1.5 flex-1">
-              <div className="flex flex-wrap items-center gap-1.5">
-                {recommendation.type === 'WEIGHT_INCREASE' && (
-                  <span className="inline-flex items-center space-x-1 text-xs font-black text-emerald-400 bg-emerald-500/20 border border-emerald-500/40 px-2.5 py-1 rounded-xl">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    <span>AUMENTAR CARGA: {recommendation.recommendedWeightKg} kg</span>
+        {/* 3. Indicador Directo de Carga y Cambio de Peso Inmediato ("De Una") */}
+        <div
+          className={`p-3.5 sm:p-4 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-lg transition-all ${
+              weightDelta > 0
+                ? 'bg-gradient-to-r from-emerald-950/60 via-zinc-950/80 to-zinc-900 border-emerald-500/40 shadow-emerald-950/20'
+                : weightDelta < 0
+                ? 'bg-gradient-to-r from-rose-950/60 via-zinc-950/80 to-zinc-900 border-rose-500/40 shadow-rose-950/20'
+                : 'bg-gradient-to-r from-red-950/40 via-zinc-950/70 to-zinc-900 border-red-500/30'
+            }`}
+          >
+            <div className="space-y-1.5 flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Gran Píldora de Cambio Directo de Peso */}
+                {weightDelta > 0 && (
+                  <span className="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-black text-emerald-300 bg-emerald-500/20 border border-emerald-500/50 px-3 py-1.5 rounded-xl shadow-md shadow-emerald-500/10">
+                    <TrendingUp className="w-4 h-4 stroke-[2.5]" />
+                    <span>▲ SUBIR +{weightDelta} kg ➔ CARGAR {targetWeight} kg</span>
                   </span>
                 )}
-                {recommendation.type === 'REP_INCREASE' && (
-                  <span className="inline-flex items-center space-x-1 text-xs font-black text-red-400 bg-red-500/20 border border-red-500/40 px-2.5 py-1 rounded-xl">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    <span>AUMENTAR REPS: {recommendation.recommendedReps} reps</span>
+                {weightDelta < 0 && (
+                  <span className="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-black text-rose-300 bg-rose-500/20 border border-rose-500/50 px-3 py-1.5 rounded-xl shadow-md shadow-rose-500/10">
+                    <AlertTriangle className="w-4 h-4 stroke-[2.5]" />
+                    <span>▼ DESCARGA -{Math.abs(weightDelta)} kg ➔ CARGAR {targetWeight} kg</span>
                   </span>
                 )}
-                {recommendation.type === 'TEMPO_ADJUSTMENT' && (
-                  <span className="inline-flex items-center space-x-1 text-xs font-black text-amber-400 bg-amber-500/20 border border-amber-500/40 px-2.5 py-1 rounded-xl">
-                    <span>TEMPO CONTROL: 3-0-1-0</span>
+                {weightDelta === 0 && repsDelta > 0 && (
+                  <span className="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-black text-amber-300 bg-amber-500/20 border border-amber-500/50 px-3 py-1.5 rounded-xl">
+                    <TrendingUp className="w-4 h-4 stroke-[2.5]" />
+                    <span>▲ +{repsDelta} REPS ➔ Mismo peso ({targetWeight} kg) buscar {targetReps} reps</span>
                   </span>
                 )}
-                {recommendation.type === 'DELOAD_SUGGESTION' && (
-                  <span className="inline-flex items-center space-x-1 text-xs font-black text-rose-400 bg-rose-500/20 border border-rose-500/40 px-2.5 py-1 rounded-xl">
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>DESCARGA ESTRATÉGICA ({recommendation.recommendedWeightKg} kg)</span>
+                {weightDelta === 0 && repsDelta <= 0 && hasPreviousSession && (
+                  <span className="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-black text-sky-300 bg-sky-500/20 border border-sky-500/50 px-3 py-1.5 rounded-xl">
+                    <span>= MANTENER {targetWeight} kg ➔ {targetReps} reps @ RIR {exercise.targetRIR}</span>
                   </span>
                 )}
-                {recommendation.type === 'CONSOLIDATING' && (
-                  <span className="inline-flex items-center space-x-1 text-xs font-bold text-zinc-200 bg-zinc-800 border border-zinc-700 px-2.5 py-1 rounded-xl">
-                    <span>CONSOLIDAR TÉCNICA ({recommendation.recommendedReps} reps)</span>
+                {!hasPreviousSession && (
+                  <span className="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-black text-sky-300 bg-sky-500/20 border border-sky-500/50 px-3 py-1.5 rounded-xl">
+                    <Sparkles className="w-4 h-4 text-sky-400" />
+                    <span>CARGA OBJETIVO: {targetWeight} kg ({targetReps} reps)</span>
                   </span>
                 )}
-                {recommendation.type === 'INFERRED_LOAD' && (
-                  <span className="inline-flex items-center space-x-1 text-xs font-black text-sky-300 bg-sky-500/20 border border-sky-500/40 px-2.5 py-1 rounded-xl">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>CARGA DEDUCIDA POR IA: {recommendation.recommendedWeightKg} kg</span>
-                  </span>
-                )}
-                {recommendation.progressionStrategy && (
+
+                {/* Estrategia de Progresión */}
+                {recommendation?.progressionStrategy && (
                   <span className="text-[10px] font-mono font-bold text-red-300 bg-red-950/80 border border-red-800/80 px-2 py-0.5 rounded-lg uppercase">
                     {recommendation.progressionStrategy.replace(/_/g, ' ')}
                   </span>
                 )}
               </div>
 
-              <p className="text-xs text-zinc-300 leading-relaxed font-medium">
-                {recommendation.reasoning}
-              </p>
+              {/* Explicaciones detalladas sólo en Modo Detallado */}
+              {!isSimplifiedMode && recommendation?.reasoning && (
+                <p className="text-xs text-zinc-300 leading-relaxed font-medium pt-1">
+                  {recommendation.reasoning}
+                </p>
+              )}
 
-              {recommendation.sfrAnalysis && (
+              {!isSimplifiedMode && recommendation?.sfrAnalysis && (
                 <p className="text-[11px] text-red-400/90 font-mono">
                   SFR: {recommendation.sfrAnalysis}
                 </p>
               )}
             </div>
 
-            {/* Quick 1-Tap Autofill Button */}
+            {/* Botón Táctil de 1 Toque para Pre-Cargar Carga Inmediata */}
             <button
               type="button"
               onClick={() => {
                 setIsWarmupMode(false);
-                onAutoFill(recommendation);
+                if (recommendation) {
+                  onAutoFill(recommendation);
+                } else {
+                  onInputChange('weight', targetWeight.toString());
+                  onInputChange('reps', targetReps.toString());
+                  onInputChange('rir', exercise.targetRIR.toString());
+                }
               }}
               className="flex items-center justify-center space-x-1.5 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 active:scale-95 text-white font-black text-xs transition-all shadow-md shadow-red-600/20 shrink-0 touch-manipulation"
-              title="Cargar peso y repeticiones objetivo sugeridos con un toque"
+              title="Cargar peso y repeticiones objetivo sugeridos de una en los selectores"
             >
               <Sparkles className="w-4 h-4 fill-current" />
-              <span>Cargar Objetivo</span>
+              <span>Cargar {targetWeight} kg</span>
             </button>
           </div>
-        )}
 
         {/* 4. Previous Session Reference Capsules */}
         {previousLogs && previousLogs.length > 0 && (
@@ -787,9 +833,11 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
                   <h4 className="text-sm font-bold text-white flex items-center space-x-1.5">
                     <span>{nextSetObjective.headline}</span>
                   </h4>
-                  <p className="text-xs text-zinc-300 leading-relaxed font-medium">
-                    {nextSetObjective.advice}
-                  </p>
+                  {!isSimplifiedMode && nextSetObjective.advice && (
+                    <p className="text-xs text-zinc-300 leading-relaxed font-medium">
+                      {nextSetObjective.advice}
+                    </p>
+                  )}
 
                   {/* Bayesian Engine Confidence & Prior-Shrinkage Indicator */}
                   {nextSetObjective.confidencePercent !== undefined && (
@@ -800,7 +848,7 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
                       <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-zinc-900/90 border border-zinc-700 text-emerald-400 font-bold">
                         <span>Confianza: {nextSetObjective.confidencePercent}%</span>
                       </span>
-                      {nextSetObjective.modelBasisExplanation && (
+                      {!isSimplifiedMode && nextSetObjective.modelBasisExplanation && (
                         <span className="text-[10px] text-zinc-400">
                           {nextSetObjective.modelBasisExplanation}
                         </span>
@@ -939,6 +987,7 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
             <div className="space-y-1.5">
               <GymNumberStepper
                 label={isBodyweight ? 'Lastre Adicional (kg)' : 'Peso de Carga (kg)'}
+                badge={stepperDeltaBadge}
                 value={inputState.weight}
                 onChange={(val) => onInputChange('weight', val)}
                 step={weightNum >= 100 ? 5 : 2.5}
@@ -1025,7 +1074,7 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
                     {liveEffective} reps
                   </span>
                 </div>
-                {liveEffectiveExplanation && (
+                {!isSimplifiedMode && liveEffectiveExplanation && (
                   <span className="text-[10px] text-zinc-400 font-mono">
                     {liveEffectiveExplanation}
                   </span>

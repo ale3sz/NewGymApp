@@ -1,6 +1,7 @@
 import { SetLog, GymEquipmentProfile, Exercise, RecommendationResult } from '../types';
 import { inferBiomechanicalProfile } from './biomechanicsEngine';
 import { calculateEffectiveReps } from '../utils/formulas';
+import { quantizeEquipmentWeight } from '../utils/weightQuantization';
 
 /**
  * MOTOR DE SOBRECARGA PROGRESIVA AUTORREGULADA (Dr. Marcus Vance, CSCS)
@@ -65,7 +66,8 @@ export function calculateNextSession(
   // 2. DETECCIÓN DE FATIGA NEUROMUSCULAR AGUDA / SOBRECARGA EXCESIVA
   // Si la primera serie no llega al mínimo de repeticiones y el RIR es 0 (fallo prematuro)
   if ((firstSet.repsCompleted < exercise.targetRepsMin && firstSet.rirLogged === 0) || (avgRIR < 0.3 && avgReps < exercise.targetRepsMin)) {
-    const reducedWeight = currentWeight > 0 ? Math.round(currentWeight * 0.85 * 10) / 10 : 0;
+    const rawReduced = currentWeight > 0 ? currentWeight * 0.85 : 0;
+    const reducedWeight = quantizeEquipmentWeight(rawReduced, exercise.category, equipment, 'down');
     return {
       type: 'DELOAD_SUGGESTION',
       recommendedWeightKg: reducedWeight,

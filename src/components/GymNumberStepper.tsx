@@ -3,6 +3,7 @@ import { Plus, Minus } from 'lucide-react';
 
 interface GymNumberStepperProps {
   label: string;
+  badge?: React.ReactNode;
   value: string;
   onChange: (val: string) => void;
   step?: number;
@@ -16,6 +17,7 @@ interface GymNumberStepperProps {
 
 export const GymNumberStepper: React.FC<GymNumberStepperProps> = ({
   label,
+  badge,
   value,
   onChange,
   step = 1,
@@ -49,11 +51,14 @@ export const GymNumberStepper: React.FC<GymNumberStepperProps> = ({
     <div className="flex flex-col bg-zinc-950/80 rounded-2xl p-3 border border-zinc-800/90 shadow-inner group focus-within:border-red-500/60 transition-all">
       {/* Label and Quick badges */}
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 group-focus-within:text-red-400 transition-colors">
-          {label}
-        </span>
+        <div className="flex items-center space-x-2 min-w-0">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 group-focus-within:text-red-400 transition-colors truncate">
+            {label}
+          </span>
+          {badge}
+        </div>
         {unit && (
-          <span className="text-[10px] font-mono font-bold text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800">
+          <span className="text-[10px] font-mono font-bold text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800 shrink-0">
             {unit}
           </span>
         )}

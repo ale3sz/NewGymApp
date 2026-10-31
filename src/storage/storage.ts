@@ -444,3 +444,18 @@ export function saveExerciseSetupNote(exerciseId: string, note: string): void {
   safeSetItem(EXERCISE_SETUP_NOTES_KEY, JSON.stringify(all));
 }
 
+// ==================== MODO GYM DIRECTO (SIN EXPLICACIONES LARGAS) ====================
+
+const SIMPLIFIED_GYM_MODE_KEY = 'gymscience_simplified_gym_mode';
+
+export function getSimplifiedGymMode(): boolean {
+  const data = safeGetItem(SIMPLIFIED_GYM_MODE_KEY);
+  if (data === null) return true; // Por defecto modo directo/simplificado activado para agilidad
+  return data === 'true';
+}
+
+export function saveSimplifiedGymMode(enabled: boolean): void {
+  safeSetItem(SIMPLIFIED_GYM_MODE_KEY, String(enabled));
+}
+
+

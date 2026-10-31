@@ -43,7 +43,9 @@ import {
   getAllExerciseSetupNotes,
   saveExerciseSetupNote,
   getRoutines,
-  saveRoutines
+  saveRoutines,
+  getSimplifiedGymMode,
+  saveSimplifiedGymMode
 } from '../storage/storage';
 import { calculateNextSession } from '../engine/overloadAlgorithm';
 import { getMusclesInDay, getSmartWorkoutRecommendation } from '../engine/smartScheduleEngine';
@@ -90,8 +92,18 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   const [activeExerciseIndex, setActiveExerciseIndex] = useState<number>(0);
   // View mode: 'focus' (solo el ejercicio activo, hiper-intuitivo para gimnasio) vs 'all' (vista expandida clásica)
   const [viewMode, setViewMode] = useState<'focus' | 'all'>('focus');
+  // Modo gimnasio directo (sin explicaciones largas ni ruido cognitivo)
+  const [isSimplifiedMode, setIsSimplifiedMode] = useState<boolean>(() => getSimplifiedGymMode());
   // Exercise removal confirmation modal / state
   const [exerciseToRemove, setExerciseToRemove] = useState<Exercise | null>(null);
+
+  const handleToggleSimplifiedMode = () => {
+    setIsSimplifiedMode((prev) => {
+      const next = !prev;
+      saveSimplifiedGymMode(next);
+      return next;
+    });
+  };
 
   // Inputs per exercise: { [exerciseId]: { weight: '', reps: '', rir: '' } }
   const [inputs, setInputs] = useState<Record<string, { weight: string; reps: string; rir: string }>>({});
@@ -1052,43 +1064,64 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
 
       {/* 2. Quick Jump Carousel & Focus Mode Switcher */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs font-bold text-zinc-400 px-1">
-          <div className="flex items-center space-x-2">
-            <span>EJERCICIOS ({completedExercisesCount}/{totalExercisesCount})</span>
-            <span className="text-zinc-600">•</span>
-            <span className="text-zinc-300">
-              Ejercicio activo: <strong className="text-white">#{activeExerciseIndex + 1} {workoutDay.exercises[activeExerciseIndex]?.name}</strong>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-zinc-400 px-1">
+          <div className="flex items-center space-x-2 min-w-0">
+            <span className="shrink-0">EJERCICIOS ({completedExercisesCount}/{totalExercisesCount})</span>
+            <span className="text-zinc-600 hidden md:inline">•</span>
+            <span className="text-zinc-300 hidden md:inline truncate">
+              Activo: <strong className="text-white">#{activeExerciseIndex + 1} {workoutDay.exercises[activeExerciseIndex]?.name}</strong>
             </span>
           </div>
 
-          {/* Toggle Modo Foco (1 a la vez) vs Todos */}
-          <div className="flex items-center space-x-1 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+            {/* Toggle Modo Directo (Sin explicaciones) vs Detallado */}
             <button
               type="button"
-              onClick={() => setViewMode('focus')}
-              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg transition text-[11px] font-bold ${
-                viewMode === 'focus'
-                  ? 'bg-red-600 text-white shadow-sm'
-                  : 'text-zinc-400 hover:text-white'
+              onClick={handleToggleSimplifiedMode}
+              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-xl border text-[11px] font-black transition-all touch-manipulation select-none ${
+                isSimplifiedMode
+                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-sm shadow-amber-500/10'
+                  : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:text-white'
               }`}
-              title="Mostrar solo el ejercicio seleccionado para máxima concentración en el gimnasio"
+              title={
+                isSimplifiedMode
+                  ? 'Modo Directo ACTIVO: Explicaciones largas ocultas, solo cambios de peso y datos esenciales'
+                  : 'Modo Detallado ACTIVO: Mostrando explicaciones completas de biomecánica y SFR'
+              }
             >
-              <Eye className="w-3 h-3" />
-              <span>Enfocado</span>
+              <Zap className={`w-3 h-3 ${isSimplifiedMode ? 'text-amber-400 fill-current' : 'text-zinc-500'}`} />
+              <span>{isSimplifiedMode ? 'Modo Directo' : 'Explicaciones ON'}</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('all')}
-              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg transition text-[11px] font-bold ${
-                viewMode === 'all'
-                  ? 'bg-zinc-800 text-white'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-              title="Mostrar todos los ejercicios en lista vertical continua"
-            >
-              <List className="w-3 h-3" />
-              <span>Ver todos</span>
-            </button>
+
+            {/* Toggle Modo Foco (1 a la vez) vs Todos */}
+            <div className="flex items-center space-x-1 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
+              <button
+                type="button"
+                onClick={() => setViewMode('focus')}
+                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg transition text-[11px] font-bold ${
+                  viewMode === 'focus'
+                    ? 'bg-red-600 text-white shadow-sm'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+                title="Mostrar solo el ejercicio seleccionado para máxima concentración en el gimnasio"
+              >
+                <Eye className="w-3 h-3" />
+                <span>Enfocado</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('all')}
+                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg transition text-[11px] font-bold ${
+                  viewMode === 'all'
+                    ? 'bg-zinc-800 text-white'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+                title="Mostrar todos los ejercicios en lista vertical continua"
+              >
+                <List className="w-3 h-3" />
+                <span>Ver todos</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1160,7 +1193,19 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
 
             const prev = previousLogs[exercise.id];
             const rec = recommendations[exercise.id];
-            const curInput = inputs[exercise.id] || { weight: '', reps: '', rir: '' };
+            const fallbackWeight =
+              rec?.recommendedWeightKg?.toString() ??
+              prev?.find((s) => !s.isWarmup)?.weightKg?.toString() ??
+              prev?.[0]?.weightKg?.toString() ??
+              (exercise.category === 'corporal' ? '0' : '');
+            const fallbackReps =
+              rec?.recommendedReps?.toString() ??
+              prev?.find((s) => !s.isWarmup)?.repsCompleted?.toString() ??
+              prev?.[0]?.repsCompleted?.toString() ??
+              exercise.targetRepsMin?.toString() ??
+              '10';
+            const fallbackRIR = rec?.recommendedRIR?.toString() ?? exercise.targetRIR?.toString() ?? '2';
+            const curInput = inputs[exercise.id] || { weight: fallbackWeight, reps: fallbackReps, rir: fallbackRIR };
             const sets = completedSets[exercise.id] || [];
             const stag = stagnationData[exercise.id];
             const targetSetsForEx = customTargetSets[exercise.id] || exercise.targetSets || 3;
@@ -1248,6 +1293,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
                     companionExerciseNames={companionNames}
                     onOpenSuperset={() => handleOpenSupersetModal(exercise)}
                     onRemoveExercise={() => handleConfirmRemoveExercise(exercise)}
+                    isSimplifiedMode={isSimplifiedMode}
                   />
                 </div>
               </div>
@@ -1259,7 +1305,19 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
           {workoutDay.exercises.map((exercise, index) => {
             const prev = previousLogs[exercise.id];
             const rec = recommendations[exercise.id];
-            const curInput = inputs[exercise.id] || { weight: '', reps: '', rir: '' };
+            const fallbackWeight =
+              rec?.recommendedWeightKg?.toString() ??
+              prev?.find((s) => !s.isWarmup)?.weightKg?.toString() ??
+              prev?.[0]?.weightKg?.toString() ??
+              (exercise.category === 'corporal' ? '0' : '');
+            const fallbackReps =
+              rec?.recommendedReps?.toString() ??
+              prev?.find((s) => !s.isWarmup)?.repsCompleted?.toString() ??
+              prev?.[0]?.repsCompleted?.toString() ??
+              exercise.targetRepsMin?.toString() ??
+              '10';
+            const fallbackRIR = rec?.recommendedRIR?.toString() ?? exercise.targetRIR?.toString() ?? '2';
+            const curInput = inputs[exercise.id] || { weight: fallbackWeight, reps: fallbackReps, rir: fallbackRIR };
             const sets = completedSets[exercise.id] || [];
             const stag = stagnationData[exercise.id];
             const isActive = activeExerciseIndex === index;
@@ -1315,6 +1373,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
                   companionExerciseNames={companionNames}
                   onOpenSuperset={() => handleOpenSupersetModal(exercise)}
                   onRemoveExercise={() => handleConfirmRemoveExercise(exercise)}
+                  isSimplifiedMode={isSimplifiedMode}
                 />
               </div>
             );

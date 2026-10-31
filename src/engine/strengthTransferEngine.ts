@@ -2,6 +2,7 @@ import { CatalogExercise, EquipmentCategory, Exercise, MuscleGroup, Recommendati
 import { EXERCISE_CATALOG } from '../data/exerciseCatalog';
 import { SavedSession } from '../storage/storage';
 import { estimateAutoregulated1RM } from '../utils/formulas';
+import { quantizeEquipmentWeight } from '../utils/weightQuantization';
 
 /**
  * MOTOR DE TRANSFERENCIA BIOMECÁNICA Y DEDUCCIÓN DE CARGAS CRUZADAS (Dr. Marcus Vance)
@@ -650,16 +651,7 @@ export function getExerciseTransferSpec(ex: CatalogExercise | Exercise): Biomech
 export function roundInferredWeight(rawKg: number, category: EquipmentCategory): number {
   if (category === 'corporal') return 0;
   if (rawKg <= 0 || isNaN(rawKg)) return 0;
-
-  if (category === 'mancuerna' || category === 'kettlebell') {
-    if (rawKg < 6) return Math.max(2, Math.round(rawKg));
-    return Math.max(2, Math.round(rawKg / 2) * 2);
-  }
-
-  if (rawKg >= 100) {
-    return Math.round(rawKg / 5) * 5;
-  }
-  return Math.max(2.5, Math.round(rawKg / 2.5) * 2.5);
+  return quantizeEquipmentWeight(rawKg, category);
 }
 
 export interface InferredStrengthPrediction {

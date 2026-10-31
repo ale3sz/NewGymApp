@@ -2,6 +2,7 @@ import { MuscleGroup, Exercise, SetLog, GymEquipmentProfile, UserFatigueProfile,
 import { estimateAutoregulated1RM } from '../utils/formulas';
 import { getUserFatigueProfile, saveUserFatigueProfile } from '../storage/storage';
 import { getSecondaryMuscles } from './trainerEngine';
+import { quantizeEquipmentWeight } from '../utils/weightQuantization';
 
 /**
  * MOTOR DE FATIGA BAYESIANO Y PREDICCIÓN INDIVIDUALIZADA (Dr. Marcus Vance, CSCS)
@@ -583,37 +584,29 @@ export function solveOptimalNextSetWeight(
   const targetVirtual = targetReps + targetRIR;
   const rawWeight = e1rmDecayed * Math.max(0.3, 1.0278 - 0.0278 * targetVirtual);
 
-  // Redondear a equipamiento disponible
-  let roundedWeight: number;
-  if (exercise.category === 'mancuerna' && equipment?.availableDumbbellsKg) {
-    const dumbbells = [...equipment.availableDumbbellsKg].sort((a, b) => a - b);
-    // Encontrar la mancuerna más cercana
-    roundedWeight = dumbbells.reduce((prev, curr) =>
-      Math.abs(curr - rawWeight) < Math.abs(prev - rawWeight) ? curr : prev
-    );
-  } else if (exercise.category === 'barra') {
-    const smallestDisc = equipment?.smallestDiscKg || 1.25;
-    const step = rawWeight >= 100 ? 5 : smallestDisc * 2;
-    roundedWeight = Math.round(rawWeight / step) * step;
-  } else {
-    // Máquinas / poleas / prensa (evitar decimales irreales como .3 o .75)
-    const step = rawWeight >= 100 ? 5 : 2.5;
-    roundedWeight = Math.round(rawWeight / step) * step;
-  }
+  // Redondear a equipamiento disponible respetando saltos biomecánicos reales (Dr. Marcus Vance)
+  const isDropAttempt = rawWeight < lastSet.weightKg;
+  let roundedWeight = quantizeEquipmentWeight(
+    rawWeight,
+    exercise.category,
+    equipment,
+    isDropAttempt ? 'down' : 'nearest'
+  );
 
-  // Si rawWeight es inferior al peso de la serie previa (la fatiga exige bajar carga para alcanzar las reps),
-  // pero el redondeo aritmético lo devolvió al mismo peso previo (o mayor), forzar el decremento al salto inferior.
-  if (rawWeight < lastSet.weightKg && roundedWeight >= lastSet.weightKg) {
-    const dropStep = exercise.category === 'barra'
-      ? (equipment?.smallestDiscKg ? equipment.smallestDiscKg * 2 : 2.5)
-      : (lastSet.weightKg >= 100 ? 5 : 2.5);
-    roundedWeight = Math.max(0, lastSet.weightKg - dropStep);
+  // Si rawWeight es inferior al peso previo pero el redondeo no bajó de peso, forzar decremento hacia abajo
+  if (isDropAttempt && roundedWeight >= lastSet.weightKg) {
+    roundedWeight = quantizeEquipmentWeight(
+      lastSet.weightKg - 0.1,
+      exercise.category,
+      equipment,
+      'down'
+    );
   }
 
   const isDropRecommended = roundedWeight < lastSet.weightKg;
 
   return {
-    calculatedWeightKg: Math.round(roundedWeight * 2) / 2,
+    calculatedWeightKg: roundedWeight,
     exactRawWeight: Math.round(rawWeight * 10) / 10,
     isDropRecommended,
   };
