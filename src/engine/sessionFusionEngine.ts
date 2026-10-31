@@ -104,7 +104,30 @@ export function analyzeWeeklyTrainingState(
   const cycleStartDateLabel = `${cycleStartDayName} ${startDateObj.getDate()}`;
 
   const routineDays = routine?.days || [];
-  const completedDayIds = new Set(completedInWeek.map((l) => l.dayId));
+
+  // Mapeo exhaustivo para saber si un día de la rutina ya fue completado esta semana
+  // considerando ID exacto o coincidencia de nombre (ej. "Miércoles – Legs" vs "Legs")
+  const isRoutineDayCompletedThisWeek = (d: WorkoutDay): boolean => {
+    return completedInWeek.some((l) => {
+      if (l.dayId === d.id) return true;
+      if (!l.dayName || !d.name) return false;
+      const dNorm = d.name.toLowerCase().trim();
+      const lNorm = l.dayName.toLowerCase().trim();
+      if (dNorm === lNorm) return true;
+
+      // Extraer nombre central omitiendo prefijo del día ("Lunes – ", "Miércoles – ", etc.)
+      const cleanLog = lNorm.replace(/^(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\s*[-–—:]\s*/i, '').trim();
+      const cleanDay = dNorm.replace(/^(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\s*[-–—:]\s*/i, '').trim();
+      if (cleanLog && cleanDay && (cleanLog === cleanDay || cleanLog.includes(cleanDay) || cleanDay.includes(cleanLog))) {
+        return true;
+      }
+      return false;
+    });
+  };
+
+  const completedDayIds = new Set(
+    routineDays.filter(isRoutineDayCompletedThisWeek).map((d) => d.id)
+  );
 
   // Determinar días de la rutina completados y estrictamente pendientes esta semana
   const completedRoutineDays: WorkoutDay[] = [];
@@ -112,7 +135,7 @@ export function analyzeWeeklyTrainingState(
   const missedRoutineDays: WorkoutDay[] = [];
 
   routineDays.forEach((d) => {
-    if (completedDayIds.has(d.id)) {
+    if (isRoutineDayCompletedThisWeek(d)) {
       completedRoutineDays.push(d);
     } else {
       pendingRoutineDays.push(d);
@@ -198,8 +221,11 @@ export function analyzeWeeklyTrainingState(
         const pIdx = availablePendingDays.findIndex((d) => d.id === scheduledForDay.id);
         if (pIdx >= 0) availablePendingDays.splice(pIdx, 1);
       } else if (availablePendingDays.length > 0) {
-        // Fallback: tomar el primer día pendiente del ciclo
-        missedDay = availablePendingDays.shift();
+        // Fallback: tomar el primer día pendiente del ciclo que no esté completado
+        const candIdx = availablePendingDays.findIndex((d) => !completedDayIds.has(d.id));
+        if (candIdx >= 0) {
+          missedDay = availablePendingDays.splice(candIdx, 1)[0];
+        }
       }
 
       if (missedDay && !missedRoutineDays.some((m) => m.id === missedDay!.id)) {

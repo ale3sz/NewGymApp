@@ -33,7 +33,12 @@ import {
   analyzeWeeklyTrainingState,
   generateTacticalFusionWorkoutDay,
 } from '../sessionFusionEngine';
-import { Exercise, GymEquipmentProfile, SetLog, Routine, UserFatigueProfile, WorkoutDay, CompletedDayLog } from '../../types';
+import {
+  ANATOMICAL_SUB_MUSCLES,
+  getAnatomicalActivation,
+  evaluateRegionalMuscleBalance,
+} from '../anatomicalEngine';
+import { Exercise, GymEquipmentProfile, SetLog, Routine, UserFatigueProfile, WorkoutDay, CompletedDayLog, AnatomicalSubMuscle } from '../../types';
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -1169,6 +1174,110 @@ assert(
   `El día saltado del jueves debe ser Jueves - Push 2 (obtenido: ${missedDayNames.join(', ')})`
 );
 console.log(`    Caso Días Resuelto: Días completados: [${p14WeeklyState.completedRoutineDays.map(d => d.name).join(', ')}]. Días saltados identificados: [${missedDayNames.join(', ')}].`);
+
+// ==========================================
+// 15. SISTEMA ANATÓMICO DUAL & CO-ACTIVACIÓN
+// ==========================================
+console.log('\n--- Pilar 15: Sistema Anatómico Dual & Co-Activación Electromiográfica ---');
+
+// Test 1: Catálogo de 26 sub-cabezas anatómicas
+assert(
+  ANATOMICAL_SUB_MUSCLES.length === 26,
+  `El catálogo anatómico debe poseer exactamente 26 sub-cabezas miofibrilares (obtenido: ${ANATOMICAL_SUB_MUSCLES.length})`
+);
+
+// Test 2: Co-activación en Press Banca Plano (Pectoral Esternocostal + Abdominal + Clavicular)
+const benchPressActivation = getAnatomicalActivation('Press Banca Plano con Barra', 'pecho', 'barra');
+assert(
+  benchPressActivation.pecho_esternocostal === 1.0,
+  `Press plano debe activar esternocostal al 100% (obtenido ${benchPressActivation.pecho_esternocostal})`
+);
+assert(
+  (benchPressActivation.pecho_abdominal || 0) >= 0.70,
+  `Press plano debe estimular pecho inferior/abdominal >= 70% sin necesidad de ejercicio aislado (obtenido ${benchPressActivation.pecho_abdominal})`
+);
+assert(
+  (benchPressActivation.pecho_clavicular || 0) >= 0.50,
+  `Press plano debe co-activar pecho clavicular/superior >= 50% (obtenido ${benchPressActivation.pecho_clavicular})`
+);
+assert(
+  (benchPressActivation.deltoides_anterior || 0) >= 0.70,
+  `Press plano debe activar deltoides anterior >= 70% como sinergista (obtenido ${benchPressActivation.deltoides_anterior})`
+);
+assert(
+  (benchPressActivation.triceps_lateral_medial || 0) >= 0.50,
+  `Press plano debe activar tríceps lateral/medial >= 50% (obtenido ${benchPressActivation.triceps_lateral_medial})`
+);
+
+// Test 3: Remos de espalda y deltoides posterior
+const rowActivation = getAnatomicalActivation('Remo con Barra 45°', 'espalda', 'barra');
+assert(
+  (rowActivation.deltoides_posterior || 0) >= 0.70,
+  `Remo de espalda debe co-activar fuertemente deltoides posterior >= 70% (obtenido ${rowActivation.deltoides_posterior})`
+);
+assert(
+  (rowActivation.espalda_alta_trapecio || 0) >= 0.90,
+  `Remo con barra debe estimular espalda alta/trapecio >= 90% (obtenido ${rowActivation.espalda_alta_trapecio})`
+);
+assert(
+  (rowActivation.antebrazos_flexores || 0) >= 0.60,
+  `Remo libre debe activar flexores de antebrazo por agarre isométrico >= 60% (obtenido ${rowActivation.antebrazos_flexores})`
+);
+
+// Test 4: Prensa 45° y activación de glúteos y pantorrillas (sóleo)
+const legPressActivation = getAnatomicalActivation('Prensa Inclinada 45°', 'cuadriceps', 'maquina');
+assert(
+  legPressActivation.cuadriceps_vastos === 1.0,
+  `Prensa 45° debe reclutar vastos al 100% (obtenido ${legPressActivation.cuadriceps_vastos})`
+);
+assert(
+  (legPressActivation.gluteo_mayor || 0) >= 0.60,
+  `Prensa 45° debe co-activar glúteo mayor >= 60% por extensión profunda de cadera (obtenido ${legPressActivation.gluteo_mayor})`
+);
+assert(
+  (legPressActivation.soleo || 0) >= 0.30,
+  `Prensa 45° debe activar el sóleo como estabilizador de tobillo >= 30% (obtenido ${legPressActivation.soleo})`
+);
+
+// Test 5: Diagnóstico de desbalance regional de cabezas musculares
+const chestImbalanceSubVolumes: Record<AnatomicalSubMuscle, number> = {
+  pecho_clavicular: 1,
+  pecho_esternocostal: 8,
+  pecho_abdominal: 6,
+} as any;
+const chestDiagnosis = evaluateRegionalMuscleBalance('pecho', chestImbalanceSubVolumes);
+assert(
+  chestDiagnosis !== null && chestDiagnosis.status === 'LAGGING_SUB_MUSCLE',
+  'Debe detectar rezago en cabeza clavicular cuando representa < 25% del total del pectoral'
+);
+assert(
+  chestDiagnosis !== null && chestDiagnosis.highlightedSubMuscle === 'pecho_clavicular',
+  `La cabeza rezagada debe ser pecho_clavicular (obtenido ${chestDiagnosis?.highlightedSubMuscle})`
+);
+
+// Test 6: Diagnóstico de cabeza larga de tríceps
+const tricepsImbalanceSubVolumes: Record<AnatomicalSubMuscle, number> = {
+  triceps_cabeza_larga: 1,
+  triceps_lateral_medial: 9,
+} as any;
+const tricepsDiagnosis = evaluateRegionalMuscleBalance('triceps', tricepsImbalanceSubVolumes);
+assert(
+  tricepsDiagnosis !== null && tricepsDiagnosis.highlightedSubMuscle === 'triceps_cabeza_larga',
+  'Debe detectar rezago de cabeza larga en tríceps si no hay suficiente trabajo por encima de la cabeza'
+);
+
+// Test 7: Diagnóstico de recto femoral en cuádriceps (Paradoja de Lombard)
+const quadsImbalanceSubVolumes: Record<AnatomicalSubMuscle, number> = {
+  cuadriceps_recto_femoral: 1,
+  cuadriceps_vastos: 10,
+} as any;
+const quadsDiagnosis = evaluateRegionalMuscleBalance('cuadriceps', quadsImbalanceSubVolumes);
+assert(
+  quadsDiagnosis !== null && quadsDiagnosis.highlightedSubMuscle === 'cuadriceps_recto_femoral',
+  'Debe detectar rezago en recto femoral si solo se realizan ejercicios compuestos (sentadilla/prensa)'
+);
+
+console.log('    Anatomical Engine: 26 sub-cabezas, co-activación electromiográfica y diagnóstico de simetría 100% validados.');
 
 console.log('\n======================================================');
 console.log('✅ TODOS LOS TESTS DE AUDITORÍA CIENTÍFICA COMPLETADOS');

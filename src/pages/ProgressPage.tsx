@@ -12,11 +12,16 @@ import {
   BarChart3,
   Activity,
   Calculator,
-  ArrowRight
+  ArrowRight,
+  LayoutGrid,
+  Microscope,
+  Dna,
+  Info
 } from 'lucide-react';
 import {
   getAllWorkoutLogs,
   getCompletedDaysLogs,
+  getRoutines,
 } from '../storage/storage';
 import { EXERCISE_CATALOG } from '../data/exerciseCatalog';
 import { analyzeExerciseStagnation } from '../engine/stagnationEngine';
@@ -27,7 +32,12 @@ import {
   inferWeightFromUserHistory,
 } from '../engine/strengthTransferEngine';
 import { getSecondaryMuscles } from '../engine/trainerEngine';
-import { AppTab, MuscleGroup } from '../types';
+import {
+  ANATOMICAL_SUB_MUSCLES,
+  getAnatomicalActivation,
+  evaluateRegionalMuscleBalance,
+} from '../engine/anatomicalEngine';
+import { AppTab, MuscleGroup, AnatomicalSubMuscle, MuscleDetailMode } from '../types';
 
 interface ProgressPageProps {
   onNavigate: (tab: AppTab) => void;
@@ -268,6 +278,28 @@ const InteractiveTrendChart: React.FC<{
 export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
   const completedDays = getCompletedDaysLogs();
   const rawLogs = getAllWorkoutLogs();
+  const allRoutines = useMemo(() => getRoutines(), []);
+
+  const resolveExerciseInfo = (exerciseId: string) => {
+    const cat = EXERCISE_CATALOG.find((c) => c.id === exerciseId);
+    if (cat) return cat;
+
+    for (const r of allRoutines) {
+      for (const d of r.days || []) {
+        const found = d.exercises.find((e) => e.id === exerciseId);
+        if (found) {
+          return {
+            id: found.id,
+            name: found.name,
+            primaryMuscle: found.primaryMuscle,
+            category: found.category,
+            baseMovement: found.name,
+          };
+        }
+      }
+    }
+    return null;
+  };
 
   // Unique exercises with logged sessions
   const uniqueExerciseIds = Array.from(new Set(rawLogs.map((l) => l.exerciseId)));
@@ -279,12 +311,28 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
   // View & Chart states
   const [globalMetric, setGlobalMetric] = useState<'tonnage' | 'strength'>('strength');
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup>('pecho');
+  const [detailMode, setDetailMode] = useState<MuscleDetailMode>(() => {
+    try {
+      return (localStorage.getItem('gym_muscle_detail_mode') as MuscleDetailMode) || 'general';
+    } catch {
+      return 'general';
+    }
+  });
+
+  const handleToggleDetailMode = (mode: MuscleDetailMode) => {
+    setDetailMode(mode);
+    try {
+      localStorage.setItem('gym_muscle_detail_mode', mode);
+    } catch (e) {
+      console.warn(e);
+    }
+  };
 
   // Strength Transfer Simulator State
   const defaultAnchorEx = useMemo(() => {
     if (rawLogs.length > 0) {
       const last = rawLogs[rawLogs.length - 1];
-      const cat = EXERCISE_CATALOG.find((c) => c.id === last.exerciseId);
+      const cat = resolveExerciseInfo(last.exerciseId);
       const workingSets = (last.sets || []).filter((s) => !s.isWarmup && s.weightKg > 0);
       if (cat && workingSets.length > 0) {
         const bestSet = workingSets.reduce((best, cur) =>
@@ -403,7 +451,7 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
     });
 
     for (const log of rawLogs) {
-      const cat = EXERCISE_CATALOG.find((c) => c.id === log.exerciseId);
+      const cat = resolveExerciseInfo(log.exerciseId);
       if (!cat) continue;
 
       const workingSets = (log.sets || []).filter((s) => !s.isWarmup && s.repsCompleted > 0);
@@ -444,6 +492,80 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
     return stats;
   }, [rawLogs]);
 
+  // Cómputo Anatómico Integral (26 sub-cabezas musculares y co-activación electromiográfica)
+  const subMuscleOverviewStats = useMemo(() => {
+    const stats: Record<
+      AnatomicalSubMuscle,
+      {
+        sets: number;
+        directSets: number;
+        indirectSets: number;
+        tonnage: number;
+        peak1RM: number;
+        bestExerciseName: string;
+      }
+    > = {} as any;
+
+    ANATOMICAL_SUB_MUSCLES.forEach((sub) => {
+      stats[sub.id] = {
+        sets: 0,
+        directSets: 0,
+        indirectSets: 0,
+        tonnage: 0,
+        peak1RM: 0,
+        bestExerciseName: '',
+      };
+    });
+
+    for (const log of rawLogs) {
+      const cat = resolveExerciseInfo(log.exerciseId);
+      if (!cat) continue;
+
+      const workingSets = (log.sets || []).filter((s) => !s.isWarmup && s.repsCompleted > 0);
+      if (workingSets.length === 0) continue;
+
+      const actMap = getAnatomicalActivation(cat.name, cat.primaryMuscle, cat.category, cat.baseMovement);
+
+      for (const [subId, factor] of Object.entries(actMap) as [AnatomicalSubMuscle, number][]) {
+        if (!stats[subId] || factor <= 0) continue;
+
+        for (const s of workingSets) {
+          stats[subId].sets += factor;
+          if (factor >= 0.85) {
+            stats[subId].directSets += 1;
+          } else {
+            stats[subId].indirectSets += 1;
+          }
+          stats[subId].tonnage += s.weightKg * s.repsCompleted * factor;
+
+          const e1 = estimateAutoregulated1RM(s.weightKg, s.repsCompleted, s.rirLogged).e1rm;
+          if (e1 > stats[subId].peak1RM) {
+            stats[subId].peak1RM = e1;
+            stats[subId].bestExerciseName = factor >= 0.85 ? cat.name : `${cat.name} (Sinergista)`;
+          }
+        }
+      }
+    }
+    return stats;
+  }, [rawLogs]);
+
+  // Diagnóstico regional y sub-volúmenes para el músculo seleccionado
+  const selectedMuscleSubVolumes = useMemo(() => {
+    const relevantSubs = ANATOMICAL_SUB_MUSCLES.filter((s) => s.parentGroup === selectedMuscle);
+    const subMap: Record<AnatomicalSubMuscle, number> = {} as any;
+    relevantSubs.forEach((s) => {
+      subMap[s.id] = subMuscleOverviewStats[s.id]?.sets || 0;
+    });
+    const diagnostic = evaluateRegionalMuscleBalance(selectedMuscle, subMap);
+    const totalSubSets = Object.values(subMap).reduce((a, b) => a + b, 0);
+    return {
+      relevantSubs,
+      subMap,
+      diagnostic,
+      totalSubSets,
+    };
+  }, [selectedMuscle, subMuscleOverviewStats]);
+
   // ==================== 2. DATOS INDIVIDUALES POR MÚSCULO ====================
   const selectedMuscleData = useMemo(() => {
     const byDate = new Map<string, { peak1RM: number; bestEx: string; sets: number; tonnage: number }>();
@@ -461,7 +583,7 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
     >();
 
     for (const log of rawLogs) {
-      const cat = EXERCISE_CATALOG.find((c) => c.id === log.exerciseId);
+      const cat = resolveExerciseInfo(log.exerciseId);
       if (!cat) continue;
 
       const isPrimary = cat.primaryMuscle === selectedMuscle;
@@ -644,6 +766,11 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
     ...Object.values(muscleOverviewStats).map((m) => m.sets)
   );
 
+  const maxSetsAcrossSubMuscles = Math.max(
+    1,
+    ...Object.values(subMuscleOverviewStats).map((s: any) => s.sets)
+  );
+
   return (
     <div className="space-y-6 pb-20">
       {/* Header & Global KPIs */}
@@ -740,64 +867,172 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
           emptyMessage="Registra tu primera sesión de entrenamiento para visualizar tu curva global de fuerza y tonelaje."
         />
 
-        {/* Mapa Comparativo de todos los Grupos Musculares */}
-        <div className="pt-3 border-t border-zinc-800/80 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
-              Balance General entre Grupos Musculares (Toca un músculo para inspeccionar)
-            </span>
-            <span className="text-[10px] font-mono text-zinc-500">Series efectivas registradas</span>
+        {/* Selector de Nivel de Análisis: General vs Anatómico Avanzado */}
+        <div className="pt-3 border-t border-zinc-800/80 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center space-x-2">
+                <Dna className="w-4 h-4 text-emerald-400" />
+                <span className="text-xs font-bold text-zinc-100 uppercase tracking-wider">
+                  {detailMode === 'general'
+                    ? 'Balance General entre Grupos Musculares'
+                    : 'Mapa Anatómico Avanzado por Cabezas Miofibrilares'}
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                {detailMode === 'general'
+                  ? 'Visión global estándar (series efectivas directas y sinergistas ponderadas).'
+                  : 'Electromiografía regional (26 porciones con co-activación indirecta en segundo plano).'}
+              </p>
+            </div>
+
+            {/* Toggle Switch */}
+            <div className="flex items-center space-x-1 p-1 bg-zinc-950 border border-zinc-800 rounded-2xl self-start sm:self-auto shrink-0 shadow-inner">
+              <button
+                type="button"
+                onClick={() => handleToggleDetailMode('general')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${
+                  detailMode === 'general'
+                    ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-md shadow-red-950/40'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>General</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleToggleDetailMode('anatomical')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${
+                  detailMode === 'anatomical'
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-950/40'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                <Microscope className="w-3.5 h-3.5" />
+                <span>Anatómico (Avanzado)</span>
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {MUSCLE_LIST.map((m) => {
-              const st = muscleOverviewStats[m.id];
-              const pct = st.sets > 0 ? Math.max(8, (st.sets / maxSetsAcrossMuscles) * 100) : 0;
-              const isFocused = selectedMuscle === m.id;
-              return (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setSelectedMuscle(m.id)}
-                  className={`p-3 rounded-2xl border text-left transition ${
-                    isFocused
-                      ? 'bg-zinc-950 border-emerald-500/60 ring-1 ring-emerald-500/30'
-                      : 'bg-zinc-950/50 border-zinc-800/80 hover:border-zinc-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="font-bold text-zinc-100">
-                      {m.emoji} {m.label}
-                    </span>
-                    <span className="font-mono text-zinc-400">
-                      <strong className="text-white">
-                        {st.sets % 1 === 0 ? st.sets : st.sets.toFixed(1)}
-                      </strong>{' '}
-                      series
-                      {st.secondarySets > 0 && (
-                        <span className="text-[10px] text-zinc-500 ml-1">
-                          {st.directSets > 0
-                            ? `(${st.directSets}d + ${st.secondarySets}s)`
-                            : `(${st.secondarySets} sin.)`}
-                        </span>
-                      )}
-                      {st.peak1RM > 0 && (
-                        <span className="text-emerald-400 ml-1.5">
-                          • Pico {Math.round(st.peak1RM)}kg
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+          {detailMode === 'general' ? (
+            /* Vista General: 10 grupos macro */
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {MUSCLE_LIST.map((m) => {
+                const st = muscleOverviewStats[m.id];
+                const pct = st.sets > 0 ? Math.max(8, (st.sets / maxSetsAcrossMuscles) * 100) : 0;
+                const isFocused = selectedMuscle === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setSelectedMuscle(m.id)}
+                    className={`p-3 rounded-2xl border text-left transition ${
+                      isFocused
+                        ? 'bg-zinc-950 border-emerald-500/60 ring-1 ring-emerald-500/30'
+                        : 'bg-zinc-950/50 border-zinc-800/80 hover:border-zinc-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between text-xs mb-1.5">
+                      <span className="font-bold text-zinc-100 flex items-center space-x-1.5">
+                        <span>{m.emoji}</span>
+                        <span>{m.label}</span>
+                      </span>
+                      <span className="font-mono text-zinc-400 text-[11px]">
+                        <strong className="text-white">
+                          {st.sets % 1 === 0 ? st.sets : st.sets.toFixed(1)}
+                        </strong>{' '}
+                        series
+                        {st.secondarySets > 0 && (
+                          <span className="text-[10px] text-zinc-500 ml-1">
+                            ({st.directSets}d + {st.secondarySets}s)
+                          </span>
+                        )}
+                        {st.peak1RM > 0 && (
+                          <span className="text-emerald-400 ml-1.5 font-bold">
+                            • Pico {Math.round(st.peak1RM)}kg
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            /* Vista Anatómica Avanzada: 26 sub-cabezas miofibrilares con activación en segundo plano */
+            <div className="space-y-4">
+              <div className="p-3 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 text-xs text-emerald-200 flex items-start space-x-2.5">
+                <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <p className="text-[11px] leading-relaxed">
+                  <strong>Modelo Biomecánico Co-activado:</strong> Cada serie computa la tensión en sus sub-porciones reales. Por ejemplo, el <em>press de banca</em> activa el pectoral medio (1.0), pectoral inferior (0.75), pectoral superior (0.55), deltoides anterior (0.7) y tríceps (0.5) sin requerir ejercicios aislados obligatorios.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                {ANATOMICAL_SUB_MUSCLES.map((sub) => {
+                  const subSt = subMuscleOverviewStats[sub.id];
+                  const sets = subSt?.sets || 0;
+                  const pct = sets > 0 ? Math.max(6, (sets / maxSetsAcrossSubMuscles) * 100) : 0;
+                  const isParentSelected = selectedMuscle === sub.parentGroup;
+
+                  return (
                     <div
-                      className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                      key={sub.id}
+                      onClick={() => setSelectedMuscle(sub.parentGroup)}
+                      className={`p-3 rounded-2xl border text-left transition cursor-pointer ${
+                        isParentSelected
+                          ? 'bg-zinc-950 border-emerald-500/50 ring-1 ring-emerald-500/20'
+                          : 'bg-zinc-950/40 border-zinc-800/80 hover:border-zinc-700'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-1.5 mb-1.5">
+                        <div className="space-y-0.5">
+                          <div className="text-xs font-bold text-white flex items-center space-x-1.5">
+                            <span>{sub.emoji}</span>
+                            <span className="truncate">{sub.name}</span>
+                          </div>
+                          <div className="text-[10px] text-zinc-500 line-clamp-1">
+                            {sub.functionDescription}
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="text-xs font-mono font-bold text-emerald-400">
+                            {sets.toFixed(1)}
+                          </span>
+                          <span className="text-[10px] text-zinc-500 block font-mono">series</span>
+                        </div>
+                      </div>
+
+                      <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden mt-2">
+                        <div
+                          className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 rounded-full transition-all duration-500"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+
+                      <div className="mt-2 flex items-center justify-between text-[10px] font-mono text-zinc-400">
+                        <span className="truncate max-w-[140px] text-zinc-400">
+                          {subSt?.bestExerciseName || 'Sin registrar aún'}
+                        </span>
+                        {subSt?.peak1RM > 0 && (
+                          <span className="text-emerald-300 font-bold ml-1">
+                            Pico {Math.round(subSt.peak1RM)}kg
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -866,6 +1101,108 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
             emptyMessage={`Todavía no tienes series registradas en ${MUSCLE_LIST.find((m) => m.id === selectedMuscle)?.label}. Registra un ejercicio de este grupo para desbloquear su curva individual.`}
           />
         </div>
+
+        {/* Desglose Anatómico por Cabezas y Porciones Regionales del Músculo Seleccionado */}
+        {selectedMuscleSubVolumes.relevantSubs.length > 0 && (
+          <div className="space-y-3.5 pt-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center space-x-1.5">
+                <Dna className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Arquitectura Regional: {MUSCLE_LIST.find((m) => m.id === selectedMuscle)?.label}</span>
+              </span>
+              <span className="text-[10px] font-mono text-zinc-500">
+                {selectedMuscleSubVolumes.totalSubSets > 0
+                  ? `${selectedMuscleSubVolumes.totalSubSets.toFixed(1)} series estimuladas`
+                  : 'Sin estímulo aún'}
+              </span>
+            </div>
+
+            {/* Diagnóstico Regional del Dr. Marcus Vance */}
+            {selectedMuscleSubVolumes.diagnostic && (
+              <div
+                className={`p-3.5 rounded-2xl border flex items-start space-x-3 text-xs ${
+                  selectedMuscleSubVolumes.diagnostic.status === 'LAGGING_SUB_MUSCLE'
+                    ? 'bg-amber-950/20 border-amber-500/30 text-amber-200'
+                    : 'bg-emerald-950/20 border-emerald-500/30 text-emerald-200'
+                }`}
+              >
+                <AlertTriangle
+                  className={`w-4 h-4 shrink-0 mt-0.5 ${
+                    selectedMuscleSubVolumes.diagnostic.status === 'LAGGING_SUB_MUSCLE'
+                      ? 'text-amber-400'
+                      : 'text-emerald-400'
+                  }`}
+                />
+                <div className="space-y-1">
+                  <div className="font-bold text-white flex items-center justify-between">
+                    <span>{selectedMuscleSubVolumes.diagnostic.title}</span>
+                    <span className="text-[10px] font-mono opacity-80">
+                      {selectedMuscleSubVolumes.diagnostic.ratioSummary}
+                    </span>
+                  </div>
+                  <p className="text-[11px] opacity-90 leading-relaxed">
+                    {selectedMuscleSubVolumes.diagnostic.advice}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Tarjetas de las Cabezas del Músculo */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {selectedMuscleSubVolumes.relevantSubs.map((sub) => {
+                const subSt = subMuscleOverviewStats[sub.id];
+                const sets = subSt?.sets || 0;
+                const totalInMuscle = selectedMuscleSubVolumes.totalSubSets || 1;
+                const pctOfMuscle = totalInMuscle > 0 ? Math.round((sets / totalInMuscle) * 100) : 0;
+
+                return (
+                  <div
+                    key={sub.id}
+                    className="p-3.5 rounded-2xl bg-zinc-950/80 border border-zinc-800 space-y-2"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="text-xs font-bold text-white flex items-center space-x-1.5">
+                          <span>{sub.emoji}</span>
+                          <span>{sub.shortName}</span>
+                        </div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5 leading-snug">
+                          {sub.functionDescription}
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0 ml-2">
+                        <span className="text-sm font-mono font-black text-emerald-400">
+                          {sets.toFixed(1)}
+                        </span>
+                        <span className="text-[9px] text-zinc-500 block font-mono">
+                          {pctOfMuscle}% del total
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
+                        style={{ width: `${Math.min(100, Math.max(5, pctOfMuscle))}%` }}
+                      />
+                    </div>
+
+                    <div className="text-[10px] font-mono text-zinc-400 pt-1 border-t border-zinc-900 flex items-center justify-between">
+                      <span className="truncate text-zinc-400">
+                        Top: {subSt?.bestExerciseName || 'Sin registrar'}
+                      </span>
+                      {subSt?.peak1RM > 0 && (
+                        <span className="text-emerald-300 font-bold ml-1">
+                          Pico {Math.round(subSt.peak1RM)}kg
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Ejercicios registrados de este músculo */}
         {selectedMuscleData.loggedExercises.length > 0 && (

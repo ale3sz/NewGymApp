@@ -3,6 +3,60 @@ export type MuscleGroup =
   | 'gluteos' | 'hombros' | 'biceps' | 'triceps' | 'pantorrillas' 
   | 'abdomen' | 'aductores' | 'antebrazos' | 'cuerpo_completo' | 'cardio';
 
+// ==================== SUB-COMPARTIMENTOS ANATÓMICOS Y CABEZAS MUSCULARES ====================
+export type AnatomicalSubMuscle =
+  // Pecho (Pectoralis Major & Minor)
+  | 'pecho_clavicular'         // Pecho Superior (Inclinados, empuje ascendente)
+  | 'pecho_esternocostal'       // Pecho Medio (Plano, aperturas en el plano esternal)
+  | 'pecho_abdominal'          // Pecho Inferior (Declinados, fondos, cruces)
+  // Espalda
+  | 'espalda_dorsal'           // Dorsal Ancho (Lats / Amplitud)
+  | 'espalda_alta_trapecio'    // Trapecio Medio/Superior, Romboides, Redondo Mayor (Densidad)
+  | 'espalda_lumbar'           // Erectores Espinales (Sostén axial)
+  // Hombros (Deltoides)
+  | 'deltoides_anterior'       // Deltoides Frontal
+  | 'deltoides_lateral'        // Deltoides Lateral (Abducción en plano escapular)
+  | 'deltoides_posterior'      // Deltoides Posterior (Extensión horizontal, Face Pull)
+  // Bíceps / Flexores de Codo
+  | 'biceps_braquial'          // Bíceps Braquial (Cabeza Larga y Corta - Supinación)
+  | 'braquial_braquiorradial'  // Braquial Anterior y Braquiorradial (Agarre neutro/martillo)
+  // Tríceps
+  | 'triceps_cabeza_larga'     // Cabeza Larga (Biarticular - Flexión de hombro/overhead)
+  | 'triceps_lateral_medial'   // Cabezas Lateral y Medial (Pushdowns, fondos, press cerrado)
+  // Cuádriceps
+  | 'cuadriceps_vastos'        // Vasto Lateral, Medial e Intermedio (Prensa, Sentadilla)
+  | 'cuadriceps_recto_femoral' // Recto Femoral (Biarticular - Extensiones de rodilla)
+  // Femorales (Isquiosurales)
+  | 'femorales_cadera'         // Cadena Posterior / Bisagra de Cadera (RDL, Peso Muerto)
+  | 'femorales_rodilla'        // Flexión de Rodilla (Curl Femoral sentado / acostado)
+  // Glúteos
+  | 'gluteo_mayor'             // Glúteo Mayor (Extensión de cadera e hiperextensión)
+  | 'gluteo_medio_menor'       // Glúteo Medio y Menor (Abducción y anti-valgo)
+  // Pantorrillas
+  | 'gastrocnemio'             // Gemelos (Pierna extendida / de pie)
+  | 'soleo'                    // Sóleo (Rodilla flexionada a 90°)
+  // Abdomen y Core
+  | 'recto_abdominal'          // Abdomen Frontal (Flexión espinal)
+  | 'oblicuos'                 // Oblicuos (Rotación y flexión lateral)
+  | 'core_profundo'            // Transverso / Lumbo-pélvico (Estabilización axial)
+  // Antebrazos
+  | 'antebrazos_flexores'      // Flexores de muñeca y agarre (Remos, tracción, peso muerto)
+  | 'antebrazos_extensores';   // Extensores de muñeca
+
+export type MuscleDetailMode = 'general' | 'anatomical';
+
+export interface AnatomicalSubMuscleSpec {
+  id: AnatomicalSubMuscle;
+  parentGroup: MuscleGroup;
+  name: string;
+  shortName: string;
+  emoji: string;
+  functionDescription: string;
+  primaryExerciseExamples: string[];
+}
+
+export type AnatomicalActivationMap = Partial<Record<AnatomicalSubMuscle, number>>;
+
 export type EquipmentCategory = 
   | 'mancuerna' | 'barra' | 'polea' | 'maquina' | 'corporal' | 'smith' | 'banda' | 'kettlebell';
 

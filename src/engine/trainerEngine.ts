@@ -69,7 +69,7 @@ export function getSecondaryMuscles(name: string, primaryMuscle: MuscleGroup, ca
       lowerName.includes('hack') ||
       lowerName.includes('bulgara')
     ) {
-      return ['gluteos', 'aductores'];
+      return ['gluteos', 'aductores', 'pantorrillas'];
     }
   }
 
