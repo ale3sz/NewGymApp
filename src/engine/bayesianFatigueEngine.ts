@@ -105,6 +105,19 @@ export function calculateCrossExerciseMuscleFatigueFactor(
     else if (targetSecondary.includes(otherEx.primaryMuscle)) {
       priorSynergistSets += sets.length * 0.7;
     }
+
+    // 4. Modulación Biomecánica por Biserie / Triserie Agonista en Vivo (Dr. Marcus Vance)
+    // Si este ejercicio es el Paso 2 o 3 de una biserie emparejada con este mismo músculo
+    // (ej. Banco Scott seguido inmediatamente de Curl Martillo con solo 15s de transición):
+    const isSupersetPair = Boolean(
+      exercise.supersetGroupId &&
+      otherEx.supersetGroupId === exercise.supersetGroupId &&
+      (exercise.supersetOrder ?? 1) > (otherEx.supersetOrder ?? 1)
+    );
+    if (isSupersetPair && otherEx.primaryMuscle === exercise.primaryMuscle) {
+      // Pre-agotamiento agudo por depleción inmediata de fosfocreatina (PCr) y acidosis metabólica
+      priorDirectSets += 1.8;
+    }
   }
 
   // Penalización periférica específica (2.2% por serie directa previa + 1.1% por serie sinergista previa)
