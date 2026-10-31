@@ -106,11 +106,10 @@ export function analyzeWeeklyTrainingState(
   const routineDays = routine?.days || [];
   const completedDayIds = new Set(completedInWeek.map((l) => l.dayId));
 
-  // Determinar la secuencia de la rutina
-  // Si el usuario arrancó el Miércoles con Legs 1 (o Day X), encontrar qué día fue
-  let completedRoutineDays: WorkoutDay[] = [];
-  let pendingRoutineDays: WorkoutDay[] = [];
-  let missedRoutineDays: WorkoutDay[] = [];
+  // Determinar días de la rutina completados y estrictamente pendientes esta semana
+  const completedRoutineDays: WorkoutDay[] = [];
+  const pendingRoutineDays: WorkoutDay[] = [];
+  const missedRoutineDays: WorkoutDay[] = [];
 
   routineDays.forEach((d) => {
     if (completedDayIds.has(d.id)) {
@@ -120,9 +119,29 @@ export function analyzeWeeklyTrainingState(
     }
   });
 
+  // Mapeo robusto de nombres de días de la semana a días de la rutina
+  const WEEKDAY_KEYWORDS: Record<string, string[]> = {
+    Lun: ['lunes', 'lun'],
+    Mar: ['martes', 'mar'],
+    Mié: ['miércoles', 'miercoles', 'mie'],
+    Jue: ['jueves', 'jue'],
+    Vie: ['viernes', 'vie'],
+    Sáb: ['sábado', 'sabado', 'sab'],
+    Dom: ['domingo', 'dom'],
+  };
+
+  const getRoutineDayForWeekday = (dayLabel: string): WorkoutDay | undefined => {
+    const kws = WEEKDAY_KEYWORDS[dayLabel] || [];
+    return routineDays.find((d) => {
+      const lower = d.name.toLowerCase();
+      return kws.some((k) => lower.includes(k));
+    });
+  };
+
   // 3. Evaluar cada día de la semana (Lunes a Domingo) respecto al inicio del usuario
   let missedCount = 0;
-  let nextExpectedRoutineDayIdx = completedRoutineDays.length;
+  // Pool de días de la rutina que aún no han sido realizados (nunca incluir días completados)
+  const availablePendingDays = [...pendingRoutineDays];
 
   const daysTimeline: WeeklyDayStatus[] = weekDates.map((wd) => {
     const isToday = wd.dateKey === todayKey;
@@ -168,11 +187,25 @@ export function analyzeWeeklyTrainingState(
     if (isPast) {
       // Día transcurrido después de haber iniciado donde NO se entrenó (Sesión Saltada)
       missedCount += 1;
-      const expectedDay = routineDays[nextExpectedRoutineDayIdx];
-      if (expectedDay) {
-        missedRoutineDays.push(expectedDay);
-        nextExpectedRoutineDayIdx += 1;
+
+      // Buscar si había un día programado específicamente para este día de la semana que NO se completó
+      const scheduledForDay = getRoutineDayForWeekday(wd.dayName);
+      let missedDay: WorkoutDay | undefined;
+
+      if (scheduledForDay && !completedDayIds.has(scheduledForDay.id)) {
+        missedDay = scheduledForDay;
+        // Quitar de availablePendingDays para no duplicarlo
+        const pIdx = availablePendingDays.findIndex((d) => d.id === scheduledForDay.id);
+        if (pIdx >= 0) availablePendingDays.splice(pIdx, 1);
+      } else if (availablePendingDays.length > 0) {
+        // Fallback: tomar el primer día pendiente del ciclo
+        missedDay = availablePendingDays.shift();
       }
+
+      if (missedDay && !missedRoutineDays.some((m) => m.id === missedDay!.id)) {
+        missedRoutineDays.push(missedDay);
+      }
+
       return {
         dateKey: wd.dateKey,
         dayName: wd.dayName,
@@ -182,14 +215,26 @@ export function analyzeWeeklyTrainingState(
         isFuture,
         isBeforeStart: false,
         status: 'MISSED',
-        expectedDay,
-        label: expectedDay ? `No fuiste: ${expectedDay.name} saltado` : 'Día sin registrar',
+        expectedDay: missedDay,
+        label: missedDay ? `No fuiste: ${missedDay.name} saltado` : 'Día sin registrar',
         badgeColor: 'amber',
       };
     }
 
     if (isToday) {
-      const expectedDay = routineDays[nextExpectedRoutineDayIdx];
+      // Para hoy: si hay un día saltado previo, el siguiente a hacer es el saltado o el primer pendiente
+      const scheduledToday = getRoutineDayForWeekday(wd.dayName);
+      let expectedDay: WorkoutDay | undefined;
+
+      if (missedRoutineDays.length > 0) {
+        // Prioridad: el día que quedó pendiente
+        expectedDay = missedRoutineDays[0];
+      } else if (scheduledToday && !completedDayIds.has(scheduledToday.id)) {
+        expectedDay = scheduledToday;
+      } else {
+        expectedDay = availablePendingDays[0] || pendingRoutineDays[0];
+      }
+
       return {
         dateKey: wd.dateKey,
         dayName: wd.dayName,
@@ -228,11 +273,11 @@ export function analyzeWeeklyTrainingState(
   let fusionReason = '';
   let involvedMuscles: MuscleGroup[] = [];
 
-  // Buscar 2 días pendientes en la rutina para proponer fusión
+  // Buscar 2 días pendientes en la rutina para proponer fusión (estrictamente no completados)
   const pendingOrMissedPool = [...missedRoutineDays, ...pendingRoutineDays];
   const uniqueCandidateDays: WorkoutDay[] = [];
   pendingOrMissedPool.forEach((d) => {
-    if (!uniqueCandidateDays.some((u) => u.id === d.id)) {
+    if (!completedDayIds.has(d.id) && !uniqueCandidateDays.some((u) => u.id === d.id)) {
       uniqueCandidateDays.push(d);
     }
   });

@@ -1066,6 +1066,110 @@ const triserieOrder = [1, 2, 3];
 assert(triserieOrder.length === 3, 'Una triserie debe constar de 3 ejercicios consecutivos');
 console.log('    Caso Usuario Resuelto: Biserie configurada: Banco Scott (Paso 1) ➔ [15s transición] ➔ Curl Martillo (Paso 2) ➔ [Descanso completo]');
 
+// ==========================================
+// 14. ANTI-OSCILACIÓN DE CARGAS, CUANTIZACIÓN REAL DE POLEAS Y SISTEMA DE DÍAS
+// ==========================================
+console.log('\n--- Pilar 14: Anti-oscilación (Hysteresis), Cuantización de Poleas y Días Semanales ---');
+
+// Test 52: Caso Usuario: 11 reps con 10kg en ejercicio de rango 12-15 reps @ RIR 1
+// NO debe mandar a bajar a 8kg para hacer 17 reps, sino MANTENER 10kg (Straight Sets)
+const p14LateralExercise: Exercise = {
+  id: 'elevaciones_laterales_mancuernas',
+  name: 'Elevaciones Laterales con Mancuernas',
+  primaryMuscle: 'hombros',
+  category: 'mancuerna',
+  targetRepsMin: 12,
+  targetRepsMax: 15,
+  targetRIR: 1,
+};
+
+const userSet11Reps10Kg: SetLog[] = [
+  { setNumber: 1, weightKg: 10, repsCompleted: 11, rirLogged: 1 }
+];
+
+const lateralCoachVerdict = evaluateNextSetObjective(p14LateralExercise, userSet11Reps10Kg, 3, equipment);
+assert(
+  lateralCoachVerdict.action === 'MAINTAIN',
+  `Con 11 reps @ RIR 1 en rango 12-15 debe sugerir MAINTAIN (obtenido ${lateralCoachVerdict.action})`
+);
+assert(
+  lateralCoachVerdict.recommendedWeightKg === 10,
+  `Debe mantener 10 kg, no bajar a 8 kg (obtenido ${lateralCoachVerdict.recommendedWeightKg} kg)`
+);
+assert(
+  lateralCoachVerdict.targetReps <= 15,
+  `El objetivo de reps NUNCA debe prescribir 17 reps si el target es 12-15 (obtenido ${lateralCoachVerdict.targetReps})`
+);
+
+// Test 53: Cuantización estricta de poleas (Prohibido 21.5 kg)
+import { quantizeEquipmentWeight } from '../../utils/weightQuantization';
+const cableWeightFromDeload = quantizeEquipmentWeight(25 * 0.85, 'polea', equipment, 'down');
+assert(
+  cableWeightFromDeload === 20,
+  `25kg * 0.85 en polea (21.25kg) debe redondear al salto físico de 20kg (obtenido ${cableWeightFromDeload} kg)`
+);
+const cableWeight21Dot5 = quantizeEquipmentWeight(21.5, 'polea', equipment);
+assert(
+  cableWeight21Dot5 === 20 || cableWeight21Dot5 === 25,
+  `21.5kg en polea debe ser 20kg o 25kg, jamás 21.5kg (obtenido ${cableWeight21Dot5} kg)`
+);
+
+// Test 54: Auditoría del Sistema de Días: Iniciar el Miércoles con Legs y saltar el Jueves
+const p14MockRoutine: Routine = {
+  id: 'test_routine_ppl',
+  name: 'PPL Clásico',
+  days: [
+    { id: 'custom_push_1', name: 'Lunes – Push 1', exercises: [] },
+    { id: 'custom_pull_1', name: 'Martes – Pull 1', exercises: [] },
+    { id: 'custom_legs', name: 'Miércoles – Legs (Pierna Completa)', exercises: [] },
+    { id: 'custom_push_2', name: 'Jueves – Push 2', exercises: [] },
+    { id: 'custom_pull_2', name: 'Viernes – Pull 2', exercises: [] },
+  ]
+};
+
+// Historial del usuario: entrenó Miércoles (Legs) y Viernes (Pull 2)
+const userHistoryLogs: CompletedDayLog[] = [
+  {
+    id: 'log_wed_legs',
+    routineId: 'test_routine_ppl',
+    dayId: 'custom_legs',
+    dayName: 'Miércoles – Legs (Pierna Completa)',
+    date: '2026-10-28T18:00:00.000Z',
+    dateKey: '2026-10-28',
+    primaryMuscles: ['cuadriceps', 'femorales', 'gluteos'],
+    totalSets: 14,
+    completedExerciseIds: ['ex1', 'ex2', 'ex3'],
+  },
+  {
+    id: 'log_fri_pull',
+    routineId: 'test_routine_ppl',
+    dayId: 'custom_pull_2',
+    dayName: 'Viernes – Pull 2',
+    date: '2026-10-30T18:00:00.000Z',
+    dateKey: '2026-10-30',
+    primaryMuscles: ['espalda', 'biceps'],
+    totalSets: 12,
+    completedExerciseIds: ['ex4', 'ex5'],
+  }
+];
+
+const p14WeeklyState = analyzeWeeklyTrainingState(p14MockRoutine, userHistoryLogs);
+// El día saltado fue el JUEVES, y el día programado para Jueves que quedó pendiente es Jueves – Push 2!
+assert(
+  p14WeeklyState.missedCount >= 1,
+  `Debe registrar al menos 1 día saltado (obtenido ${p14WeeklyState.missedCount})`
+);
+const missedDayNames = p14WeeklyState.missedRoutineDays.map(d => d.name);
+assert(
+  !missedDayNames.some(n => n.includes('Legs')),
+  `Miércoles - Legs ya fue completado, NUNCA debe figurar como saltado (obtenido: ${missedDayNames.join(', ')})`
+);
+assert(
+  missedDayNames.some(n => n.includes('Push 2')),
+  `El día saltado del jueves debe ser Jueves - Push 2 (obtenido: ${missedDayNames.join(', ')})`
+);
+console.log(`    Caso Días Resuelto: Días completados: [${p14WeeklyState.completedRoutineDays.map(d => d.name).join(', ')}]. Días saltados identificados: [${missedDayNames.join(', ')}].`);
+
 console.log('\n======================================================');
 console.log('✅ TODOS LOS TESTS DE AUDITORÍA CIENTÍFICA COMPLETADOS');
 console.log('======================================================\n');

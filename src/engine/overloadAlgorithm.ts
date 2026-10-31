@@ -223,15 +223,11 @@ export function calculateNextSession(
   }
 
   // 7. CASO BARRAS, MÁQUINAS Y POLEAS
-  const increment = currentWeight >= 100
-    ? 5
-    : exercise.category === 'barra'
-    ? smallestDisc * 2
-    : Math.max(2.5, smallestDisc * 2);
-  const nextWeight = Math.round((currentWeight + increment) * 2) / 2;
+  const nextWeight = quantizeEquipmentWeight(currentWeight + 0.1, exercise.category, equipment, 'up');
+  const increment = Math.round((nextWeight - currentWeight) * 10) / 10;
   const jumpPercent = currentWeight > 0 ? (increment / currentWeight) * 100 : 0;
 
-  // Si en barra el incremento de 2 discos mínimos representa > 10% del peso total (ej. peso bajo en militar):
+  // Si el incremento representa > 10% del peso total (ej. peso bajo en militar o polea ligera):
   if (jumpPercent > 10 && avgReps < exercise.targetRepsMax + 1) {
     return {
       type: 'REP_INCREASE',
@@ -239,7 +235,7 @@ export function calculateNextSession(
       recommendedReps: exercise.targetRepsMax + 1,
       recommendedRIR: exercise.targetRIR,
       tempoInstruction: 'Pausa isométrica de 1s en punto muerto',
-      reasoning: `Un incremento de +${increment} kg representa un +${jumpPercent.toFixed(0)}% del peso actual. Recomendamos consolidar ${exercise.targetRepsMax + 1} reps con ${currentWeight} kg antes de realizar el salto en barra.`,
+      reasoning: `Un incremento de +${increment} kg representa un +${jumpPercent.toFixed(0)}% del peso actual. Recomendamos consolidar ${exercise.targetRepsMax + 1} reps con ${currentWeight} kg antes de realizar el salto.`,
       progressionStrategy: 'VOLUME_COMPENSATION',
       microIncrementKg: 0,
     };
@@ -251,7 +247,7 @@ export function calculateNextSession(
     recommendedReps: exercise.targetRepsMin,
     recommendedRIR: exercise.targetRIR,
     tempoInstruction: 'Ritmo fluido y concéntrica con intención de máxima velocidad',
-    reasoning: `Doble progresión completada con éxito (${avgReps.toFixed(0)} reps promedio con RIR ${avgRIR.toFixed(1)}). Microcarga precisa de +${increment} kg para un nuevo peso de ${nextWeight} kg.`,
+    reasoning: `Doble progresión completada con éxito (${avgReps.toFixed(0)} reps promedio con RIR ${avgRIR.toFixed(1)}). Incremento preciso de +${increment} kg para un nuevo peso de ${nextWeight} kg.`,
     progressionStrategy: 'MICRO_LOAD',
     microIncrementKg: increment,
     sfrAnalysis: `Incremento de tensión mecánica controlado (+${jumpPercent.toFixed(1)}%). Estímulo neuromuscular óptimo.`,

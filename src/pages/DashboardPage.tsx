@@ -284,7 +284,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
                 <span className="text-[8px] sm:text-[9px] font-medium text-center truncate max-w-full px-0.5 leading-tight">
                   {d.status === 'COMPLETED'
-                    ? d.completedLog?.dayName.split('–')[1]?.trim() || 'Hecho'
+                    ? (d.completedLog?.dayName.split(/[-–—]/)[1]?.trim() || d.completedLog?.dayName || 'Hecho')
                     : d.status === 'MISSED'
                     ? 'Saltado'
                     : d.status === 'BEFORE_START'

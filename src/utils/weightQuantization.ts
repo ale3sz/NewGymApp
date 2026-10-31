@@ -70,8 +70,9 @@ export function quantizeEquipmentWeight(
   }
 
   if (category === 'maquina') {
-    // Máquinas de placas o palanca: escalones de 5 kg para cargas >= 20 kg, o 2.5 kg para menores
-    const step = rawWeightKg >= 20 ? 5 : 2.5;
+    // Máquinas de placas o palanca: escalones de 2.5 kg (placas fraccionarias o pin estándar)
+    // Para cargas pesadas (>= 100 kg como prensa), saltos de 5 kg.
+    const step = rawWeightKg >= 100 ? 5 : 2.5;
     return Math.max(step, snapToStep(rawWeightKg, step, direction));
   }
 

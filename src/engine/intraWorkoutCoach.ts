@@ -129,20 +129,22 @@ export function evaluateNextSetObjective(
   // - O bien estuvo en el rango pero con RIR >= 3 (muy lejos de la fatiga efectiva).
   // EVALUACIÓN DE FATIGA Y ESFUERZO:
   // Histéresis fisiológica (Dr. Marcus Vance): Evitar oscilaciones pendulares.
-  // La sobrecarga o subida intra-sesión solo debe prescribirse si la carga es GROSERAMENTE liviana.
+  // La sobrecarga o subida intra-sesión solo debe prescribirse si la carga es claramente subumbral
+  // (ej. 8 reps con RIR 4, o superó por 3+ reps el tope).
   const targetVirtual = exercise.targetRepsMax + exercise.targetRIR;
   const setVirtual = lastSet.repsCompleted + (lastSet.rirLogged ?? 1);
   const isTooLight =
     (lastSet.repsCompleted >= exercise.targetRepsMax + 3) ||
     (lastSet.repsCompleted >= exercise.targetRepsMax && (lastSet.rirLogged ?? 1) >= 3) ||
-    (setVirtual >= targetVirtual + 4);
+    (setVirtual >= targetVirtual + 3);
 
-  // ¿Hubo colapso agudo que justifique romper la serie plana y bajar peso?
-  // Solo se justifica Back-off si el atleta colapsó severamente (fallo antes de 3 reps del mínimo o < 5 reps).
-  // Si hizo 11 reps en rango 12-15, o 9 en rango 10-12, la carga es ADECUADA y se mantiene.
+  // ¿Hubo colapso agudo por fatiga o fallo concéntrico que justifique un Back-off Set?
+  // Ocurre si:
+  // - Fue al fallo total (RIR 0) y no alcanzó el rango mínimo de repeticiones.
+  // - O las reps cayeron sensiblemente por debajo del umbral mínimo de trabajo (>= 2 reps por debajo).
   const isFatigueCollapse =
-    (lastSet.rirLogged === 0 && lastSet.repsCompleted < Math.max(4, exercise.targetRepsMin - 3)) ||
-    (lastSet.repsCompleted < 5 && exercise.targetRepsMin >= 8);
+    (lastSet.rirLogged === 0 && lastSet.repsCompleted < exercise.targetRepsMin) ||
+    (lastSet.repsCompleted < Math.max(1, exercise.targetRepsMin - 2) && (lastSet.rirLogged ?? 1) <= 1);
 
   const safeRest = Math.max(45, restSeconds || 90);
 
@@ -287,12 +289,16 @@ export function evaluateNextSetObjective(
   // Subcaso C: Evaluación estándar intra-sesión
   const pred = predictNextSetReps(exercise, workingSets, currentWeight, safeRest, 0, acuteModifier, undefined, crossMuscleFatigueFactor);
 
-  // PRINCIPIO DE ESTABILIDAD DE CARGA: Si el atleta estuvo cerca del rango (reps >= targetRepsMin - 2),
-  // por ejemplo 11 reps con target 12-15, o 9 reps con target 10-12:
-  // ¡JAMÁS mandarlo a bajar peso ni oscilar a 8kg para hacer 17 reps!
+  // PRINCIPIO DE ESTABILIDAD DE CARGA (Dr. Marcus Vance):
+  // Si fue al fallo absoluto (RIR 0) y el modelo proyecta que las reps caerán por debajo del mínimo,
+  // prescribir Back-off táctico para rescatar la ventana hipertrófica.
+  // Pero si el atleta dejó reserva (RIR >= 1) y estuvo cerca del rango (ej. 11 reps en rango 12-15):
+  // ¡MANTENER LA CARGA! La fatiga inter-serie de 1-2 reps es normal y no debe generar oscilaciones pendulares.
   const isWithinOperationalZone = lastSet.repsCompleted >= Math.max(1, exercise.targetRepsMin - 2);
+  const isRirZeroCollapse = lastSet.rirLogged === 0 && pred.predictedReps < exercise.targetRepsMin;
+  const isSevereRepDeficit = !isWithinOperationalZone && pred.predictedReps < Math.max(4, exercise.targetRepsMin - 2);
 
-  if (!isWithinOperationalZone && pred.predictedReps < Math.max(4, exercise.targetRepsMin - 3) && currentWeight > 0) {
+  if ((isRirZeroCollapse || isSevereRepDeficit) && currentWeight > 0) {
     const solved = solveOptimalNextSetWeight(
       exercise,
       workingSets,
