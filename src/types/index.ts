@@ -140,6 +140,16 @@ export interface CatalogExercise {
   sfrTier?: SFRTier;
 }
 
+export type SupersetType = 'biserie' | 'triserie' | 'superserie';
+
+export interface SupersetLinkInfo {
+  groupId: string;
+  type: SupersetType;
+  exerciseIds: string[];
+  order: number;
+  transitionSeconds?: number;
+}
+
 export interface Exercise extends CatalogExercise {
   targetSets?: number;
   targetRepsMin: number;
@@ -147,6 +157,10 @@ export interface Exercise extends CatalogExercise {
   targetRIR: number;
   restSeconds?: number;
   notes?: string;
+  supersetGroupId?: string;
+  supersetType?: SupersetType;
+  supersetOrder?: number;
+  supersetTransitionSeconds?: number;
 }
 
 // ==================== MATRIZ DE SUSTITUCIÓN BIOMECÁNICA ====================

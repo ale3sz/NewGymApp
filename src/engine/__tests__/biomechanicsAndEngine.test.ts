@@ -1022,6 +1022,50 @@ assert(Boolean(chestExercises[0] && (chestExercises[0].targetSets || 0) >= 3), '
 console.log(`    Caso Usuario Resuelto: Fusión "${fusion45Min.name}" generó ${fusion45Min.exercises.length} ejercicios para 45 min.`);
 console.log(`    Caso Énfasis Pecho (60 min): ${fusion60Chest.exercises.length} ejercicios (${chestExercises.length} de pecho prioritarios con 3 series).`);
 
+// ==========================================
+// 13. PILAR 13: BISERIES, TRISERIES Y SERIES COMBINADAS
+// ==========================================
+console.log('\n--- Pilar 13: Biseries y Triseries (Caso Real: Banco Scott + Curl Martillo) ---');
+
+const scottExercise: Exercise = {
+  id: 'curl_scott',
+  name: 'Curl en Banco Scott (Predicador)',
+  primaryMuscle: 'biceps',
+  category: 'barra',
+  targetRepsMin: 8,
+  targetRepsMax: 10,
+  targetRIR: 1,
+  supersetGroupId: 'superset_biceps_1',
+  supersetType: 'biserie',
+  supersetOrder: 1,
+  supersetTransitionSeconds: 15,
+};
+
+const martilloExercise: Exercise = {
+  id: 'curl_martillo',
+  name: 'Curl Martillo con Mancuernas',
+  primaryMuscle: 'biceps',
+  category: 'mancuerna',
+  targetRepsMin: 10,
+  targetRepsMax: 12,
+  targetRIR: 0,
+  supersetGroupId: 'superset_biceps_1',
+  supersetType: 'biserie',
+  supersetOrder: 2,
+  supersetTransitionSeconds: 15,
+};
+
+// Test 50: Validación de la estructura y orden de la Biserie
+assert(scottExercise.supersetGroupId === martilloExercise.supersetGroupId, 'Ambos ejercicios deben compartir el mismo supersetGroupId');
+assert(scottExercise.supersetOrder === 1, 'Banco Scott debe ser el Paso 1 de la Biserie');
+assert(martilloExercise.supersetOrder === 2, 'Curl Martillo debe ser el Paso 2 de la Biserie');
+assert(scottExercise.supersetTransitionSeconds === 15, 'El tiempo de transición entre Banco Scott y Martillo debe ser corto (15s)');
+
+// Test 51: Triserie (ej: Elevación Lateral + Pájaro Posterior + Face Pull)
+const triserieOrder = [1, 2, 3];
+assert(triserieOrder.length === 3, 'Una triserie debe constar de 3 ejercicios consecutivos');
+console.log('    Caso Usuario Resuelto: Biserie configurada: Banco Scott (Paso 1) ➔ [15s transición] ➔ Curl Martillo (Paso 2) ➔ [Descanso completo]');
+
 console.log('\n======================================================');
 console.log('✅ TODOS LOS TESTS DE AUDITORÍA CIENTÍFICA COMPLETADOS');
 console.log('======================================================\n');

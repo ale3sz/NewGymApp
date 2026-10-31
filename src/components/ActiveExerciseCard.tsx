@@ -22,7 +22,8 @@ import {
   SetLog,
   RecommendationResult,
   StagnationAnalysisResult,
-  GymEquipmentProfile
+  GymEquipmentProfile,
+  SupersetLinkInfo
 } from '../types';
 import { GymNumberStepper } from './GymNumberStepper';
 import { RirSegmentedPicker } from './RirSegmentedPicker';
@@ -61,6 +62,10 @@ interface ActiveExerciseCardProps {
   onAddExtraTargetSet?: () => void;
   setupNote?: string;
   onSaveSetupNote?: (note: string) => void;
+  supersetLinkInfo?: SupersetLinkInfo;
+  companionExerciseNames?: string[];
+  onOpenSuperset?: () => void;
+  onRemoveExercise?: () => void;
 }
 
 export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
@@ -88,6 +93,10 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
   onAddExtraTargetSet,
   setupNote = '',
   onSaveSetupNote,
+  supersetLinkInfo,
+  companionExerciseNames,
+  onOpenSuperset,
+  onRemoveExercise,
 }) => {
   const [isWarmupMode, setIsWarmupMode] = useState<boolean>(false);
   const [showWarmupRamp, setShowWarmupRamp] = useState<boolean>(false);
@@ -190,11 +199,38 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
   return (
     <div
       className={`rounded-3xl border transition-all duration-300 overflow-hidden shadow-xl ${
-        isActiveFocus
+        supersetLinkInfo
+          ? 'border-amber-500/50 shadow-amber-950/20 ring-1 ring-amber-500/30 bg-zinc-900'
+          : isActiveFocus
           ? 'bg-zinc-900 border-red-500/50 shadow-red-950/40 ring-1 ring-red-500/30'
           : 'bg-zinc-900/90 border-zinc-800 hover:border-zinc-700/80'
       }`}
     >
+      {/* Banner de Biserie / Triserie Vinculada */}
+      {supersetLinkInfo && (
+        <div className="bg-gradient-to-r from-amber-950/60 via-amber-900/30 to-zinc-950 border-b border-amber-500/40 px-4 py-2 flex items-center justify-between text-xs text-amber-300">
+          <div className="flex items-center space-x-2 min-w-0">
+            <span className="px-2 py-0.5 rounded-full bg-amber-500 text-black font-black text-[10px] uppercase font-mono tracking-wider shrink-0">
+              ⚡ {supersetLinkInfo.type} • Paso {supersetLinkInfo.order}/{supersetLinkInfo.exerciseIds.length}
+            </span>
+            <span className="font-bold text-[11px] truncate">
+              {companionExerciseNames && companionExerciseNames.length > 0
+                ? `Combinado con: ${companionExerciseNames.join(', ')}`
+                : 'Serie combinada activa'}
+            </span>
+          </div>
+          {onOpenSuperset && (
+            <button
+              type="button"
+              onClick={onOpenSuperset}
+              className="text-[10px] text-amber-400 hover:text-white font-mono underline shrink-0 ml-2"
+            >
+              Configurar
+            </button>
+          )}
+        </div>
+      )}
+
       {/* 1. Header Bar: Exercise Title, Badges, Setup Pin & Quick Substitute */}
       <div className="p-4 sm:p-5 border-b border-zinc-800/80 bg-gradient-to-r from-zinc-900 via-zinc-900 to-zinc-850">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -329,8 +365,30 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
             </div>
           </div>
 
-          {/* Actions: Técnica & Sustituir */}
-          <div className="flex items-center space-x-2 shrink-0 self-start sm:self-auto">
+          {/* Actions: Técnica, Biserie & Sustituir */}
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0 self-start sm:self-auto">
+            {onOpenSuperset && (
+              <button
+                type="button"
+                onClick={onOpenSuperset}
+                className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl active:scale-95 border text-xs font-bold transition-all touch-manipulation ${
+                  supersetLinkInfo
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 hover:bg-amber-500/30 shadow-md shadow-amber-500/10'
+                    : 'bg-zinc-800 hover:bg-zinc-700/80 border-zinc-700 text-zinc-300 hover:text-white'
+                }`}
+                title="Configurar Biserie o Triserie con otro ejercicio"
+              >
+                <Zap className={`w-3.5 h-3.5 ${supersetLinkInfo ? 'text-amber-400 fill-current' : 'text-amber-400'}`} />
+                <span>
+                  {supersetLinkInfo
+                    ? supersetLinkInfo.type === 'triserie'
+                      ? 'Triserie'
+                      : 'Biserie'
+                    : 'Biserie'}
+                </span>
+              </button>
+            )}
+
             {onOpenTechnique && (
               <button
                 type="button"
@@ -352,6 +410,18 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
               <RefreshCw className="w-3.5 h-3.5 text-zinc-400" />
               <span>Sustituir</span>
             </button>
+
+            {onRemoveExercise && (
+              <button
+                type="button"
+                onClick={onRemoveExercise}
+                className="flex items-center space-x-1.5 px-2.5 py-2 rounded-xl bg-zinc-800/80 hover:bg-rose-500/20 active:scale-95 border border-zinc-700 hover:border-rose-500/40 text-zinc-400 hover:text-rose-300 text-xs font-bold transition-all touch-manipulation"
+                title="Eliminar este ejercicio de la sesión de hoy"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Quitar</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

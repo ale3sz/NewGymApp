@@ -513,6 +513,11 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
                         <div>
                           <div className="text-sm font-bold text-zinc-200">{ex.name}</div>
                           <div className="flex items-center space-x-2 mt-1">
+                            {ex.supersetGroupId && (
+                              <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                                ⚡ {ex.supersetType === 'triserie' ? 'Triserie' : 'Biserie'} (Paso {ex.supersetOrder})
+                              </span>
+                            )}
                             <span className="text-[10px] font-semibold text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20 capitalize">
                               {ex.primaryMuscle}
                             </span>
