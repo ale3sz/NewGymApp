@@ -103,6 +103,7 @@ export const RirSegmentedPicker: React.FC<RirSegmentedPickerProps> = ({
               key={tier.rir}
               type="button"
               onClick={() => onChange(tier.rir.toString())}
+              aria-label={`Seleccionar RIR ${tier.label}: ${tier.sublabel}, RPE ${tier.rpe}`}
               className={`h-12 rounded-xl flex flex-col items-center justify-center transition-all select-none touch-manipulation border ${
                 isSelected
                   ? `${tier.activeColor} ${tier.borderColor} shadow-lg ${tier.bgGlow} scale-[1.03] z-10`

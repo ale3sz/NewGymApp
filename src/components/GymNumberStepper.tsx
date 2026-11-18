@@ -116,7 +116,8 @@ export const GymNumberStepper: React.FC<GymNumberStepperProps> = ({
               key={inc}
               type="button"
               onClick={() => handleAdjust(inc)}
-              className="flex-1 py-1 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 active:scale-95 border border-zinc-800 text-[11px] font-mono font-bold text-zinc-300 hover:text-red-400 transition-all select-none touch-manipulation"
+              aria-label={`Añadir ${inc} a ${label}`}
+              className="flex-1 py-1.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 active:scale-95 border border-zinc-800 text-xs font-mono font-bold text-zinc-300 hover:text-white transition-all select-none touch-manipulation min-h-[36px]"
             >
               +{inc}
             </button>

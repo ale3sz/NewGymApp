@@ -57,10 +57,35 @@ const DAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
  */
 export function analyzeWeeklyTrainingState(
   routine: Routine | null,
-  history: CompletedDayLog[]
+  history: CompletedDayLog[] = [],
+  referenceDate?: Date | string
 ): WeeklyCycleAnalysis {
-  const now = new Date();
-  const todayKey = getTodayKey();
+  let now = new Date();
+  if (referenceDate) {
+    now = typeof referenceDate === 'string' ? new Date(referenceDate) : new Date(referenceDate.getTime());
+  } else if (history.length > 0) {
+    // Si no hay logs en la semana calendario actual pero el historial proviene de un periodo mock o anterior,
+    // sincronizar con la semana del log más reciente para garantizar coherencia analítica
+    const weekMon = new Date(now);
+    const cDow = now.getDay();
+    const dToMon = cDow === 0 ? -6 : 1 - cDow;
+    weekMon.setDate(now.getDate() + dToMon);
+    weekMon.setHours(0, 0, 0, 0);
+    const weekSun = new Date(weekMon);
+    weekSun.setDate(weekMon.getDate() + 7);
+
+    const hasLogsCurrentWeek = history.some(l => {
+      const t = new Date(l.date).getTime();
+      return t >= weekMon.getTime() && t <= weekSun.getTime();
+    });
+
+    if (!hasLogsCurrentWeek) {
+      const sorted = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      now = new Date(sorted[0].date);
+    }
+  }
+
+  const todayKey = formatLocalDateKey(now);
   const currentDayOfWeek = now.getDay(); // 0 = Dom, 1 = Lun, ...
   const distanceToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
 

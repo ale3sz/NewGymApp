@@ -16,8 +16,10 @@ import {
   LayoutGrid,
   Microscope,
   Dna,
-  Info
+  Info,
+  Target
 } from 'lucide-react';
+import { useMuscleStats } from '../hooks/useMuscleStats';
 import {
   getAllWorkoutLogs,
   getCompletedDaysLogs,
@@ -276,9 +278,10 @@ const InteractiveTrendChart: React.FC<{
 };
 
 export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
-  const completedDays = getCompletedDaysLogs();
-  const rawLogs = getAllWorkoutLogs();
+  const completedDays = useMemo(() => getCompletedDaysLogs(), []);
+  const rawLogs = useMemo(() => getAllWorkoutLogs(), []);
   const allRoutines = useMemo(() => getRoutines(), []);
+  const { parentStats: muscleOverviewStats, subMuscleStats: subMuscleOverviewStats, weeklyDeficits } = useMuscleStats(rawLogs);
 
   const resolveExerciseInfo = (exerciseId: string) => {
     const cat = EXERCISE_CATALOG.find((c) => c.id === exerciseId);
@@ -310,6 +313,7 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
 
   // View & Chart states
   const [globalMetric, setGlobalMetric] = useState<'tonnage' | 'strength'>('strength');
+  const [exerciseMetric, setExerciseMetric] = useState<'reps' | 'weight' | 'e1rm'>('reps');
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup>('pecho');
   const [detailMode, setDetailMode] = useState<MuscleDetailMode>(() => {
     try {
@@ -424,129 +428,6 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
           },
         };
       });
-  }, [rawLogs]);
-
-  // Resumen global de los grupos musculares (incluye trabajo directo al 100% y sinergista/asistencia al 50%)
-  const muscleOverviewStats = useMemo(() => {
-    const stats: Record<
-      string,
-      {
-        sets: number;
-        directSets: number;
-        secondarySets: number;
-        tonnage: number;
-        peak1RM: number;
-        bestExerciseName: string;
-      }
-    > = {};
-    MUSCLE_LIST.forEach((m) => {
-      stats[m.id] = {
-        sets: 0,
-        directSets: 0,
-        secondarySets: 0,
-        tonnage: 0,
-        peak1RM: 0,
-        bestExerciseName: '',
-      };
-    });
-
-    for (const log of rawLogs) {
-      const cat = resolveExerciseInfo(log.exerciseId);
-      if (!cat) continue;
-
-      const workingSets = (log.sets || []).filter((s) => !s.isWarmup && s.repsCompleted > 0);
-      if (workingSets.length === 0) continue;
-
-      const primary = cat.primaryMuscle;
-      const secondaries = getSecondaryMuscles(cat.name, cat.primaryMuscle, cat.category);
-
-      // 1. Músculo Principal (100% de crédito de volumen)
-      if (primary && stats[primary]) {
-        for (const s of workingSets) {
-          stats[primary].directSets += 1;
-          stats[primary].sets += 1;
-          stats[primary].tonnage += s.weightKg * s.repsCompleted;
-          const e1 = estimateAutoregulated1RM(s.weightKg, s.repsCompleted, s.rirLogged).e1rm;
-          if (e1 > stats[primary].peak1RM) {
-            stats[primary].peak1RM = e1;
-            stats[primary].bestExerciseName = cat.name;
-          }
-        }
-      }
-
-      // 2. Músculos Secundarios / Sinergistas (0.5 series efectivas según consenso científico)
-      for (const sec of secondaries) {
-        if (!stats[sec]) continue;
-        for (const s of workingSets) {
-          stats[sec].secondarySets += 1;
-          stats[sec].sets += 0.5;
-          stats[sec].tonnage += s.weightKg * s.repsCompleted * 0.5;
-          const e1 = estimateAutoregulated1RM(s.weightKg, s.repsCompleted, s.rirLogged).e1rm;
-          if (stats[sec].directSets === 0 && e1 > stats[sec].peak1RM) {
-            stats[sec].peak1RM = e1;
-            stats[sec].bestExerciseName = `${cat.name} (Sinergista)`;
-          }
-        }
-      }
-    }
-    return stats;
-  }, [rawLogs]);
-
-  // Cómputo Anatómico Integral (26 sub-cabezas musculares y co-activación electromiográfica)
-  const subMuscleOverviewStats = useMemo(() => {
-    const stats: Record<
-      AnatomicalSubMuscle,
-      {
-        sets: number;
-        directSets: number;
-        indirectSets: number;
-        tonnage: number;
-        peak1RM: number;
-        bestExerciseName: string;
-      }
-    > = {} as any;
-
-    ANATOMICAL_SUB_MUSCLES.forEach((sub) => {
-      stats[sub.id] = {
-        sets: 0,
-        directSets: 0,
-        indirectSets: 0,
-        tonnage: 0,
-        peak1RM: 0,
-        bestExerciseName: '',
-      };
-    });
-
-    for (const log of rawLogs) {
-      const cat = resolveExerciseInfo(log.exerciseId);
-      if (!cat) continue;
-
-      const workingSets = (log.sets || []).filter((s) => !s.isWarmup && s.repsCompleted > 0);
-      if (workingSets.length === 0) continue;
-
-      const actMap = getAnatomicalActivation(cat.name, cat.primaryMuscle, cat.category, cat.baseMovement);
-
-      for (const [subId, factor] of Object.entries(actMap) as [AnatomicalSubMuscle, number][]) {
-        if (!stats[subId] || factor <= 0) continue;
-
-        for (const s of workingSets) {
-          stats[subId].sets += factor;
-          if (factor >= 0.85) {
-            stats[subId].directSets += 1;
-          } else {
-            stats[subId].indirectSets += 1;
-          }
-          stats[subId].tonnage += s.weightKg * s.repsCompleted * factor;
-
-          const e1 = estimateAutoregulated1RM(s.weightKg, s.repsCompleted, s.rirLogged).e1rm;
-          if (e1 > stats[subId].peak1RM) {
-            stats[subId].peak1RM = e1;
-            stats[subId].bestExerciseName = factor >= 0.85 ? cat.name : `${cat.name} (Sinergista)`;
-          }
-        }
-      }
-    }
-    return stats;
   }, [rawLogs]);
 
   // Diagnóstico regional y sub-volúmenes para el músculo seleccionado
@@ -761,6 +642,64 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
   const selectedAnalysis = analyzeExerciseStagnation(selectedExerciseId, selectedExName, rawLogs);
   const exerciseHistory = selectedAnalysis.historySnapshots;
 
+  // Comparación detallada sesión a sesión para detectar sobrecarga progresiva real (reps & peso)
+  const progressiveOverloadDiffs = useMemo(() => {
+    return exerciseHistory.map((snap, idx) => {
+      if (idx === 0) {
+        return {
+          ...snap,
+          status: 'BASE' as const,
+          label: 'Línea Base',
+          deltaWeight: 0,
+          deltaReps: 0,
+          color: 'sky' as const,
+        };
+      }
+      const prev = exerciseHistory[idx - 1];
+      const dWeight = Math.round((snap.weightKg - prev.weightKg) * 10) / 10;
+      const dReps = Math.round((snap.avgReps - prev.avgReps) * 10) / 10;
+
+      if (dWeight > 0) {
+        return {
+          ...snap,
+          status: 'WEIGHT_UP' as const,
+          label: `+${dWeight} kg (Sobrecarga Carga)`,
+          deltaWeight: dWeight,
+          deltaReps: dReps,
+          color: 'emerald' as const,
+        };
+      }
+      if (dWeight === 0 && dReps > 0) {
+        return {
+          ...snap,
+          status: 'REPS_UP' as const,
+          label: `+${dReps} reps (Sobrecarga Reps)`,
+          deltaWeight: 0,
+          deltaReps: dReps,
+          color: 'emerald' as const,
+        };
+      }
+      if (dWeight === 0 && dReps === 0) {
+        return {
+          ...snap,
+          status: 'MAINTAINED' as const,
+          label: 'Rendimiento Consolidado',
+          deltaWeight: 0,
+          deltaReps: 0,
+          color: 'amber' as const,
+        };
+      }
+      return {
+        ...snap,
+        status: 'DROP' as const,
+        label: dWeight < 0 ? `${dWeight} kg` : `${dReps} reps`,
+        deltaWeight: dWeight,
+        deltaReps: dReps,
+        color: 'rose' as const,
+      };
+    });
+  }, [exerciseHistory]);
+
   const maxSetsAcrossMuscles = Math.max(
     1,
     ...Object.values(muscleOverviewStats).map((m) => m.sets)
@@ -816,6 +755,53 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
           </div>
         </div>
       </div>
+
+      {/* ==================== NUEVO: OBJETIVO SEMANAL & DÉFICITS ACCIONABLES ==================== */}
+      {weeklyDeficits && weeklyDeficits.length > 0 && (
+        <div className="bg-gradient-to-br from-red-950/40 via-zinc-900 to-zinc-900 border border-red-500/30 rounded-3xl p-5 sm:p-6 shadow-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-9 h-9 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 flex items-center justify-center shrink-0">
+                <Target className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-white">Objetivo Semanal & Déficits Accionables</h3>
+                <p className="text-xs text-zinc-300">
+                  Volumen pendiente para alcanzar la máxima respuesta hipertrófica (MEV - MAV) esta semana
+                </p>
+              </div>
+            </div>
+            <span className="text-[11px] font-mono font-bold text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/20 shrink-0 self-start sm:self-auto">
+              {weeklyDeficits.length} grupos con series pendientes
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {weeklyDeficits.slice(0, 6).map((item) => (
+              <div
+                key={item.muscleGroup}
+                className="p-3.5 rounded-2xl bg-zinc-950/70 border border-zinc-800 hover:border-red-500/40 transition flex items-center justify-between"
+              >
+                <div>
+                  <div className="text-sm font-bold text-white capitalize">{item.label}</div>
+                  <div className="text-xs text-zinc-300 mt-0.5">
+                    Completadas: <span className="text-white font-bold">{item.currentSets}</span> / {item.targetSets} series
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-black ${
+                    item.urgency === 'HIGH'
+                      ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                      : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                  }`}>
+                    Faltan {item.deficitSets} series
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ==================== SECCIÓN 1: GRÁFICO GENERAL DE EVOLUCIÓN ==================== */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl space-y-5">
@@ -1590,16 +1576,116 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
 
           {exerciseHistory.length > 0 ? (
             <div className="space-y-4">
+              {/* Selector de Métrica: Repeticiones vs Carga Real vs 1RM */}
+              <div className="flex flex-wrap items-center justify-between gap-2 p-1 bg-zinc-950 rounded-2xl border border-zinc-800 text-xs font-bold">
+                <span className="px-3 text-zinc-400">Ver evolución en:</span>
+                <div className="flex items-center space-x-1">
+                  <button
+                    type="button"
+                    onClick={() => setExerciseMetric('reps')}
+                    className={`px-3 py-1.5 rounded-xl transition ${
+                      exerciseMetric === 'reps'
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    Repeticiones Logradas
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExerciseMetric('weight')}
+                    className={`px-3 py-1.5 rounded-xl transition ${
+                      exerciseMetric === 'weight'
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    Peso Levantado (kg)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExerciseMetric('e1rm')}
+                    className={`px-3 py-1.5 rounded-xl transition ${
+                      exerciseMetric === 'e1rm'
+                        ? 'bg-red-500/20 text-red-300 border border-red-500/40'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    Fuerza Estimada (1RM)
+                  </button>
+                </div>
+              </div>
+
               <InteractiveTrendChart
                 data={exerciseHistory.map((snap) => ({
                   label: snap.dateKey.slice(5),
-                  value: snap.estimated1RM,
+                  value:
+                    exerciseMetric === 'reps'
+                      ? snap.avgReps
+                      : exerciseMetric === 'weight'
+                      ? snap.weightKg
+                      : snap.estimated1RM,
                   secondaryText: `${snap.weightKg} kg × ${snap.avgReps} reps`,
                 }))}
-                unit="kg 1RM"
-                accentColor="red"
+                unit={
+                  exerciseMetric === 'reps'
+                    ? 'reps'
+                    : exerciseMetric === 'weight'
+                    ? 'kg'
+                    : 'kg 1RM'
+                }
+                accentColor={
+                  exerciseMetric === 'reps'
+                    ? 'emerald'
+                    : exerciseMetric === 'weight'
+                    ? 'amber'
+                    : 'red'
+                }
                 emptyMessage="Sin registros en este ejercicio."
               />
+
+              {/* Registro Sesión a Sesión de Sobrecarga Progresiva Real */}
+              <div className="space-y-2 pt-2 border-t border-zinc-800">
+                <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+                  Auditoría de Sobrecarga Progresiva (Sesión a Sesión)
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                  {progressiveOverloadDiffs.map((diff, dIdx) => (
+                    <div
+                      key={dIdx}
+                      className="p-3 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 flex flex-col justify-between space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-mono text-zinc-400">{diff.dateKey}</span>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            diff.color === 'emerald'
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                              : diff.color === 'amber'
+                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                              : diff.color === 'rose'
+                              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                              : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                          }`}
+                        >
+                          {diff.label}
+                        </span>
+                      </div>
+                      <div className="flex items-baseline space-x-2">
+                        <span className="text-lg font-black font-mono text-white">
+                          {diff.weightKg} kg
+                        </span>
+                        <span className="text-sm font-bold text-zinc-300">
+                          × {diff.avgReps} reps
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-zinc-500">
+                        {diff.totalVolume} kg volumen total
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               {selectedAnalysis.recommendedInterventions.length > 0 && (
                 <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 space-y-2">

@@ -24,7 +24,7 @@ import {
 import { Routine, CompletedDayLog, ScheduleRecommendation, AppTab, WorkoutDay } from '../types';
 import { getCurrentWeekDays } from '../engine/smartScheduleEngine';
 import { evaluateSystemicFatigue } from '../engine/deloadDetector';
-import { getAllWorkoutLogs } from '../storage/storage';
+import { getAllWorkoutLogs, getActiveWorkoutDraft, hasRecentActiveWorkoutDraft } from '../storage/storage';
 import { downloadRoutineAsText } from '../utils/routineExport';
 import { aiCoachImg, getWorkoutDayBadge } from '../constants/brandAssets';
 import {
@@ -66,8 +66,44 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   // Find which week days were completed
   const completedDateKeys = new Set(completedLogs.map(l => l.dateKey));
 
+  // Comprobar si hay un borrador de entrenamiento en curso para ofrecer reanudación inmediata
+  const hasActiveDraft = hasRecentActiveWorkoutDraft();
+  const activeDraft = hasActiveDraft ? getActiveWorkoutDraft() : null;
+  const totalDraftSets = activeDraft?.completedSets
+    ? Object.values(activeDraft.completedSets).reduce((sum, s) => sum + (s?.length || 0), 0)
+    : 0;
+
   return (
     <div className="space-y-6 pb-12">
+      {/* Banner de Recuperación de Sesión Activa */}
+      {activeDraft && totalDraftSets > 0 && (
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 p-5 shadow-2xl border border-red-400/40">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center space-x-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-black/30 backdrop-blur-md flex items-center justify-center text-white shrink-0">
+                <Play className="w-6 h-6 fill-white" />
+              </div>
+              <div>
+                <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-black uppercase tracking-wider mb-1">
+                  Sesión en curso detectada
+                </span>
+                <h3 className="text-lg font-black text-white">{activeDraft.dayName || 'Entrenamiento del día'}</h3>
+                <p className="text-xs text-white/90">
+                  Tienes {totalDraftSets} serie{totalDraftSets === 1 ? '' : 's'} guardada{totalDraftSets === 1 ? '' : 's'}. Puedes reanudar exactamente donde te quedaste.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => onNavigate('active-workout', { dayId: activeDraft.dayId, routineId: activeDraft.routineId })}
+              className="px-6 py-3 rounded-2xl bg-white text-zinc-950 font-black text-sm hover:bg-zinc-100 shadow-xl transition-transform active:scale-95 shrink-0 flex items-center justify-center space-x-2"
+            >
+              <span>Reanudar Entrenamiento</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Hero Welcome & Streak Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-950 via-zinc-900 to-red-950/40 border border-zinc-800 p-6 md:p-8 shadow-2xl">
         <div className="absolute top-0 right-0 w-80 h-80 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />

@@ -12,7 +12,7 @@ import {
   WifiOff
 } from 'lucide-react';
 import { CatalogExercise } from '../types';
-import { getExerciseMedia } from '../data/exerciseMedia';
+import type { ExerciseMediaGuide } from '../data/exerciseMedia';
 
 interface ExerciseTechniqueModalProps {
   exercise: CatalogExercise | null;
@@ -29,6 +29,15 @@ export const ExerciseTechniqueModal: React.FC<ExerciseTechniqueModalProps> = ({
   const [activeTab, setActiveTab] = useState<'demo' | 'instructions'>('demo');
   const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [mediaLoadError, setMediaLoadError] = useState<boolean>(false);
+  const [media, setMedia] = useState<ExerciseMediaGuide | undefined>(undefined);
+
+  useEffect(() => {
+    if (isOpen && exercise?.id) {
+      import('../data/exerciseMedia').then((mod) => {
+        setMedia(mod.getExerciseMedia(exercise.id));
+      });
+    }
+  }, [isOpen, exercise?.id]);
 
   useEffect(() => {
     const handleOnline = () => {
@@ -55,8 +64,6 @@ export const ExerciseTechniqueModal: React.FC<ExerciseTechniqueModalProps> = ({
   }, [exercise?.id, isOpen]);
 
   if (!isOpen || !exercise) return null;
-
-  const media = getExerciseMedia(exercise.id);
 
   return (
     <div

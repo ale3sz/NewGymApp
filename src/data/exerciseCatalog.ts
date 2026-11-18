@@ -1,6 +1,6 @@
 import { CatalogExercise } from '../types';
 
-export const EXERCISE_CATALOG: CatalogExercise[] = [
+const RAW_EXERCISE_CATALOG: CatalogExercise[] = [
   //  PECHO
   // 1. Press plano / horizontal
   { id: 'press_plano_barra', name: 'Press plano con barra', primaryMuscle: 'pecho', category: 'barra', baseMovement: 'Press plano / horizontal' },
@@ -341,5 +341,206 @@ export const EXERCISE_CATALOG: CatalogExercise[] = [
   // 43. Pallof press
   { id: 'pallof_press_polea', name: 'Pallof press en polea', primaryMuscle: 'abdomen', category: 'polea', baseMovement: 'Pallof press' },
   { id: 'pallof_press_banda', name: 'Pallof press con banda', primaryMuscle: 'abdomen', category: 'banda', baseMovement: 'Pallof press' },
-  { id: 'pallof_press_maquina', name: 'Pallof press en mquina', primaryMuscle: 'abdomen', category: 'maquina', baseMovement: 'Pallof press' }
+  { id: 'pallof_press_maquina', name: 'Pallof press en maquina', primaryMuscle: 'abdomen', category: 'maquina', baseMovement: 'Pallof press' },
+
+  // Compatibilidad hacia atras y alias frecuentes
+  { id: 'press_frances_barra_ez', name: 'Press Frances con Barra EZ', primaryMuscle: 'triceps', category: 'barra', baseMovement: 'Skull crusher' },
+  { id: 'elevaciones_laterales_poleas', name: 'Elevaciones Laterales en Polea', primaryMuscle: 'hombros', category: 'polea', baseMovement: 'Elevacion lateral' },
+  { id: 'sentadilla_bulgara_mancuernas', name: 'Sentadilla Bulgara con Mancuernas', primaryMuscle: 'cuadriceps', category: 'mancuerna', baseMovement: 'Split squat / bulgara' }
 ];
+
+export function getBaseMovementPattern(
+  baseMovement?: string,
+  exerciseName?: string,
+  primaryMuscle?: string
+): import('../types').MovementPattern {
+  const norm = (str?: string) =>
+    (str || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+  const base = norm(baseMovement);
+  const name = norm(exerciseName);
+  const muscle = norm(primaryMuscle);
+
+  // 1. PECHO
+  if (muscle === 'pecho') {
+    if (base.includes('inclinad') || name.includes('inclinad')) return 'incline_press';
+    if (base.includes('declinad') || name.includes('declinad')) return 'decline_press';
+    if (
+      base.includes('apertura') ||
+      name.includes('apertura') ||
+      base.includes('pec deck') ||
+      name.includes('pec deck') ||
+      base.includes('cruce') ||
+      name.includes('cruce') ||
+      base.includes('fly') ||
+      name.includes('fly')
+    ) {
+      return 'chest_fly';
+    }
+    if (base.includes('fondo') || name.includes('fondo') || base.includes('dip') || name.includes('dip')) {
+      return 'dips';
+    }
+    return 'horizontal_press';
+  }
+
+  // 2. ESPALDA
+  if (muscle === 'espalda') {
+    if (base.includes('pullover') || name.includes('pullover')) return 'pullover';
+    if (base.includes('pecho apoyado') || name.includes('pecho apoyado')) return 'chest_supported_row';
+    if (base.includes('remo t') || name.includes('remo t') || base.includes('landmine') || name.includes('landmine')) {
+      return 't_bar_row';
+    }
+    if (base.includes('remo') || name.includes('remo') || base.includes('face pull') || name.includes('face pull')) {
+      return 'horizontal_row';
+    }
+    return 'vertical_pull';
+  }
+
+  // 3. CUADRICEPS
+  if (muscle === 'cuadriceps') {
+    if (base.includes('extension') || name.includes('extension') || base.includes('sissy') || name.includes('sissy')) {
+      return 'leg_extension';
+    }
+    if (base.includes('prensa') || name.includes('prensa')) return 'leg_press';
+    if (
+      base.includes('bulgara') ||
+      name.includes('bulgara') ||
+      base.includes('zancada') ||
+      name.includes('zancada') ||
+      base.includes('lunge') ||
+      name.includes('lunge') ||
+      base.includes('step-up')
+    ) {
+      return 'split_squat_lunge';
+    }
+    return 'squat_quad';
+  }
+
+  // 4. FEMORALES
+  if (muscle === 'femorales') {
+    if (base.includes('curl') || name.includes('curl') || base.includes('nordic') || name.includes('nordic')) {
+      return 'knee_flexion_curl';
+    }
+    if (base.includes('rumano') || name.includes('rumano') || base.includes('rdl') || name.includes('rdl')) {
+      return 'rdl';
+    }
+    return 'hip_hinge';
+  }
+
+  // 5. GLUTEOS
+  if (muscle === 'gluteos') {
+    return 'hip_thrust';
+  }
+
+  // 6. HOMBROS
+  if (muscle === 'hombros') {
+    if (base.includes('lateral') || name.includes('lateral')) return 'lateral_raise';
+    if (base.includes('frontal') || name.includes('frontal')) return 'front_raise';
+    if (base.includes('face pull') || name.includes('face pull')) return 'face_pull';
+    if (
+      base.includes('pajaro') ||
+      name.includes('pajaro') ||
+      base.includes('posterior') ||
+      name.includes('posterior') ||
+      base.includes('reverse pec') ||
+      name.includes('reverse pec')
+    ) {
+      return 'rear_delt_fly';
+    }
+    return 'overhead_press';
+  }
+
+  // 7. BICEPS
+  if (muscle === 'biceps') {
+    if (
+      base.includes('martillo') ||
+      name.includes('martillo') ||
+      base.includes('inverso') ||
+      name.includes('inverso') ||
+      base.includes('neutral') ||
+      name.includes('neutral')
+    ) {
+      return 'biceps_curl_neutral';
+    }
+    if (base.includes('predicador') || name.includes('predicador') || base.includes('scott') || name.includes('scott')) {
+      return 'biceps_preacher';
+    }
+    return 'biceps_curl_supinated';
+  }
+
+  // 8. TRICEPS
+  if (muscle === 'triceps') {
+    if (
+      base.includes('encima de la cabeza') ||
+      name.includes('encima de la cabeza') ||
+      base.includes('tras nuca') ||
+      name.includes('tras nuca') ||
+      base.includes('overhead') ||
+      name.includes('overhead') ||
+      base.includes('frances') ||
+      name.includes('frances')
+    ) {
+      return 'triceps_overhead';
+    }
+    if (base.includes('skull') || name.includes('skull')) return 'triceps_skullcrusher';
+    if (base.includes('fondo') || name.includes('fondo') || base.includes('dip') || name.includes('dip')) {
+      return 'dips';
+    }
+    return 'triceps_pushdown';
+  }
+
+  // 9. PANTORRILLAS
+  if (muscle === 'pantorrillas') {
+    if (base.includes('sentado') || name.includes('sentado')) return 'calf_raise_bent';
+    return 'calf_raise_straight';
+  }
+
+  // 10. ABDOMEN / CORE
+  if (muscle === 'abdomen') {
+    if (base.includes('pallof') || name.includes('pallof') || base.includes('plancha') || name.includes('plancha')) {
+      return 'core_anti_extension';
+    }
+    if (
+      base.includes('rotacion') ||
+      name.includes('rotacion') ||
+      base.includes('twist') ||
+      name.includes('twist') ||
+      base.includes('woodchopper') ||
+      name.includes('woodchopper')
+    ) {
+      return 'core_rotation';
+    }
+    return 'core_flexion';
+  }
+
+  // Heurística de respaldo genérica si primaryMuscle no está definido
+  if (base.includes('press') || name.includes('press')) return 'horizontal_press';
+  if (base.includes('remo') || name.includes('remo') || base.includes('jalon') || name.includes('jalon')) return 'vertical_pull';
+  if (base.includes('sentadilla') || name.includes('sentadilla')) return 'squat_quad';
+
+  return 'horizontal_press';
+}
+
+// Catalogo enriquecido con movementPattern garantizado en cada registro
+export const EXERCISE_CATALOG: CatalogExercise[] = RAW_EXERCISE_CATALOG.slice(0, -1).concat([
+  RAW_EXERCISE_CATALOG[RAW_EXERCISE_CATALOG.length - 1]
+]).map((ex) => ({
+  ...ex,
+  movementPattern: ex.movementPattern || getBaseMovementPattern(ex.baseMovement, ex.name, ex.primaryMuscle)
+}));
+
+export function resolveCatalogExercise(idOrName: string): CatalogExercise | null {
+  if (!idOrName) return null;
+  const matchId = EXERCISE_CATALOG.find((e) => e.id === idOrName);
+  if (matchId) return matchId;
+
+  const lower = idOrName.toLowerCase().trim();
+  const matchName = EXERCISE_CATALOG.find((e) => e.name.toLowerCase() === lower);
+  if (matchName) return matchName;
+
+  const matchPartial = EXERCISE_CATALOG.find((e) => e.name.toLowerCase().includes(lower) || lower.includes(e.name.toLowerCase()));
+  return matchPartial || null;
+}

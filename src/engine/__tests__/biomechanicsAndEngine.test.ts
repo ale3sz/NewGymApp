@@ -1,3 +1,5 @@
+import { describe, it } from 'vitest';
+import { quantizeEquipmentWeight } from '../../utils/weightQuantization';
 import {
   calculateVirtualReps,
   calculateBrzycki1RM,
@@ -28,6 +30,7 @@ import {
   calculateAcuteSessionFatigue,
 } from '../bayesianFatigueEngine';
 import { generateAIRoutine, AIUserProfile } from '../aiRoutineGenerator';
+import { getSecondaryMuscles } from '../trainerEngine';
 import { predictWeightFromReferenceLift, inferWeightFromUserHistory } from '../strengthTransferEngine';
 import {
   analyzeWeeklyTrainingState,
@@ -47,7 +50,9 @@ function assert(condition: boolean, message: string) {
   console.log(`  ✓ ${message}`);
 }
 
-console.log('=== TEST SUITE: MOTOR FISIOLÓGICO Y BIOMECÁNICO (Dr. Marcus Vance) ===\n');
+describe('Motor Fisiológico y Biomecánico (Dr. Marcus Vance)', () => {
+  it('debe ejecutar y validar todos los pilares científicos', () => {
+    console.log('=== TEST SUITE: MOTOR FISIOLÓGICO Y BIOMECÁNICO (Dr. Marcus Vance) ===\n');
 
 // ==========================================
 // 1. CÁLCULO DE e1RM AUTORREGULADO Y FÓRMULAS
@@ -958,12 +963,14 @@ const mockTestRoutine: Routine = {
 };
 
 // Simular el caso exacto del usuario:
-// Arrancó el Miércoles con Legs 1.
+// Arrancó el Miércoles con Legs 1 de la semana en curso.
 // Jueves NO fue al gym (no hay log para jueves).
-const wednesdayDate = new Date();
-const currentDOW = wednesdayDate.getDay(); // 0 = Dom, 1 = Lun, 3 = Mié
-const distToWed = (currentDOW >= 3 ? 3 - currentDOW : -4); // Miércoles de esta semana
-wednesdayDate.setDate(wednesdayDate.getDate() + distToWed);
+const nowRef = new Date();
+const currentDOW = nowRef.getDay();
+const distToMonday = currentDOW === 0 ? -6 : 1 - currentDOW;
+const wednesdayDate = new Date(nowRef);
+wednesdayDate.setDate(nowRef.getDate() + distToMonday + 2); // Lunes + 2 = Miércoles de esta misma semana
+wednesdayDate.setHours(10, 0, 0, 0);
 
 const mockHistory: CompletedDayLog[] = [
   {
@@ -1107,7 +1114,6 @@ assert(
 );
 
 // Test 53: Cuantización estricta de poleas (Prohibido 21.5 kg)
-import { quantizeEquipmentWeight } from '../../utils/weightQuantization';
 const cableWeightFromDeload = quantizeEquipmentWeight(25 * 0.85, 'polea', equipment, 'down');
 assert(
   cableWeightFromDeload === 20,
@@ -1282,3 +1288,5 @@ console.log('    Anatomical Engine: 26 sub-cabezas, co-activación electromiogr�
 console.log('\n======================================================');
 console.log('✅ TODOS LOS TESTS DE AUDITORÍA CIENTÍFICA COMPLETADOS');
 console.log('======================================================\n');
+  });
+});

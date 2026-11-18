@@ -34,6 +34,12 @@ import {
   calculatePlatesPerSide,
   calculateWarmupRamp
 } from '../utils/formulas';
+import {
+  getExerciseCustomWeightStep,
+  setExerciseCustomWeightStep,
+  getExerciseGoalPreference,
+  setExerciseGoalPreference,
+} from '../storage/storage';
 import { evaluateNextSetObjective } from '../engine/intraWorkoutCoach';
 import { predictNextSetReps } from '../engine/bayesianFatigueEngine';
 
@@ -67,6 +73,7 @@ interface ActiveExerciseCardProps {
   onOpenSuperset?: () => void;
   onRemoveExercise?: () => void;
   isSimplifiedMode?: boolean;
+  onGoalChange?: (newGoal: 'fuerza' | 'hipertrofia' | 'auto') => void;
 }
 
 export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
@@ -99,15 +106,33 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
   onOpenSuperset,
   onRemoveExercise,
   isSimplifiedMode = true,
+  onGoalChange,
 }) => {
   const [isWarmupMode, setIsWarmupMode] = useState<boolean>(false);
   const [showWarmupRamp, setShowWarmupRamp] = useState<boolean>(false);
   const [isEditingNote, setIsEditingNote] = useState<boolean>(false);
   const [noteDraft, setNoteDraft] = useState<string>(setupNote);
 
+  // Estado del objetivo del ejercicio: Fuerza (3-6 reps) vs Hipertrofia (8-12 reps)
+  const [currentGoal, setCurrentGoal] = useState<'fuerza' | 'hipertrofia' | 'auto'>(() => {
+    return exercise.goal || getExerciseGoalPreference(exercise.id) || 'auto';
+  });
+
+  const handleToggleGoal = (newGoal: 'fuerza' | 'hipertrofia' | 'auto') => {
+    setCurrentGoal(newGoal);
+    setExerciseGoalPreference(exercise.id, newGoal);
+    onGoalChange?.(newGoal);
+  };
+
   // Estado para edición rápida de series ya completadas (1-tap edit)
   const [editingSetIdx, setEditingSetIdx] = useState<number | null>(null);
   const [editSetWeight, setEditSetWeight] = useState<string>('');
+  const [customStep, setCustomStep] = useState<number | undefined>(() => getExerciseCustomWeightStep(exercise.id));
+
+  const handleSetStep = (step: number) => {
+    setExerciseCustomWeightStep(exercise.id, step);
+    setCustomStep(step);
+  };
   const [editSetReps, setEditSetReps] = useState<string>('');
   const [editSetRir, setEditSetRir] = useState<string>('');
   const [editSetWarmup, setEditSetWarmup] = useState<boolean>(false);
@@ -310,6 +335,42 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
                   Target: {effectiveTargetSets}×{exercise.targetRepsMin}-{exercise.targetRepsMax} @ RIR {exercise.targetRIR}
                 </span>
 
+                {/* Selector de Objetivo: Fuerza (3-6 reps) vs Hipertrofia (8-12 reps) */}
+                <div className="inline-flex items-center rounded-lg bg-zinc-950 p-0.5 border border-zinc-800 text-[10px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleGoal(currentGoal === 'fuerza' ? 'hipertrofia' : 'fuerza')}
+                    className={`px-2 py-0.5 rounded-md transition-all flex items-center space-x-1 ${
+                      currentGoal === 'fuerza'
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                        : 'text-zinc-400 hover:text-zinc-200'
+                    }`}
+                    title={
+                      currentGoal === 'fuerza'
+                        ? 'Enfoque Fuerza: 3-6 reps pesadas con descanso completo (3-5m)'
+                        : 'Toca para cambiar a Fuerza (3-6 reps)'
+                    }
+                  >
+                    <span>⚡ Fuerza</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleGoal(currentGoal === 'hipertrofia' ? 'fuerza' : 'hipertrofia')}
+                    className={`px-2 py-0.5 rounded-md transition-all flex items-center space-x-1 ${
+                      currentGoal === 'hipertrofia'
+                        ? 'bg-red-500/20 text-red-300 border border-red-500/40 shadow-sm'
+                        : 'text-zinc-400 hover:text-zinc-200'
+                    }`}
+                    title={
+                      currentGoal === 'hipertrofia'
+                        ? 'Enfoque Hipertrofia: 8-12 reps buscando tensión mecánica y volumen'
+                        : 'Toca para cambiar a Hipertrofia (8-12 reps)'
+                    }
+                  >
+                    <span>💪 Hipertrofia</span>
+                  </button>
+                </div>
+
                 {/* Indicador de Fatiga Cruzada si ya hay volumen previo en el mismo músculo o sinergistas */}
                 {priorMuscleSetsInfo &&
                   (priorMuscleSetsInfo.priorDirectSets > 0 || priorMuscleSetsInfo.priorSynergistSets > 0) && (
@@ -402,7 +463,8 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
               <button
                 type="button"
                 onClick={onOpenSuperset}
-                className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl active:scale-95 border text-xs font-bold transition-all touch-manipulation ${
+                aria-label="Configurar biserie o triserie para este ejercicio"
+                className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl active:scale-95 border text-xs font-bold transition-all touch-manipulation min-h-[40px] ${
                   supersetLinkInfo
                     ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 hover:bg-amber-500/30 shadow-md shadow-amber-500/10'
                     : 'bg-zinc-800 hover:bg-zinc-700/80 border-zinc-700 text-zinc-300 hover:text-white'
@@ -424,7 +486,8 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
               <button
                 type="button"
                 onClick={onOpenTechnique}
-                className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 active:scale-95 border border-sky-500/30 text-sky-400 hover:text-sky-300 text-xs font-bold transition-all touch-manipulation"
+                aria-label="Ver técnica y video del ejercicio"
+                className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 active:scale-95 border border-sky-500/30 text-sky-400 hover:text-sky-300 text-xs font-bold transition-all touch-manipulation min-h-[40px]"
                 title="Ver demostración visual y técnica de ejecución"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
@@ -435,7 +498,8 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
             <button
               type="button"
               onClick={onOpenSubstitute}
-              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 border border-zinc-700 text-zinc-300 hover:text-white text-xs font-bold transition-all touch-manipulation"
+              aria-label="Sustituir por una alternativa biomecánica equivalente"
+              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 border border-zinc-700 text-zinc-300 hover:text-white text-xs font-bold transition-all touch-manipulation min-h-[40px]"
               title="Sustituir por una alternativa biomecánica equivalente"
             >
               <RefreshCw className="w-3.5 h-3.5 text-zinc-400" />
@@ -446,7 +510,8 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
               <button
                 type="button"
                 onClick={onRemoveExercise}
-                className="flex items-center space-x-1.5 px-2.5 py-2 rounded-xl bg-zinc-800/80 hover:bg-rose-500/20 active:scale-95 border border-zinc-700 hover:border-rose-500/40 text-zinc-400 hover:text-rose-300 text-xs font-bold transition-all touch-manipulation"
+                aria-label="Quitar ejercicio de la sesión actual"
+                className="flex items-center space-x-1.5 px-2.5 py-2 rounded-xl bg-zinc-800/80 hover:bg-rose-500/20 active:scale-95 border border-zinc-700 hover:border-rose-500/40 text-zinc-400 hover:text-rose-300 text-xs font-bold transition-all touch-manipulation min-h-[40px]"
                 title="Eliminar este ejercicio de la sesión de hoy"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -526,6 +591,13 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
                   <span className="text-[10px] font-mono font-bold text-red-300 bg-red-950/80 border border-red-800/80 px-2 py-0.5 rounded-lg uppercase">
                     {recommendation.progressionStrategy.replace(/_/g, ' ')}
                   </span>
+                )}
+                {/* Transparencia IA: 1 línea clara con el motivo de la carga sugerida */}
+                {recommendation?.reasoning && (
+                  <div className="flex items-center space-x-1.5 text-xs text-zinc-300 font-medium pt-1">
+                    <span className="text-red-400 font-bold shrink-0">💡 IA:</span>
+                    <span className="truncate">{recommendation.reasoning.split('.')[0] || recommendation.reasoning}</span>
+                  </div>
                 )}
               </div>
 
@@ -990,14 +1062,43 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
                 badge={stepperDeltaBadge}
                 value={inputState.weight}
                 onChange={(val) => onInputChange('weight', val)}
-                step={weightNum >= 100 ? 5 : 2.5}
+                step={customStep || (weightNum >= 100 ? 5 : (exercise.category === 'polea' ? 5 : 2.5))}
                 min={0}
                 max={600}
                 unit="KG"
                 placeholder={isBodyweight ? '0' : '70'}
-                quickIncrements={weightNum >= 100 ? [2.5, 5, 10] : [1.25, 2.5, 5]}
+                quickIncrements={
+                  customStep === 5 || (weightNum >= 100 && !customStep)
+                    ? [2.5, 5, 10]
+                    : [1.25, 2.5, 5]
+                }
                 isBodyweight={isBodyweight}
               />
+
+              {/* Selector de salto físico de carga por ejercicio (Personalizable) */}
+              <div className="flex items-center space-x-1.5 px-1 pt-1">
+                <span className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">
+                  Salto:
+                </span>
+                {[1, 2, 2.5, 5].map((s) => {
+                  const isSelected = (customStep || (exercise.category === 'polea' ? 5 : 2.5)) === s;
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => handleSetStep(s)}
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                        isSelected
+                          ? 'bg-red-500/20 text-red-400 border border-red-500/40'
+                          : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                      }`}
+                      title={`Fijar salto de ${s} kg para este ejercicio`}
+                    >
+                      {s} kg
+                    </button>
+                  );
+                })}
+              </div>
 
               {/* Píldora de Desglose de Discos por Lado (Plate Calculator) */}
               {plateBreakdown && (

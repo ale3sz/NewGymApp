@@ -1,4 +1,10 @@
-const CACHE_NAME = 'gymscience-pwa-v2';
+const CACHE_NAME = 'gymscience-pwa-v4';
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
 
 const PRECACHE_URLS = [
   './',

@@ -207,7 +207,8 @@ export const RestTimer: React.FC<RestTimerProps> = ({
           <button
             type="button"
             onClick={handleAdd30s}
-            className="px-2 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 active:scale-95 border border-zinc-800 text-[11px] font-mono font-bold text-zinc-200 transition"
+            aria-label="Sumar 30 segundos de descanso"
+            className="px-2.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 active:scale-95 border border-zinc-800 text-xs font-mono font-bold text-zinc-200 transition min-h-[36px]"
             title="Sumar 30s"
           >
             +30s
@@ -216,7 +217,8 @@ export const RestTimer: React.FC<RestTimerProps> = ({
           <button
             type="button"
             onClick={handleToggleRunning}
-            className={`p-2 rounded-xl active:scale-95 transition ${
+            aria-label={isRunning ? 'Pausar descanso' : 'Reanudar descanso'}
+            className={`p-2 rounded-xl active:scale-95 transition min-h-[36px] min-w-[36px] flex items-center justify-center ${
               isRunning
                 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
                 : 'bg-emerald-500 text-zinc-950 font-bold hover:bg-emerald-400'
@@ -229,7 +231,8 @@ export const RestTimer: React.FC<RestTimerProps> = ({
           <button
             type="button"
             onClick={handleSkip}
-            className="px-2.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white transition active:scale-95"
+            aria-label="Saltar descanso y continuar"
+            className="px-2.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white transition active:scale-95 min-h-[36px]"
             title="Saltar descanso"
           >
             Saltar
@@ -238,7 +241,8 @@ export const RestTimer: React.FC<RestTimerProps> = ({
           <button
             type="button"
             onClick={() => setIsExpanded(true)}
-            className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition"
+            aria-label="Expandir temporizador a pantalla completa"
+            className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition min-h-[36px] min-w-[36px] flex items-center justify-center"
             title="Expandir a pantalla completa"
           >
             <Maximize2 className="w-3.5 h-3.5" />
@@ -351,7 +355,8 @@ export const RestTimer: React.FC<RestTimerProps> = ({
           <button
             type="button"
             onClick={handleSub30s}
-            className="flex items-center space-x-1 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-bold text-zinc-200 transition active:scale-95"
+            aria-label="Restar 30 segundos"
+            className="flex items-center space-x-1 px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-bold text-zinc-200 transition active:scale-95 min-h-[44px]"
           >
             <Minus className="w-4 h-4" />
             <span>30s</span>
@@ -359,7 +364,8 @@ export const RestTimer: React.FC<RestTimerProps> = ({
           <button
             type="button"
             onClick={handleAdd30s}
-            className="flex items-center space-x-1 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-bold text-zinc-200 transition active:scale-95"
+            aria-label="Sumar 30 segundos"
+            className="flex items-center space-x-1 px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-bold text-zinc-200 transition active:scale-95 min-h-[44px]"
           >
             <Plus className="w-4 h-4" />
             <span>30s</span>

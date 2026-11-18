@@ -177,6 +177,8 @@ export interface GymEquipmentProfile {
   smallestDiscKg: number;
 }
 
+export type ExerciseGoal = 'fuerza' | 'hipertrofia' | 'auto';
+
 export interface CatalogExercise {
   id: string;
   name: string;
@@ -192,6 +194,8 @@ export interface CatalogExercise {
   axialLoad?: AxialLoadLevel;
   mechanicType?: MechanicType;
   sfrTier?: SFRTier;
+  customWeightStepKg?: number; // Salto de carga mínimo configurable por máquina/ejercicio (ej: 1, 2.5, 5 kg)
+  goal?: ExerciseGoal;         // Enfoque científico del ejercicio: Fuerza (3-6 reps) vs Hipertrofia (8-12 reps)
 }
 
 export type SupersetType = 'biserie' | 'triserie' | 'superserie';
@@ -215,6 +219,7 @@ export interface Exercise extends CatalogExercise {
   supersetType?: SupersetType;
   supersetOrder?: number;
   supersetTransitionSeconds?: number;
+  goal?: ExerciseGoal;
 }
 
 // ==================== MATRIZ DE SUSTITUCIÓN BIOMECÁNICA ====================
@@ -325,6 +330,8 @@ export interface StagnationAnalysisResult {
   statusBadgeText: string;
   statusColor: string;
   consecutiveUnchangedSessions: number;
+  totalSessionsTracked?: number;
+  currentEstimated1RM?: number;
   performanceTrend: 'UP' | 'FLAT' | 'DOWN';
   historySnapshots: SessionPerformanceSnapshot[];
   analysisNote: string;

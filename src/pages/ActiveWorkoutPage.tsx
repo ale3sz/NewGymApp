@@ -32,6 +32,7 @@ import {
 } from '../types';
 import {
   saveWorkoutSession,
+  removeExerciseSessionToday,
   getLastSessionLogs,
   saveCompletedDayLog,
   getCompletedDaysLogs,
@@ -40,12 +41,16 @@ import {
   saveActiveWorkoutDraft,
   getActiveWorkoutDraft,
   clearActiveWorkoutDraft,
+  hasRecentActiveWorkoutDraft,
+  getUnfinishedSessionLogsToday,
   getAllExerciseSetupNotes,
   saveExerciseSetupNote,
   getRoutines,
   saveRoutines,
   getSimplifiedGymMode,
-  saveSimplifiedGymMode
+  saveSimplifiedGymMode,
+  getExerciseGoalPreference,
+  setExerciseGoalPreference
 } from '../storage/storage';
 import { calculateNextSession } from '../engine/overloadAlgorithm';
 import { getMusclesInDay, getSmartWorkoutRecommendation } from '../engine/smartScheduleEngine';
@@ -54,6 +59,7 @@ import { analyzeExerciseStagnation } from '../engine/stagnationEngine';
 import { estimateAutoregulated1RM, calculateEffectiveReps } from '../utils/formulas';
 import { evaluateNextSetObjective } from '../engine/intraWorkoutCoach';
 import { getWorkoutDayBadge } from '../constants/brandAssets';
+import { useSessionDraft } from '../hooks/useSessionDraft';
 import {
   recordObservedFatigue,
   getPrescribedOptimalRest,
@@ -84,12 +90,26 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   customDay,
   onFinishWorkout,
 }) => {
-  const [selectedDayId, setSelectedDayId] = useState<string>(initialDayId || '');
+  const [selectedDayId, setSelectedDayId] = useState<string>(() => {
+    if (initialDayId) return initialDayId;
+    if (customDay) return customDay.id;
+    const draft = getActiveWorkoutDraft();
+    if (draft && draft.dayId && hasRecentActiveWorkoutDraft()) {
+      return draft.dayId;
+    }
+    return '';
+  });
   const [equipment, setEquipment] = useState<GymEquipmentProfile>(getEquipmentProfile());
   const [workoutDay, setWorkoutDay] = useState<WorkoutDay | null>(null);
 
-  // Active focused exercise index (0-based) for quick scrolling/focus
-  const [activeExerciseIndex, setActiveExerciseIndex] = useState<number>(0);
+  // Active focused exercise index (0-based) for quick scrolling/focus - recuperado de borrador si existe
+  const [activeExerciseIndex, setActiveExerciseIndex] = useState<number>(() => {
+    const draft = getActiveWorkoutDraft();
+    if (draft && typeof draft.activeExerciseIndex === 'number' && hasRecentActiveWorkoutDraft()) {
+      return draft.activeExerciseIndex;
+    }
+    return 0;
+  });
   // View mode: 'focus' (solo el ejercicio activo, hiper-intuitivo para gimnasio) vs 'all' (vista expandida clásica)
   const [viewMode, setViewMode] = useState<'focus' | 'all'>('focus');
   // Modo gimnasio directo (sin explicaciones largas ni ruido cognitivo)
@@ -107,8 +127,22 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
 
   // Inputs per exercise: { [exerciseId]: { weight: '', reps: '', rir: '' } }
   const [inputs, setInputs] = useState<Record<string, { weight: string; reps: string; rir: string }>>({});
-  // Completed sets per exercise: { [exerciseId]: SetLog[] }
-  const [completedSets, setCompletedSets] = useState<Record<string, SetLog[]>>({});
+  
+  // Completed sets per exercise: { [exerciseId]: SetLog[] } - Inicialización síncrona inmediata anti-reseteos
+  const [completedSets, setCompletedSets] = useState<Record<string, SetLog[]>>(() => {
+    const draft = getActiveWorkoutDraft();
+    const targetDay = initialDayId || customDay?.id || draft?.dayId;
+    if (draft && draft.completedSets && hasRecentActiveWorkoutDraft()) {
+      if (!draft.dayId || draft.dayId === targetDay) {
+        return draft.completedSets;
+      }
+    }
+    const unfinished = getUnfinishedSessionLogsToday(targetDay || undefined);
+    if (unfinished) {
+      return unfinished;
+    }
+    return {};
+  });
   // Algorithm recommendations per exercise
   const [recommendations, setRecommendations] = useState<Record<string, RecommendationResult>>({});
   // Previous logs per exercise
@@ -118,7 +152,13 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   // Setup notes per exercise (Asiento, Pin, Polea)
   const [setupNotes, setSetupNotes] = useState<Record<string, string>>(getAllExerciseSetupNotes());
   // Dynamic target sets per exercise (permite añadir +1 Serie Extra en vivo)
-  const [customTargetSets, setCustomTargetSets] = useState<Record<string, number>>({});
+  const [customTargetSets, setCustomTargetSets] = useState<Record<string, number>>(() => {
+    const draft = getActiveWorkoutDraft();
+    if (draft && draft.customTargetSets && hasRecentActiveWorkoutDraft()) {
+      return draft.customTargetSets;
+    }
+    return {};
+  });
   // Active rest seconds per exercise (sincronizado con extensiones del temporizador)
   const [activeRestByExercise, setActiveRestByExercise] = useState<Record<string, number>>({});
 
@@ -141,7 +181,17 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   // Victory / Completion Modal
   const [showCompletionModal, setShowCompletionModal] = useState<boolean>(false);
   const [completionSummary, setCompletionSummary] = useState<WorkoutSummaryData | null>(null);
-  const [draftRestoredNotification, setDraftRestoredNotification] = useState<boolean>(false);
+
+  const {
+    draftRestoredNotification,
+    dismissNotification: dismissDraftNotification,
+    clearDraft,
+  } = useSessionDraft(
+    routine?.id,
+    workoutDay?.id,
+    completedSets,
+    (restored) => setCompletedSets(restored)
+  );
 
   // Biserie / Triserie State
   const [supersetModalOpen, setSupersetModalOpen] = useState<boolean>(false);
@@ -195,34 +245,90 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       setWorkoutDay(dayToLoad);
       loadExerciseContexts(dayToLoad);
 
-      // Comprobar si existe un borrador de sesión activo para restaurar
+      // Si completedSets está vacío o parcial, restaurar desde el borrador activo o historial permanente
       const draft = getActiveWorkoutDraft();
-      if (
-        draft &&
-        draft.routineId === routine.id &&
-        draft.dayId === dayToLoad.id &&
-        draft.completedSets &&
-        Object.keys(draft.completedSets).length > 0
-      ) {
-        setCompletedSets(draft.completedSets);
-        setDraftRestoredNotification(true);
+      let restoredSets: Record<string, SetLog[]> | null = null;
+      if (draft && draft.completedSets && (!draft.dayId || draft.dayId === dayToLoad.id)) {
+        restoredSets = draft.completedSets;
+      } else {
+        restoredSets = getUnfinishedSessionLogsToday(dayToLoad.id);
+      }
+
+      if (restoredSets) {
+        const count = Object.values(restoredSets).reduce((sum, s) => sum + (s?.length || 0), 0);
+        if (count > 0) {
+          const toRestore = restoredSets;
+          setCompletedSets((prev) => {
+            const prevCount = Object.values(prev).reduce((sum, s) => sum + (s?.length || 0), 0);
+            return prevCount > 0 ? prev : toRestore;
+          });
+          if (draft && typeof draft.activeExerciseIndex === 'number' && draft.activeExerciseIndex >= 0) {
+            setActiveExerciseIndex(draft.activeExerciseIndex);
+          } else {
+            // Posicionar automáticamente en el ejercicio que se encuentra en curso
+            const firstIncompleteIdx = dayToLoad.exercises.findIndex((ex) => {
+              const setsDone = (toRestore[ex.id] || []).filter((s) => !s.isWarmup).length;
+              const target = (draft?.customTargetSets && draft.customTargetSets[ex.id]) || ex.targetSets || 3;
+              return setsDone < target;
+            });
+            if (firstIncompleteIdx >= 0) {
+              setActiveExerciseIndex(firstIncompleteIdx);
+            }
+          }
+        }
       }
     }
   }, [routine, initialDayId, customDay]);
 
-  // Sincronización continua de borrador en vivo (Crash & Refresh Resilience)
+  // Protección del ciclo de vida móvil (Anti-reseteo al salir de la app, bloquear pantalla o cambiar de app)
   useEffect(() => {
-    if (!routine || !workoutDay) return;
-    const totalRecorded = Object.values(completedSets).reduce((sum, s) => sum + s.length, 0);
-    if (totalRecorded > 0) {
-      saveActiveWorkoutDraft({
-        routineId: routine.id,
-        dayId: workoutDay.id,
-        completedSets,
-        timestamp: new Date().toISOString()
-      });
-    }
-  }, [completedSets, routine, workoutDay]);
+    const handleEmergencySave = () => {
+      if (!workoutDay || !completedSets) return;
+      const totalSets = Object.values(completedSets).reduce((sum, s) => sum + (s?.length || 0), 0);
+      if (totalSets > 0) {
+        saveActiveWorkoutDraft({
+          routineId: routine?.id || 'default_routine',
+          dayId: workoutDay.id,
+          dayName: workoutDay.name,
+          completedSets,
+          customDay: customDay || undefined,
+          activeExerciseIndex,
+          customTargetSets,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    };
+
+    const handleAppResume = () => {
+      if (document.visibilityState === 'visible') {
+        const draft = getActiveWorkoutDraft();
+        if (draft && draft.dayId === workoutDay?.id && draft.completedSets) {
+          const draftCount = Object.values(draft.completedSets).reduce((sum, s) => sum + (s?.length || 0), 0);
+          const currentCount = Object.values(completedSets).reduce((sum, s) => sum + (s?.length || 0), 0);
+          if (draftCount > currentCount) {
+            setCompletedSets(draft.completedSets);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('pagehide', handleEmergencySave);
+    window.addEventListener('beforeunload', handleEmergencySave);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        handleEmergencySave();
+      } else if (document.visibilityState === 'visible') {
+        handleAppResume();
+      }
+    });
+    window.addEventListener('focus', handleAppResume);
+
+    return () => {
+      window.removeEventListener('pagehide', handleEmergencySave);
+      window.removeEventListener('beforeunload', handleEmergencySave);
+      window.removeEventListener('focus', handleAppResume);
+    };
+  }, [routine?.id, workoutDay, completedSets, customDay, activeExerciseIndex, customTargetSets]);
 
   const handleSelectDay = (dayId: string) => {
     const targetDay = availableDays.find((d) => d.id === dayId);
@@ -376,7 +482,8 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
           rir: rec.recommendedRIR.toString(),
         };
       } else {
-        const prescription = prescribeExerciseParameters(ex.name, ex.category, ex.primaryMuscle);
+        const effectiveGoal = ex.goal || getExerciseGoalPreference(ex.id) || 'hipertrofia';
+        const prescription = prescribeExerciseParameters(ex.name, ex.category, ex.primaryMuscle, effectiveGoal === 'auto' ? 'hipertrofia' : effectiveGoal);
         const inferredPred = inferWeightFromUserHistory(ex, allLogs, completedSets, day.exercises);
         if (inferredPred) {
           const inferredRec = buildInferredRecommendationResult(inferredPred);
@@ -427,6 +534,48 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
         rir: rec.recommendedRIR.toString(),
       },
     }));
+  };
+
+  const handleExerciseGoalChange = (exerciseId: string, newGoal: 'fuerza' | 'hipertrofia' | 'auto') => {
+    if (!workoutDay) return;
+    const targetEx = workoutDay.exercises.find((e) => e.id === exerciseId);
+    if (!targetEx) return;
+
+    const effectiveGoal = newGoal === 'auto' ? 'hipertrofia' : newGoal;
+    const prescription = prescribeExerciseParameters(targetEx.name, targetEx.category, targetEx.primaryMuscle, effectiveGoal);
+
+    // Actualizar objetivos del ejercicio en el día activo
+    setWorkoutDay((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        exercises: prev.exercises.map((e) =>
+          e.id === exerciseId
+            ? {
+                ...e,
+                goal: newGoal,
+                targetRepsMin: prescription.targetRepsMin,
+                targetRepsMax: prescription.targetRepsMax,
+                targetRIR: prescription.targetRIR,
+                restSeconds: prescription.restSeconds,
+              }
+            : e
+        ),
+      };
+    });
+
+    // Actualizar inputs recomendados si aún no hay series registradas
+    const existingSets = completedSets[exerciseId] || [];
+    if (existingSets.length === 0) {
+      setInputs((prev) => ({
+        ...prev,
+        [exerciseId]: {
+          weight: prev[exerciseId]?.weight || (targetEx.category === 'corporal' ? '0' : ''),
+          reps: prescription.targetRepsMin.toString(),
+          rir: prescription.targetRIR.toString(),
+        },
+      }));
+    }
   };
 
   const handleAddSet = (exercise: Exercise, exerciseIndex: number, isWarmup: boolean = false) => {
@@ -498,6 +647,22 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
     const updated = [...curSets, newSet];
     const updatedAllSets = { ...completedSets, [exercise.id]: updated };
     setCompletedSets(updatedAllSets);
+
+    // Guardado síncrono transaccional inmediato (Anti-Freeze / Crash-Proof al salir de la app)
+    if (workoutDay) {
+      saveActiveWorkoutDraft({
+        routineId: routine?.id || 'default_routine',
+        dayId: workoutDay.id,
+        dayName: workoutDay.name,
+        completedSets: updatedAllSets,
+        customDay: customDay || undefined,
+        activeExerciseIndex,
+        customTargetSets,
+        timestamp: new Date().toISOString(),
+      });
+      // PERSISTENCIA PERMANENTE ATÓMICA: Cada serie completada se guarda de inmediato en el historial maestro
+      saveWorkoutSession(exercise.id, updated, undefined, workoutDay.id);
+    }
 
     // Actualizar en tiempo real las cargas deducidas por IA en ejercicios posteriores sin historial propio
     if (!isWarmup && workoutDay) {
@@ -697,6 +862,26 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
     const updatedAll = { ...completedSets, [exerciseId]: updated };
     setCompletedSets(updatedAll);
 
+    // Guardado síncrono inmediato
+    if (workoutDay) {
+      saveActiveWorkoutDraft({
+        routineId: routine?.id || 'default_routine',
+        dayId: workoutDay.id,
+        dayName: workoutDay.name,
+        completedSets: updatedAll,
+        customDay: customDay || undefined,
+        activeExerciseIndex,
+        customTargetSets,
+        timestamp: new Date().toISOString(),
+      });
+      // Sincronización inmediata con almacenamiento permanente
+      if (updated.length > 0) {
+        saveWorkoutSession(exerciseId, updated, undefined, workoutDay.id);
+      } else {
+        removeExerciseSessionToday(exerciseId, workoutDay.id);
+      }
+    }
+
     const exObj = workoutDay?.exercises.find((e) => e.id === exerciseId);
     if (exObj) {
       const targetSetsForEx = customTargetSets[exerciseId] || exObj.targetSets || 3;
@@ -729,10 +914,28 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       .filter((_, idx) => idx !== setIndex)
       .map((s, idx) => ({ ...s, setNumber: idx + 1 }));
 
-    setCompletedSets((prev) => ({
-      ...prev,
-      [exerciseId]: updated,
-    }));
+    const updatedAll = { ...completedSets, [exerciseId]: updated };
+    setCompletedSets(updatedAll);
+
+    // Guardado síncrono inmediato
+    if (workoutDay) {
+      saveActiveWorkoutDraft({
+        routineId: routine?.id || 'default_routine',
+        dayId: workoutDay.id,
+        dayName: workoutDay.name,
+        completedSets: updatedAll,
+        customDay: customDay || undefined,
+        activeExerciseIndex,
+        customTargetSets,
+        timestamp: new Date().toISOString(),
+      });
+      // Sincronización inmediata con almacenamiento permanente
+      if (updated.length > 0) {
+        saveWorkoutSession(exerciseId, updated, undefined, workoutDay.id);
+      } else {
+        removeExerciseSessionToday(exerciseId, workoutDay.id);
+      }
+    }
   };
 
   const handleSaveSetupNote = (exerciseId: string, note: string) => {
@@ -780,6 +983,19 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
     const updatedSets = { ...completedSets };
     delete updatedSets[removedId];
     setCompletedSets(updatedSets);
+    removeExerciseSessionToday(removedId, workoutDay.id);
+
+    // Actualizar borrador
+    saveActiveWorkoutDraft({
+      routineId: routine?.id || 'default_routine',
+      dayId: workoutDay.id,
+      dayName: workoutDay.name,
+      completedSets: updatedSets,
+      customDay: customDay || undefined,
+      activeExerciseIndex: Math.min(activeExerciseIndex, remainingExercises.length - 1),
+      customTargetSets,
+      timestamp: new Date().toISOString(),
+    });
 
     // Ajustar activeExerciseIndex si quedó fuera de rango
     if (activeExerciseIndex >= remainingExercises.length) {
@@ -953,8 +1169,9 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
             </div>
           </div>
           <button
-            onClick={() => setDraftRestoredNotification(false)}
+            onClick={() => dismissDraftNotification()}
             className="p-1 text-zinc-400 hover:text-white shrink-0"
+            aria-label="Cerrar notificación de sesión recuperada"
           >
             ✕
           </button>
@@ -1294,6 +1511,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
                     onOpenSuperset={() => handleOpenSupersetModal(exercise)}
                     onRemoveExercise={() => handleConfirmRemoveExercise(exercise)}
                     isSimplifiedMode={isSimplifiedMode}
+                    onGoalChange={(newGoal) => handleExerciseGoalChange(exercise.id, newGoal)}
                   />
                 </div>
               </div>
@@ -1374,6 +1592,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
                   onOpenSuperset={() => handleOpenSupersetModal(exercise)}
                   onRemoveExercise={() => handleConfirmRemoveExercise(exercise)}
                   isSimplifiedMode={isSimplifiedMode}
+                  onGoalChange={(newGoal) => handleExerciseGoalChange(exercise.id, newGoal)}
                 />
               </div>
             );

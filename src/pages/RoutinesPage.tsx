@@ -180,6 +180,33 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
     setIsAddExerciseModalOpen(false);
   };
 
+  const handleToggleExerciseGoal = (exerciseId: string) => {
+    if (!editingRoutine || !selectedDayId) return;
+
+    const updatedDays = editingRoutine.days.map((d) => {
+      if (d.id !== selectedDayId) return d;
+      return {
+        ...d,
+        exercises: d.exercises.map((ex) => {
+          if (ex.id !== exerciseId) return ex;
+          const nextGoal: 'fuerza' | 'hipertrofia' = ex.goal === 'fuerza' ? 'hipertrofia' : 'fuerza';
+          const p = prescribeExerciseParameters(ex.name, ex.category, ex.primaryMuscle, nextGoal);
+          return {
+            ...ex,
+            goal: nextGoal,
+            targetRepsMin: p.targetRepsMin,
+            targetRepsMax: p.targetRepsMax,
+            targetRIR: p.targetRIR,
+            restSeconds: p.restSeconds,
+          };
+        }),
+      };
+    });
+
+    const updatedRoutine = { ...editingRoutine, days: updatedDays };
+    updateRoutineState(updatedRoutine);
+  };
+
   const handleCreateAndAddCustomExercise = () => {
     if (!customExerciseName.trim()) {
       alert('Ingresa el nombre del nuevo ejercicio.');
@@ -527,6 +554,18 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
                             <span className="text-[10px] font-mono text-zinc-300">
                               {ex.targetRepsMin}-{ex.targetRepsMax} reps @ RIR {ex.targetRIR}
                             </span>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleExerciseGoal(ex.id)}
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ${
+                                ex.goal === 'fuerza'
+                                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                  : 'bg-zinc-900 text-zinc-400 hover:text-zinc-200 border-zinc-800'
+                              }`}
+                              title="Toca para cambiar entre Fuerza (3-6 reps) e Hipertrofia (8-12 reps)"
+                            >
+                              {ex.goal === 'fuerza' ? '⚡ Fuerza' : '💪 Hipertrofia'}
+                            </button>
                           </div>
                         </div>
                       </div>

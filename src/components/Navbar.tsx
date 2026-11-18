@@ -177,8 +177,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               {onOpenInstallModal && (
                 <button
                   onClick={onOpenInstallModal}
+                  aria-label="Descargar aplicación para acceso directo en pantalla de inicio"
                   title="Descargar como App / Acceso directo a tu pantalla"
-                  className="flex items-center space-x-1 sm:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-md shadow-red-600/25 transition transform active:scale-95 shrink-0"
+                  className="flex items-center space-x-1 sm:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-md shadow-red-600/25 transition transform active:scale-95 shrink-0 min-h-[44px]"
                 >
                   <Smartphone className="w-4 h-4" />
                   <span className="hidden 2xl:inline">Descargar App</span>
@@ -196,8 +197,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               
               <button
                 onClick={handleExportBackup}
+                aria-label="Descargar copia de seguridad de datos en formato JSON"
                 title="Descargar copia de seguridad de datos (JSON)"
-                className="flex items-center space-x-1.5 p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-semibold text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 transition shadow-sm shrink-0"
+                className="flex items-center space-x-1.5 p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-semibold text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 transition shadow-sm shrink-0 min-h-[44px]"
               >
                 <Download className="w-4 h-4" />
                 <span className="hidden 2xl:inline">Descargar Datos</span>
@@ -206,16 +208,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               <button
                 onClick={handleImportClick}
+                aria-label="Restaurar copia de seguridad JSON"
                 title="Restaurar copia de seguridad JSON"
-                className="p-1.5 sm:p-2 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-transparent hover:border-zinc-700 transition shrink-0"
+                className="p-2 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-800 border border-transparent hover:border-zinc-700 transition shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 <Upload className="w-4 h-4" />
               </button>
 
               <button
                 onClick={handleResetData}
+                aria-label="Restablecer datos de fábrica a sus valores por defecto"
                 title="Restablecer datos de fábrica"
-                className="p-1.5 sm:p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition hidden sm:block shrink-0"
+                className="p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition hidden sm:flex items-center justify-center shrink-0 min-h-[44px] min-w-[44px]"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
@@ -241,17 +245,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   key={item.id}
                   onClick={() => onSelectTab(item.id)}
-                  className={`flex flex-col items-center justify-center relative transition-colors ${
-                    isActive ? 'text-red-500' : 'text-zinc-400 hover:text-zinc-200'
+                  aria-label={`Ir a sección ${item.label}`}
+                  className={`flex flex-col items-center justify-center relative transition-colors min-h-[48px] ${
+                    isActive ? 'text-red-500' : 'text-zinc-300 hover:text-white'
                   }`}
                 >
                   {item.isPrimary ? (
-                    <div className={`w-10 h-10 -mt-4 rounded-xl flex items-center justify-center shadow-lg transition-transform ${
-                      isActive
-                        ? 'bg-gradient-to-tr from-red-600 to-rose-600 text-white scale-105 shadow-red-600/30'
+                    <div className={`w-10 h-10 -mt-4 rounded-xl flex items-center justify-center shadow-lg transition-transform relative ${
+                      isActive || activeWorkoutDayName
+                        ? 'bg-gradient-to-tr from-red-600 to-rose-600 text-white scale-105 shadow-red-600/30 ring-2 ring-red-500/50'
                         : 'bg-zinc-800 text-zinc-200 border border-zinc-700'
                     }`}>
                       <Icon className="w-5 h-5" />
+                      {activeWorkoutDayName && !isActive && (
+                        <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-400 border-2 border-zinc-950 animate-ping" />
+                      )}
                     </div>
                   ) : (
                     <Icon className="w-5 h-5 mb-1" />

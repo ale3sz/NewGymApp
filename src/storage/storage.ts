@@ -1,5 +1,6 @@
 import {
   Routine,
+  WorkoutDay,
   Exercise,
   SetLog,
   CompletedDayLog,
@@ -18,6 +19,11 @@ const ROUTINES_KEY = 'gymscience_routines';
 const ACTIVE_ROUTINE_KEY = 'gymscience_active_routine';
 const EQUIPMENT_KEY = 'gymscience_equipment';
 const CUSTOM_CATALOG_KEY = 'gymscience_custom_catalog';
+export const SCHEMA_VERSION_KEY = 'gymscience_schema_version';
+export const CURRENT_SCHEMA_VERSION = 2;
+export const AUTO_BACKUP_KEY = 'gymscience_auto_backup';
+export const EXERCISE_STEP_PREFERENCES_KEY = 'gymscience_exercise_weight_steps';
+export const EXERCISE_GOAL_PREFERENCES_KEY = 'gymscience_exercise_goals';
 
 export interface SavedSession {
   id: string;
@@ -93,9 +99,32 @@ export function saveWorkoutSession(exerciseId: string, sets: SetLog[], customDat
 
     cleanLogs.push(newSession);
     safeSetItem(WORKOUT_LOGS_KEY, JSON.stringify(cleanLogs));
+    createAutoBackupSnapshot();
     return true;
   } catch (err) {
     console.error('Error guardando la sesión de entrenamiento:', err);
+    return false;
+  }
+}
+
+/**
+ * Elimina la sesión registrada hoy para un ejercicio específico (p. ej. si el usuario borró todas sus series).
+ */
+export function removeExerciseSessionToday(exerciseId: string, dayId?: string): boolean {
+  try {
+    const logs = getAllWorkoutLogs();
+    const todayKey = formatLocalDateKey(new Date());
+    const filtered = logs.filter(l => {
+      const logDateKey = l.dateKey || formatLocalDateKey(l.date);
+      if (logDateKey !== todayKey) return true;
+      if (l.exerciseId !== exerciseId) return true;
+      if (dayId && l.dayId && l.dayId !== dayId) return true;
+      return false;
+    });
+    safeSetItem(WORKOUT_LOGS_KEY, JSON.stringify(filtered));
+    return true;
+  } catch (err) {
+    console.error('Error eliminando sesión de ejercicio:', err);
     return false;
   }
 }
@@ -148,6 +177,7 @@ export function saveCompletedDayLog(log: Omit<CompletedDayLog, 'id' | 'date' | '
   filtered.push(newLog);
 
   safeSetItem(COMPLETED_DAYS_KEY, JSON.stringify(filtered));
+  createAutoBackupSnapshot();
   return newLog;
 }
 
@@ -178,6 +208,7 @@ export function getRoutines(): Routine[] {
 export function saveRoutines(routines: Routine[]): boolean {
   try {
     safeSetItem(ROUTINES_KEY, JSON.stringify(routines));
+    createAutoBackupSnapshot();
     return true;
   } catch (e) {
     return false;
@@ -298,6 +329,7 @@ export function saveCustomCatalogExercise(newExercise: CatalogExercise): Catalog
 
 export interface FullBackupPayload {
   version: string;
+  schemaVersion?: number;
   timestamp: string;
   routines: Routine[];
   activeRoutineId: string;
@@ -305,18 +337,21 @@ export interface FullBackupPayload {
   completedDays: CompletedDayLog[];
   equipment: GymEquipmentProfile;
   customCatalog: CatalogExercise[];
+  exerciseWeightSteps?: Record<string, number>;
 }
 
 export function exportBackupData(): string {
   const payload: FullBackupPayload = {
-    version: '1.0.0',
+    version: '2.0.0',
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     timestamp: new Date().toISOString(),
     routines: getRoutines(),
     activeRoutineId: getActiveRoutineId(),
     workoutLogs: getAllWorkoutLogs(),
     completedDays: getCompletedDaysLogs(),
     equipment: getEquipmentProfile(),
-    customCatalog: getCustomCatalog()
+    customCatalog: getCustomCatalog(),
+    exerciseWeightSteps: getAllExerciseCustomWeightSteps(),
   };
   return JSON.stringify(payload, null, 2);
 }
@@ -330,11 +365,180 @@ export function importBackupData(jsonString: string): boolean {
     if (data.completedDays) safeSetItem(COMPLETED_DAYS_KEY, JSON.stringify(data.completedDays));
     if (data.equipment) saveEquipmentProfile(data.equipment);
     if (data.customCatalog) safeSetItem(CUSTOM_CATALOG_KEY, JSON.stringify(data.customCatalog));
+    if (data.exerciseWeightSteps) safeSetItem(EXERCISE_STEP_PREFERENCES_KEY, JSON.stringify(data.exerciseWeightSteps));
+    createAutoBackupSnapshot();
     return true;
   } catch (err) {
     console.error('Error importando backup:', err);
     return false;
   }
+}
+
+export function createAutoBackupSnapshot(): void {
+  try {
+    const payload: FullBackupPayload = {
+      version: '2.0.0',
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      timestamp: new Date().toISOString(),
+      routines: getRoutines(),
+      activeRoutineId: getActiveRoutineId(),
+      workoutLogs: getAllWorkoutLogs(),
+      completedDays: getCompletedDaysLogs(),
+      equipment: getEquipmentProfile(),
+      customCatalog: getCustomCatalog(),
+      exerciseWeightSteps: getAllExerciseCustomWeightSteps(),
+    };
+    safeSetItem(AUTO_BACKUP_KEY, JSON.stringify(payload));
+  } catch (e) {
+    // Ignore quota or memory limitations
+  }
+}
+
+export function getAutoBackupSnapshot(): FullBackupPayload | null {
+  const raw = safeGetItem(AUTO_BACKUP_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+export function restoreLatestAutoBackup(): boolean {
+  const snapshot = getAutoBackupSnapshot();
+  if (!snapshot) return false;
+  return importBackupData(JSON.stringify(snapshot));
+}
+
+const LEGACY_ID_MAP: Record<string, string> = {
+  elevaciones_laterales_poleas: 'elevaciones_laterales_polea',
+  press_frances_barra_ez: 'skull_crusher_barra_ez',
+  sentadilla_bulgara_mancuernas: 'bulgara_mancuernas'
+};
+
+export function runStorageMigrations(): void {
+  try {
+    const rawVersion = safeGetItem(SCHEMA_VERSION_KEY);
+    const currentVersion = rawVersion ? parseInt(rawVersion, 10) : 1;
+
+    if (currentVersion < CURRENT_SCHEMA_VERSION) {
+      // 1. Migrar logs de sesiones
+      const rawLogs = safeGetItem(WORKOUT_LOGS_KEY);
+      if (rawLogs) {
+        try {
+          const logs: SavedSession[] = JSON.parse(rawLogs);
+          let changed = false;
+          const migratedLogs = logs.map(l => {
+            let updated = { ...l };
+            if (LEGACY_ID_MAP[updated.exerciseId]) {
+              updated.exerciseId = LEGACY_ID_MAP[updated.exerciseId];
+              changed = true;
+            }
+            if (!updated.dateKey && updated.date) {
+              updated.dateKey = formatLocalDateKey(updated.date);
+              changed = true;
+            }
+            return updated;
+          });
+          if (changed) {
+            safeSetItem(WORKOUT_LOGS_KEY, JSON.stringify(migratedLogs));
+          }
+        } catch {
+          // ignore parsing error
+        }
+      }
+
+      // 2. Migrar rutinas guardadas
+      const rawRoutines = safeGetItem(ROUTINES_KEY);
+      if (rawRoutines) {
+        try {
+          const routines: Routine[] = JSON.parse(rawRoutines);
+          let changed = false;
+          const migratedRoutines = routines.map(r => ({
+            ...r,
+            days: (r.days || []).map(d => ({
+              ...d,
+              exercises: (d.exercises || []).map(e => {
+                if (LEGACY_ID_MAP[e.id]) {
+                  changed = true;
+                  return { ...e, id: LEGACY_ID_MAP[e.id] };
+                }
+                return e;
+              })
+            }))
+          }));
+          if (changed) {
+            safeSetItem(ROUTINES_KEY, JSON.stringify(migratedRoutines));
+          }
+        } catch {
+          // ignore parsing error
+        }
+      }
+
+      // Actualizar a esquema v2
+      safeSetItem(SCHEMA_VERSION_KEY, String(CURRENT_SCHEMA_VERSION));
+      createAutoBackupSnapshot();
+    }
+  } catch (err) {
+    console.error('Error ejecutando migraciones de storage:', err);
+  }
+}
+
+// Ejecutar migraciones al inicializar el módulo
+runStorageMigrations();
+
+export function getAllExerciseCustomWeightSteps(): Record<string, number> {
+  const data = safeGetItem(EXERCISE_STEP_PREFERENCES_KEY);
+  if (!data) return {};
+  try {
+    return JSON.parse(data);
+  } catch {
+    return {};
+  }
+}
+
+export function getExerciseCustomWeightStep(exerciseId: string): number | undefined {
+  const map = getAllExerciseCustomWeightSteps();
+  return map[exerciseId];
+}
+
+export function setExerciseCustomWeightStep(exerciseId: string, stepKg: number): void {
+  const map = getAllExerciseCustomWeightSteps();
+  if (stepKg <= 0) {
+    delete map[exerciseId];
+  } else {
+    map[exerciseId] = stepKg;
+  }
+  safeSetItem(EXERCISE_STEP_PREFERENCES_KEY, JSON.stringify(map));
+  createAutoBackupSnapshot();
+}
+
+// ==================== PREFERENCIAS DE OBJETIVO POR EJERCICIO (FUERZA VS HIPERTROFIA) ====================
+
+export function getAllExerciseGoals(): Record<string, 'fuerza' | 'hipertrofia'> {
+  const data = safeGetItem(EXERCISE_GOAL_PREFERENCES_KEY);
+  if (!data) return {};
+  try {
+    return JSON.parse(data);
+  } catch {
+    return {};
+  }
+}
+
+export function getExerciseGoalPreference(exerciseId: string): 'fuerza' | 'hipertrofia' | undefined {
+  const map = getAllExerciseGoals();
+  return map[exerciseId];
+}
+
+export function setExerciseGoalPreference(exerciseId: string, goal: 'fuerza' | 'hipertrofia' | 'auto'): void {
+  const map = getAllExerciseGoals();
+  if (goal === 'auto') {
+    delete map[exerciseId];
+  } else {
+    map[exerciseId] = goal;
+  }
+  safeSetItem(EXERCISE_GOAL_PREFERENCES_KEY, JSON.stringify(map));
+  createAutoBackupSnapshot();
 }
 
 export function resetAllData(): void {
@@ -356,25 +560,115 @@ export function resetAllData(): void {
 
 // ==================== SESIÓN EN VIVO / DRAFT RESILIENCE ====================
 
+const LAST_ACTIVE_TAB_KEY = 'gymscience_last_active_tab';
+
+export function getLastActiveTab(): string | null {
+  return safeGetItem(LAST_ACTIVE_TAB_KEY);
+}
+
+export function setLastActiveTab(tab: string): void {
+  safeSetItem(LAST_ACTIVE_TAB_KEY, tab);
+}
+
 export interface ActiveWorkoutDraft {
   routineId: string;
   dayId: string;
+  dayName?: string;
   completedSets: Record<string, SetLog[]>;
+  customDay?: WorkoutDay;
+  activeExerciseIndex?: number;
+  customTargetSets?: Record<string, number>;
+  inputs?: Record<string, { weight: string; reps: string; rir: string }>;
   timestamp: string;
 }
 
 export function saveActiveWorkoutDraft(draft: ActiveWorkoutDraft): void {
-  safeSetItem('gymscience_active_session_draft', JSON.stringify(draft));
+  const existing = getActiveWorkoutDraft();
+  const merged: ActiveWorkoutDraft = {
+    ...existing,
+    ...draft,
+    completedSets: draft.completedSets ?? existing?.completedSets ?? {},
+    timestamp: draft.timestamp || new Date().toISOString(),
+  };
+  safeSetItem('gymscience_active_session_draft', JSON.stringify(merged));
 }
 
 export function getActiveWorkoutDraft(): ActiveWorkoutDraft | null {
   const data = safeGetItem('gymscience_active_session_draft');
   if (!data) return null;
   try {
-    return JSON.parse(data);
+    const parsed: ActiveWorkoutDraft = JSON.parse(data);
+    if (parsed && parsed.completedSets) {
+      const totalSets = Object.values(parsed.completedSets).reduce((sum, s) => sum + (s?.length || 0), 0);
+      if (totalSets > 0) {
+        return parsed;
+      }
+    }
+    return null;
   } catch (e) {
     return null;
   }
+}
+
+/**
+ * Recupera series registradas hoy para un día de entrenamiento que aún no haya sido completado.
+ * Actúa como red de seguridad final si el borrador volátil no existe.
+ */
+export function getUnfinishedSessionLogsToday(dayId?: string): Record<string, SetLog[]> | null {
+  try {
+    const todayKey = formatLocalDateKey(new Date());
+    const completedDays = getCompletedDaysLogs();
+    const completedDayIdsToday = new Set(
+      completedDays
+        .filter((cd) => (cd.dateKey || formatLocalDateKey(cd.date)) === todayKey)
+        .map((cd) => cd.dayId)
+    );
+
+    if (dayId && completedDayIdsToday.has(dayId)) {
+      return null;
+    }
+
+    const logs = getAllWorkoutLogs();
+    const todayLogs = logs.filter((l) => {
+      const logDateKey = l.dateKey || formatLocalDateKey(l.date);
+      if (logDateKey !== todayKey) return false;
+      if (!Array.isArray(l.sets) || l.sets.length === 0) return false;
+      if (l.dayId && completedDayIdsToday.has(l.dayId)) return false;
+      if (dayId && l.dayId && l.dayId !== dayId) return false;
+      return true;
+    });
+
+    if (todayLogs.length === 0) return null;
+
+    const recovered: Record<string, SetLog[]> = {};
+    todayLogs.forEach((l) => {
+      if (l.exerciseId && Array.isArray(l.sets) && l.sets.length > 0) {
+        recovered[l.exerciseId] = l.sets;
+      }
+    });
+
+    return Object.keys(recovered).length > 0 ? recovered : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+/**
+ * Comprueba si existe un borrador de entrenamiento activo reciente con series registradas.
+ * Por defecto busca sesiones de menos de 18 horas para cubrir cualquier interrupción durante el día.
+ */
+export function hasRecentActiveWorkoutDraft(maxAgeHours = 18): boolean {
+  const draft = getActiveWorkoutDraft();
+  if (draft && draft.completedSets) {
+    const totalSets = Object.values(draft.completedSets).reduce((sum, s) => sum + (s?.length || 0), 0);
+    if (totalSets > 0) {
+      const draftTime = new Date(draft.timestamp).getTime();
+      if (!isNaN(draftTime) && (Date.now() - draftTime) < maxAgeHours * 60 * 60 * 1000) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 export function clearActiveWorkoutDraft(): void {

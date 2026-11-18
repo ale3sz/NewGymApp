@@ -4,7 +4,9 @@ import {
   AnatomicalSubMuscleSpec,
   AnatomicalActivationMap,
   EquipmentCategory,
+  MovementPattern,
 } from '../types';
+import { getBaseMovementPattern, resolveCatalogExercise } from '../data/exerciseCatalog';
 
 /**
  * REGISTRO TAXONÓMICO DE SUB-COMPARTIMENTOS ANATÓMICOS (Dr. Marcus Vance, CSCS)
@@ -270,320 +272,397 @@ export const ANATOMICAL_SUB_MUSCLES: AnatomicalSubMuscleSpec[] = [
 ];
 
 /**
+ * TABLA TAXONÓMICA DE CO-ACTIVACIÓN POR PATRÓN MOTOR FUNDAMENTAL (Single Source of Truth)
+ * Coeficientes EMG estandarizados (Dr. Marcus Vance, CSCS).
+ * La activación se busca de manera determinista por patrón motor, evitando fallos
+ * por renombramiento o coincidencias parciales de texto.
+ */
+export const PATTERN_ACTIVATION_MAP: Record<MovementPattern, AnatomicalActivationMap> = {
+  horizontal_press: {
+    pecho_esternocostal: 1.0,
+    pecho_abdominal: 0.75,
+    pecho_clavicular: 0.55,
+    deltoides_anterior: 0.70,
+    triceps_lateral_medial: 0.50,
+    triceps_cabeza_larga: 0.20,
+    core_profundo: 0.25,
+  },
+  incline_press: {
+    pecho_clavicular: 1.0,
+    pecho_esternocostal: 0.60,
+    pecho_abdominal: 0.25,
+    deltoides_anterior: 0.85,
+    deltoides_lateral: 0.20,
+    triceps_lateral_medial: 0.50,
+    triceps_cabeza_larga: 0.20,
+    core_profundo: 0.25,
+  },
+  decline_press: {
+    pecho_abdominal: 1.0,
+    pecho_esternocostal: 0.80,
+    pecho_clavicular: 0.25,
+    triceps_lateral_medial: 0.65,
+    deltoides_anterior: 0.50,
+    core_profundo: 0.30,
+  },
+  chest_fly: {
+    pecho_esternocostal: 1.0,
+    pecho_abdominal: 0.60,
+    pecho_clavicular: 0.50,
+    deltoides_anterior: 0.40,
+  },
+  dips: {
+    pecho_abdominal: 1.0,
+    pecho_esternocostal: 0.80,
+    triceps_lateral_medial: 0.75,
+    deltoides_anterior: 0.55,
+    core_profundo: 0.30,
+  },
+  vertical_pull: {
+    espalda_dorsal: 1.0,
+    espalda_alta_trapecio: 0.60,
+    deltoides_posterior: 0.45,
+    biceps_braquial: 0.60,
+    braquial_braquiorradial: 0.40,
+    antebrazos_flexores: 0.55,
+    core_profundo: 0.30,
+  },
+  pullover: {
+    espalda_dorsal: 1.0,
+    pecho_abdominal: 0.45,
+    triceps_cabeza_larga: 0.50,
+    core_profundo: 0.40,
+  },
+  horizontal_row: {
+    espalda_alta_trapecio: 0.95,
+    espalda_dorsal: 0.85,
+    deltoides_posterior: 0.75,
+    biceps_braquial: 0.55,
+    braquial_braquiorradial: 0.60,
+    antebrazos_flexores: 0.65,
+    espalda_lumbar: 0.50,
+    core_profundo: 0.45,
+  },
+  chest_supported_row: {
+    espalda_alta_trapecio: 1.0,
+    espalda_dorsal: 0.80,
+    deltoides_posterior: 0.75,
+    biceps_braquial: 0.55,
+    braquial_braquiorradial: 0.60,
+    antebrazos_flexores: 0.60,
+  },
+  t_bar_row: {
+    espalda_alta_trapecio: 0.95,
+    espalda_dorsal: 0.85,
+    deltoides_posterior: 0.75,
+    biceps_braquial: 0.55,
+    braquial_braquiorradial: 0.60,
+    antebrazos_flexores: 0.65,
+    espalda_lumbar: 0.55,
+    core_profundo: 0.45,
+  },
+  squat_quad: {
+    cuadriceps_vastos: 1.0,
+    gluteo_mayor: 0.70,
+    gluteo_medio_menor: 0.35,
+    espalda_lumbar: 0.50,
+    core_profundo: 0.55,
+    soleo: 0.35,
+    gastrocnemio: 0.30,
+    cuadriceps_recto_femoral: 0.30,
+  },
+  leg_press: {
+    cuadriceps_vastos: 1.0,
+    cuadriceps_recto_femoral: 0.30,
+    gluteo_mayor: 0.65,
+    gluteo_medio_menor: 0.30,
+    soleo: 0.35,
+    gastrocnemio: 0.30,
+  },
+  split_squat_lunge: {
+    cuadriceps_vastos: 1.0,
+    gluteo_mayor: 0.80,
+    gluteo_medio_menor: 0.65,
+    cuadriceps_recto_femoral: 0.40,
+    soleo: 0.35,
+    gastrocnemio: 0.30,
+    core_profundo: 0.45,
+  },
+  leg_extension: {
+    cuadriceps_recto_femoral: 1.0,
+    cuadriceps_vastos: 0.90,
+  },
+  hip_hinge: {
+    femorales_cadera: 1.0,
+    gluteo_mayor: 0.85,
+    espalda_lumbar: 0.70,
+    espalda_alta_trapecio: 0.50,
+    antebrazos_flexores: 0.65,
+    cuadriceps_vastos: 0.35,
+    core_profundo: 0.55,
+  },
+  rdl: {
+    femorales_cadera: 1.0,
+    gluteo_mayor: 0.85,
+    espalda_lumbar: 0.70,
+    espalda_alta_trapecio: 0.50,
+    antebrazos_flexores: 0.65,
+    core_profundo: 0.55,
+  },
+  knee_flexion_curl: {
+    femorales_rodilla: 1.0,
+    femorales_cadera: 0.45,
+    gastrocnemio: 0.35,
+  },
+  hip_thrust: {
+    gluteo_mayor: 1.0,
+    gluteo_medio_menor: 0.45,
+    cuadriceps_vastos: 0.35,
+    femorales_cadera: 0.50,
+    core_profundo: 0.40,
+  },
+  calf_raise_straight: {
+    gastrocnemio: 1.0,
+    soleo: 0.65,
+  },
+  calf_raise_bent: {
+    soleo: 1.0,
+    gastrocnemio: 0.25,
+  },
+  overhead_press: {
+    deltoides_anterior: 1.0,
+    deltoides_lateral: 0.55,
+    triceps_lateral_medial: 0.60,
+    triceps_cabeza_larga: 0.35,
+    pecho_clavicular: 0.50,
+    espalda_alta_trapecio: 0.40,
+    core_profundo: 0.45,
+  },
+  lateral_raise: {
+    deltoides_lateral: 1.0,
+    deltoides_posterior: 0.25,
+    deltoides_anterior: 0.20,
+    espalda_alta_trapecio: 0.40,
+  },
+  front_raise: {
+    deltoides_anterior: 1.0,
+    pecho_clavicular: 0.50,
+    deltoides_lateral: 0.20,
+  },
+  rear_delt_fly: {
+    deltoides_posterior: 1.0,
+    espalda_alta_trapecio: 0.80,
+    deltoides_lateral: 0.35,
+  },
+  face_pull: {
+    deltoides_posterior: 1.0,
+    espalda_alta_trapecio: 0.80,
+    deltoides_lateral: 0.35,
+  },
+  biceps_curl_supinated: {
+    biceps_braquial: 1.0,
+    braquial_braquiorradial: 0.55,
+    antebrazos_flexores: 0.45,
+  },
+  biceps_curl_neutral: {
+    braquial_braquiorradial: 1.0,
+    biceps_braquial: 0.45,
+    antebrazos_flexores: 0.55,
+  },
+  biceps_preacher: {
+    biceps_braquial: 1.0,
+    braquial_braquiorradial: 0.50,
+    antebrazos_flexores: 0.40,
+  },
+  triceps_pushdown: {
+    triceps_lateral_medial: 1.0,
+    triceps_cabeza_larga: 0.40,
+  },
+  triceps_overhead: {
+    triceps_cabeza_larga: 1.0,
+    triceps_lateral_medial: 0.65,
+  },
+  triceps_skullcrusher: {
+    triceps_cabeza_larga: 0.90,
+    triceps_lateral_medial: 0.85,
+  },
+  core_flexion: {
+    recto_abdominal: 1.0,
+    core_profundo: 0.60,
+    oblicuos: 0.45,
+  },
+  core_anti_extension: {
+    core_profundo: 1.0,
+    recto_abdominal: 0.80,
+    oblicuos: 0.60,
+  },
+  core_rotation: {
+    oblicuos: 1.0,
+    core_profundo: 0.70,
+    recto_abdominal: 0.50,
+  },
+};
+
+/**
  * MAPA DE CO-ACTIVACIÓN ELECTROMIOGRÁFICA Y BIOMECÁNICA INTEGRAL (Dr. Marcus Vance)
  * 
  * Determina el espectro de activación exacto (0.0 a 1.0) para CUALQUIER ejercicio
  * incluyendo activación primaria, sinergista directa y activación en segundo plano.
+ * Acepta tanto un objeto ejercicio como parámetros posicionales.
  */
 export function getAnatomicalActivation(
-  exerciseName: string,
-  primaryMuscle: MuscleGroup,
+  exerciseOrName: string | {
+    id?: string;
+    name: string;
+    primaryMuscle: MuscleGroup;
+    category?: EquipmentCategory | string;
+    baseMovement?: string;
+    movementPattern?: MovementPattern;
+  },
+  primaryMuscle?: MuscleGroup,
   category?: EquipmentCategory | string,
-  baseMovement?: string
+  baseMovement?: string,
+  explicitPattern?: MovementPattern
 ): AnatomicalActivationMap {
-  const name = exerciseName.toLowerCase();
-  const base = (baseMovement || '').toLowerCase();
-  const cat = (category || '').toLowerCase();
+  let name = '';
+  let primary: MuscleGroup = 'pecho';
+  let cat = '';
+  let base = '';
+  let pattern: MovementPattern | undefined = explicitPattern;
 
-  const map: AnatomicalActivationMap = {};
+  if (typeof exerciseOrName === 'object' && exerciseOrName !== null) {
+    name = exerciseOrName.name || '';
+    primary = exerciseOrName.primaryMuscle || primaryMuscle || 'pecho';
+    cat = (exerciseOrName.category as string) || (category as string) || '';
+    base = exerciseOrName.baseMovement || baseMovement || '';
+    pattern = exerciseOrName.movementPattern || explicitPattern;
 
-  // ==================== 1. PECHO ====================
-  if (primaryMuscle === 'pecho') {
-    if (name.includes('inclinad') || base.includes('inclinad')) {
-      // Press inclinado (30°-45°)
-      map.pecho_clavicular = 1.0;
-      map.pecho_esternocostal = 0.60;
-      map.pecho_abdominal = 0.25;
-      map.deltoides_anterior = 0.85;
-      map.deltoides_lateral = 0.20;
-      map.triceps_lateral_medial = 0.50;
-      map.triceps_cabeza_larga = 0.20;
-      map.core_profundo = 0.25;
-      return map;
+    if (!pattern && exerciseOrName.id) {
+      const fromCatalog = resolveCatalogExercise(exerciseOrName.id);
+      if (fromCatalog?.movementPattern) {
+        pattern = fromCatalog.movementPattern;
+        if (!base) base = fromCatalog.baseMovement || '';
+        if (!primary) primary = fromCatalog.primaryMuscle;
+      }
     }
-
-    if (name.includes('declinad') || base.includes('declinad') || name.includes('fondo') || base.includes('fondo')) {
-      // Press declinado o Fondos
-      map.pecho_abdominal = 1.0;
-      map.pecho_esternocostal = 0.80;
-      map.pecho_clavicular = 0.25;
-      map.triceps_lateral_medial = 0.65;
-      map.deltoides_anterior = 0.50;
-      map.core_profundo = 0.30;
-      return map;
-    }
-
-    if (name.includes('apertura') || base.includes('apertura') || name.includes('pec deck') || name.includes('cruce')) {
-      // Aperturas / Pec deck / Cruces
-      map.pecho_esternocostal = 1.0;
-      map.pecho_abdominal = 0.60;
-      map.pecho_clavicular = 0.50;
-      map.deltoides_anterior = 0.40;
-      return map;
-    }
-
-    // Press plano por defecto (Barra, Mancuernas, Máquina, Smith)
-    map.pecho_esternocostal = 1.0;
-    map.pecho_abdominal = 0.75; // Alta co-activación en segundo plano por el plano del esternón
-    map.pecho_clavicular = 0.55;
-    map.deltoides_anterior = 0.70;
-    map.triceps_lateral_medial = 0.50;
-    map.triceps_cabeza_larga = 0.20;
-    map.core_profundo = 0.25;
-    return map;
+  } else if (typeof exerciseOrName === 'string') {
+    name = exerciseOrName;
+    primary = primaryMuscle || 'pecho';
+    cat = (category as string) || '';
+    base = baseMovement || '';
   }
 
-  // ==================== 2. ESPALDA ====================
-  if (primaryMuscle === 'espalda') {
-    if (name.includes('jalon') || name.includes('jalón') || name.includes('dominada') || base.includes('jalon')) {
-      // Jalón vertical / Dominadas
-      map.espalda_dorsal = 1.0;
-      map.espalda_alta_trapecio = 0.60;
-      map.deltoides_posterior = 0.45;
-      map.biceps_braquial = 0.60;
-      map.braquial_braquiorradial = 0.40;
-      map.antebrazos_flexores = 0.55;
-      map.core_profundo = 0.30;
-      return map;
-    }
-
-    if (name.includes('pullover') || base.includes('pullover')) {
-      // Pullover
-      map.espalda_dorsal = 1.0;
-      map.pecho_abdominal = 0.45; // El pectoral inferior asiste en el inicio del pullover
-      map.triceps_cabeza_larga = 0.50; // Contracción isométrica de la cabeza larga en aducción
-      map.core_profundo = 0.40;
-      return map;
-    }
-
-    // Remos (Remo con barra, mancuerna, T-Bar, landmine, remo en punta, remo gironda)
-    map.espalda_alta_trapecio = 0.95;
-    map.espalda_dorsal = 0.85;
-    map.deltoides_posterior = 0.75; // Hombro posterior fuertemente involucrado en todos los remos
-    map.biceps_braquial = 0.55;
-    map.braquial_braquiorradial = 0.60;
-    map.antebrazos_flexores = 0.65;
-    map.espalda_lumbar = cat === 'barra' ? 0.65 : 0.40; // Lumbar estabiliza en remos libres
-    map.core_profundo = 0.45;
-    return map;
+  // Si no tenemos movementPattern explícito, deducirlo mediante taxonomía biomecánica
+  if (!pattern) {
+    pattern = getBaseMovementPattern(base, name, primary);
   }
 
-  // ==================== 3. CUÁDRICEPS ====================
-  if (primaryMuscle === 'cuadriceps') {
-    if (name.includes('extension') || name.includes('extensión') || base.includes('extension')) {
-      // Extensión de rodilla en máquina (aislamiento)
-      map.cuadriceps_recto_femoral = 1.0; // Máxima hipertrofia del recto femoral
-      map.cuadriceps_vastos = 0.90;
-      return map;
-    }
-
-    if (name.includes('prensa') || base.includes('prensa')) {
-      // Prensa inclinada / horizontal
-      map.cuadriceps_vastos = 1.0;
-      map.cuadriceps_recto_femoral = 0.30;
-      map.gluteo_mayor = 0.65; // Co-activación en extensión de cadera
-      map.gluteo_medio_menor = 0.30;
-      map.soleo = 0.35;
-      map.gastrocnemio = 0.30;
-      return map;
-    }
-
-    if (name.includes('bulgara') || name.includes('búlgara') || name.includes('zancada') || name.includes('lunge') || name.includes('step')) {
-      // Sentadilla búlgara / Zancadas
-      map.cuadriceps_vastos = 1.0;
-      map.gluteo_mayor = 0.80;
-      map.gluteo_medio_menor = 0.65; // Estabilización pélvica unilateral crucial
-      map.cuadriceps_recto_femoral = 0.40;
-      map.soleo = 0.35;
-      map.gastrocnemio = 0.30;
-      map.core_profundo = 0.45;
-      return map;
-    }
-
-    // Sentadilla con barra / Libre / Smith / Hack
-    map.cuadriceps_vastos = 1.0;
-    map.gluteo_mayor = 0.70;
-    map.gluteo_medio_menor = 0.35;
-    map.espalda_lumbar = cat === 'barra' ? 0.65 : 0.35;
-    map.core_profundo = 0.55;
-    map.soleo = 0.35;
-    map.gastrocnemio = 0.30;
-    map.cuadriceps_recto_femoral = 0.30;
-    return map;
+  // 1. Coincidencia directa por MovementPattern (Single Source of Truth determinista)
+  if (pattern && PATTERN_ACTIVATION_MAP[pattern]) {
+    return { ...PATTERN_ACTIVATION_MAP[pattern] };
   }
 
-  // ==================== 4. GLÚTEOS ====================
-  if (primaryMuscle === 'gluteos') {
-    if (name.includes('abduccion') || name.includes('abducción') || base.includes('abduccion')) {
-      // Máquina de abductor
-      map.gluteo_medio_menor = 1.0;
-      map.gluteo_mayor = 0.40; // Fibras superiores del glúteo mayor
-      return map;
-    }
+  // 2. Fallback de resguardo por compatibilidad
+  const fallbackMap: AnatomicalActivationMap = {};
+  if (primary === 'pecho') fallbackMap.pecho_esternocostal = 1.0;
+  else if (primary === 'espalda') fallbackMap.espalda_dorsal = 1.0;
+  else if (primary === 'cuadriceps') fallbackMap.cuadriceps_vastos = 1.0;
+  else if (primary === 'femorales') fallbackMap.femorales_cadera = 1.0;
+  else if (primary === 'gluteos') fallbackMap.gluteo_mayor = 1.0;
+  else if (primary === 'hombros') fallbackMap.deltoides_anterior = 1.0;
+  else if (primary === 'biceps') fallbackMap.biceps_braquial = 1.0;
+  else if (primary === 'triceps') fallbackMap.triceps_lateral_medial = 1.0;
+  else if (primary === 'pantorrillas') fallbackMap.gastrocnemio = 1.0;
+  else if (primary === 'abdomen') fallbackMap.recto_abdominal = 1.0;
+  else if (primary === 'antebrazos') fallbackMap.antebrazos_flexores = 1.0;
 
-    if (name.includes('patada') || base.includes('patada')) {
-      // Patada de glúteo en polea / máquina
-      map.gluteo_mayor = 1.0;
-      map.gluteo_medio_menor = 0.40;
-      map.femorales_cadera = 0.35;
-      return map;
-    }
+  return fallbackMap;
+}
 
-    // Hip Thrust / Puente de glúteos
-    map.gluteo_mayor = 1.0;
-    map.gluteo_medio_menor = 0.45;
-    map.cuadriceps_vastos = 0.35;
-    map.femorales_cadera = 0.35;
-    map.core_profundo = 0.40;
-    return map;
+export interface UnifiedVolumeResult {
+  bySubMuscle: Partial<Record<AnatomicalSubMuscle, number>>;
+  byParentGroup: Record<MuscleGroup, {
+    directSets: number;
+    indirectSets: number;
+    totalSets: number;
+  }>;
+}
+
+/**
+ * Agregación Unificada de Volumen por Grupo Muscular Padre (Single Source of Truth)
+ * El modo General deriva sus series DIRECTAMENTE de la suma de las sub-cabezas por grupo padre,
+ * garantizando coherencia al 100% entre ambas vistas.
+ */
+export function getUnifiedMuscleVolume(
+  items: {
+    exercise: {
+      id?: string;
+      name: string;
+      primaryMuscle: MuscleGroup;
+      category?: EquipmentCategory | string;
+      baseMovement?: string;
+      movementPattern?: MovementPattern;
+      goal?: 'fuerza' | 'hipertrofia' | 'auto';
+    };
+    workingSets: number;
+  }[]
+): UnifiedVolumeResult {
+  const bySubMuscle: Partial<Record<AnatomicalSubMuscle, number>> = {};
+
+  for (const spec of ANATOMICAL_SUB_MUSCLES) {
+    bySubMuscle[spec.id] = 0;
   }
 
-  // ==================== 5. FEMORALES / ISQUIOSURALES ====================
-  if (primaryMuscle === 'femorales') {
-    if (name.includes('curl') || base.includes('curl')) {
-      // Curl femoral (sentado / acostado) - flexión de rodilla
-      map.femorales_rodilla = 1.0;
-      map.femorales_cadera = 0.45;
-      map.gastrocnemio = 0.35; // Los gemelos asisten la flexión de rodilla
-      return map;
+  const allMuscleGroups: MuscleGroup[] = [
+    'pecho', 'espalda', 'cuadriceps', 'femorales', 'gluteos', 'hombros',
+    'biceps', 'triceps', 'pantorrillas', 'abdomen', 'aductores', 'antebrazos',
+    'cuerpo_completo', 'cardio'
+  ];
+
+  const directSetsMap: Record<MuscleGroup, number> = {} as any;
+  allMuscleGroups.forEach((m) => {
+    directSetsMap[m] = 0;
+  });
+
+  for (const { exercise, workingSets } of items) {
+    if (workingSets <= 0) continue;
+    // Si el ejercicio está enfocado en fuerza máxima (bajas reps, alto estrés SNC),
+    // el crédito hipertrófico del volumen es de 0.70x (70%) de una serie estándar de hipertrofia.
+    const volumeMultiplier = exercise.goal === 'fuerza' ? 0.70 : 1.0;
+    const effectiveSets = workingSets * volumeMultiplier;
+
+    const act = getAnatomicalActivation(exercise);
+
+    if (exercise.primaryMuscle && directSetsMap[exercise.primaryMuscle] !== undefined) {
+      directSetsMap[exercise.primaryMuscle] += effectiveSets;
     }
 
-    // Peso muerto rumano (RDL) / Peso muerto convencional / Sumo
-    map.femorales_cadera = 1.0;
-    map.gluteo_mayor = 0.85; // Potente extensión de cadera en bisagra
-    map.espalda_lumbar = 0.70;
-    map.espalda_alta_trapecio = 0.50;
-    map.antebrazos_flexores = 0.65;
-    map.cuadriceps_vastos = name.includes('convencional') || name.includes('sumo') ? 0.45 : 0.20;
-    map.core_profundo = 0.55;
-    return map;
+    for (const [subId, factor] of Object.entries(act) as [AnatomicalSubMuscle, number][]) {
+      if (factor && factor > 0) {
+        bySubMuscle[subId] = (bySubMuscle[subId] || 0) + effectiveSets * factor;
+      }
+    }
   }
 
-  // ==================== 6. HOMBROS ====================
-  if (primaryMuscle === 'hombros') {
-    if (name.includes('lateral') || base.includes('lateral')) {
-      // Elevaciones laterales
-      map.deltoides_lateral = 1.0;
-      map.deltoides_anterior = 0.20;
-      map.deltoides_posterior = 0.25;
-      map.espalda_alta_trapecio = 0.40;
-      return map;
-    }
+  const byParentGroup: Record<
+    MuscleGroup,
+    { directSets: number; indirectSets: number; totalSets: number }
+  > = {} as any;
 
-    if (name.includes('pajaro') || name.includes('pájaro') || name.includes('face pull') || name.includes('posterior') || name.includes('reverse pec')) {
-      // Deltoides posterior / Face Pull
-      map.deltoides_posterior = 1.0;
-      map.espalda_alta_trapecio = 0.80;
-      map.deltoides_lateral = 0.35;
-      return map;
-    }
+  for (const mg of allMuscleGroups) {
+    const subMuscles = ANATOMICAL_SUB_MUSCLES.filter((s) => s.parentGroup === mg);
+    const sumOfSubHeads = subMuscles.reduce((acc, sub) => acc + (bySubMuscle[sub.id] || 0), 0);
+    const direct = directSetsMap[mg] || 0;
+    const indirect = Math.max(0, sumOfSubHeads - direct);
 
-    if (name.includes('frontal') || base.includes('frontal')) {
-      // Elevaciones frontales
-      map.deltoides_anterior = 1.0;
-      map.pecho_clavicular = 0.50;
-      map.deltoides_lateral = 0.20;
-      return map;
-    }
-
-    // Press militar / Press de hombros
-    map.deltoides_anterior = 1.0;
-    map.deltoides_lateral = 0.55;
-    map.triceps_lateral_medial = 0.60;
-    map.triceps_cabeza_larga = 0.35;
-    map.pecho_clavicular = 0.50;
-    map.espalda_alta_trapecio = 0.40;
-    map.core_profundo = 0.45;
-    return map;
+    byParentGroup[mg] = {
+      directSets: direct,
+      indirectSets: Math.round(indirect * 100) / 100,
+      totalSets: Math.round(sumOfSubHeads * 100) / 100,
+    };
   }
 
-  // ==================== 7. BÍCEPS ====================
-  if (primaryMuscle === 'biceps') {
-    if (name.includes('martillo') || name.includes('hammer') || name.includes('inverso') || name.includes('prono')) {
-      // Curl Martillo (agarre neutro) o Inverso
-      map.braquial_braquiorradial = 1.0;
-      map.biceps_braquial = 0.45;
-      map.antebrazos_flexores = 0.55;
-      return map;
-    }
-
-    // Curl con supinación / Scott / Predicador / Mancuernas / Barra
-    map.biceps_braquial = 1.0;
-    map.braquial_braquiorradial = 0.55;
-    map.antebrazos_flexores = 0.45;
-    return map;
-  }
-
-  // ==================== 8. TRÍCEPS ====================
-  if (primaryMuscle === 'triceps') {
-    if (name.includes('overhead') || name.includes('trasnuca') || name.includes('frances') || name.includes('francés')) {
-      // Cabeza larga (brazo elevado / flexión de hombro)
-      map.triceps_cabeza_larga = 1.0;
-      map.triceps_lateral_medial = 0.65;
-      return map;
-    }
-
-    // Pushdowns en polea / Fondos / Press cerrado
-    map.triceps_lateral_medial = 1.0;
-    map.triceps_cabeza_larga = 0.40;
-    if (name.includes('fondo') || name.includes('cerrado')) {
-      map.pecho_abdominal = 0.45;
-      map.deltoides_anterior = 0.40;
-    }
-    return map;
-  }
-
-  // ==================== 9. PANTORRILLAS ====================
-  if (primaryMuscle === 'pantorrillas') {
-    if (name.includes('sentad') || base.includes('sentado')) {
-      // Gemelos sentado
-      map.soleo = 1.0;
-      map.gastrocnemio = 0.25;
-      return map;
-    }
-
-    // De pie / en prensa (rodilla estirada)
-    map.gastrocnemio = 1.0;
-    map.soleo = 0.65;
-    return map;
-  }
-
-  // ==================== 10. ABDOMEN ====================
-  if (primaryMuscle === 'abdomen') {
-    if (name.includes('oblicu') || name.includes('pallof') || name.includes('woodchopper') || name.includes('lateral')) {
-      map.oblicuos = 1.0;
-      map.core_profundo = 0.70;
-      map.recto_abdominal = 0.50;
-      return map;
-    }
-
-    if (name.includes('plancha') || name.includes('plank') || name.includes('rollout')) {
-      map.core_profundo = 1.0;
-      map.recto_abdominal = 0.80;
-      map.oblicuos = 0.60;
-      return map;
-    }
-
-    // Crunches / Elevaciones de piernas
-    map.recto_abdominal = 1.0;
-    map.core_profundo = 0.60;
-    map.oblicuos = 0.45;
-    return map;
-  }
-
-  // ==================== 11. ANTEBRAZOS ====================
-  if (primaryMuscle === 'antebrazos') {
-    if (name.includes('invers') || name.includes('extens')) {
-      map.antebrazos_extensores = 1.0;
-      map.braquial_braquiorradial = 0.65;
-      return map;
-    }
-    map.antebrazos_flexores = 1.0;
-    map.braquial_braquiorradial = 0.50;
-    return map;
-  }
-
-  return map;
+  return { bySubMuscle, byParentGroup };
 }
 
 /**
@@ -600,7 +679,7 @@ export interface RegionalDiagnostic {
 
 export function evaluateRegionalMuscleBalance(
   parentGroup: MuscleGroup,
-  subVolumes: Record<AnatomicalSubMuscle, number>
+  subVolumes: Partial<Record<AnatomicalSubMuscle, number>>
 ): RegionalDiagnostic | null {
   if (parentGroup === 'pecho') {
     const clav = subVolumes['pecho_clavicular'] || 0;

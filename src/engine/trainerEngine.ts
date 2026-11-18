@@ -1,4 +1,5 @@
-import { Exercise, MuscleGroup, WorkoutDay } from '../types';
+import { Exercise, MuscleGroup, WorkoutDay, AnatomicalSubMuscle } from '../types';
+import { getAnatomicalActivation, getUnifiedMuscleVolume, ANATOMICAL_SUB_MUSCLES } from './anatomicalEngine';
 
 export interface ExercisePrescription {
   targetSets: number;
@@ -20,72 +21,34 @@ export interface VolumeAudit {
 
 /**
  * Identifica los músculos secundarios que reciben estímulo indirecto
- * según los principios de solapamiento de evidencia científica (Principio 9)
+ * Derivado directamente de la fuente de verdad anatómica (getAnatomicalActivation).
+ * Elimina discrepancias entre el modo general y anatómico.
  */
-export function getSecondaryMuscles(name: string, primaryMuscle: MuscleGroup, category: Exercise['category']): MuscleGroup[] {
-  const lowerName = name.toLowerCase();
+export function getSecondaryMuscles(
+  nameOrEx: string | Exercise,
+  primaryMuscle?: MuscleGroup,
+  category?: Exercise['category']
+): MuscleGroup[] {
+  const activation = typeof nameOrEx === 'object'
+    ? getAnatomicalActivation(nameOrEx)
+    : getAnatomicalActivation(nameOrEx, primaryMuscle!, category);
 
-  if (primaryMuscle === 'pecho') {
-    // Si es aislamiento (aperturas, pec deck, cruces, flyes), no fatiga el tríceps ni sobrecarga el deltoide
-    if (
-      lowerName.includes('apertura') ||
-      lowerName.includes('pec deck') ||
-      lowerName.includes('cruce') ||
-      lowerName.includes('contractor') ||
-      lowerName.includes('fly')
-    ) {
-      return []; // Aislamiento analítico pectoral sin sobrecarga sinergista
-    }
-    if (lowerName.includes('press') || category === 'barra' || category === 'mancuerna' || category === 'maquina') {
-      return ['triceps', 'hombros'];
-    }
-  }
+  const primary = typeof nameOrEx === 'object' ? nameOrEx.primaryMuscle : primaryMuscle;
+  const secondaries = new Set<MuscleGroup>();
 
-  if (primaryMuscle === 'espalda') {
-    // Tracción horizontal (remos, face pull, pajaros) involucra deltoide posterior, bíceps y antebrazos por agarre isométrico.
-    // Tracción vertical pura (jalón, dominadas) activa dorsal mayor, bíceps y flexores de dedos/antebrazo.
-    if (
-      lowerName.includes('remo') ||
-      lowerName.includes('face pull') ||
-      lowerName.includes('pajaro') ||
-      lowerName.includes('deltoide')
-    ) {
-      return ['biceps', 'hombros', 'antebrazos'];
-    }
-    return ['biceps', 'antebrazos'];
-  }
-
-  if (primaryMuscle === 'hombros') {
-    if (lowerName.includes('press') || lowerName.includes('militar')) {
-      return ['triceps'];
+  for (const [subId, factor] of Object.entries(activation) as [AnatomicalSubMuscle, number][]) {
+    if (factor && factor >= 0.50) {
+      const spec = ANATOMICAL_SUB_MUSCLES.find((s) => s.id === subId);
+      if (spec && spec.parentGroup !== primary) {
+        if (spec.parentGroup === 'abdomen' && primary !== 'abdomen') continue;
+        if (spec.parentGroup === 'pecho' && primary === 'hombros') continue;
+        if (spec.parentGroup === 'espalda' && primary === 'hombros') continue;
+        secondaries.add(spec.parentGroup);
+      }
     }
   }
 
-  if (primaryMuscle === 'cuadriceps') {
-    if (
-      lowerName.includes('sentadilla') ||
-      lowerName.includes('prensa') ||
-      lowerName.includes('zancadas') ||
-      lowerName.includes('hack') ||
-      lowerName.includes('bulgara')
-    ) {
-      return ['gluteos', 'aductores', 'pantorrillas'];
-    }
-  }
-
-  if (primaryMuscle === 'femorales') {
-    if (lowerName.includes('peso muerto') || lowerName.includes('rdl') || lowerName.includes('hip thrust')) {
-      return ['gluteos', 'espalda', 'antebrazos'];
-    }
-  }
-
-  if (primaryMuscle === 'gluteos') {
-    if (lowerName.includes('hip thrust') || lowerName.includes('puente')) {
-      return ['femorales'];
-    }
-  }
-
-  return [];
+  return Array.from(secondaries);
 }
 
 /**
@@ -174,41 +137,27 @@ export function prescribeExerciseParameters(
 
 /**
  * Auditor de Volumen Semanal Basado en Evidencia Científica:
- * Reconoce tanto el volumen directo (1.0) como el indirecto/solapamiento (0.5).
+ * Utiliza getUnifiedMuscleVolume (Single Source of Truth) para derivar tanto series directas
+ * como indirectas de forma armónica con la taxonomía anatómica.
  */
 export function auditWeeklyVolume(allDays: WorkoutDay[]): VolumeAudit[] {
-  const directSets: Record<MuscleGroup, number> = {
-    pecho: 0, espalda: 0, cuadriceps: 0, femorales: 0,
-    gluteos: 0, hombros: 0, biceps: 0, triceps: 0, pantorrillas: 0,
-    abdomen: 0, aductores: 0, antebrazos: 0, cuerpo_completo: 0, cardio: 0
-  };
+  const exerciseItems: { exercise: Exercise; workingSets: number }[] = [];
 
-  const indirectSets: Record<MuscleGroup, number> = {
-    pecho: 0, espalda: 0, cuadriceps: 0, femorales: 0,
-    gluteos: 0, hombros: 0, biceps: 0, triceps: 0, pantorrillas: 0,
-    abdomen: 0, aductores: 0, antebrazos: 0, cuerpo_completo: 0, cardio: 0
-  };
-
-  allDays.forEach(day => {
-    (day.exercises || []).forEach(ex => {
-      const sets = 3; // Promedio estándar de series efectivas por ejercicio
-      if (ex.primaryMuscle) {
-        directSets[ex.primaryMuscle] = (directSets[ex.primaryMuscle] || 0) + sets;
-
-        const secondaries = getSecondaryMuscles(ex.name, ex.primaryMuscle, ex.category);
-        secondaries.forEach(sec => {
-          indirectSets[sec] = (indirectSets[sec] || 0) + (sets * 0.5);
-        });
-      }
+  allDays.forEach((day) => {
+    (day.exercises || []).forEach((ex) => {
+      const sets = ex.targetSets || 3;
+      exerciseItems.push({ exercise: ex, workingSets: sets });
     });
   });
 
-  const muscleKeys = Object.keys(directSets) as MuscleGroup[];
+  const unified = getUnifiedMuscleVolume(exerciseItems);
+  const muscleKeys = Object.keys(unified.byParentGroup) as MuscleGroup[];
 
-  return muscleKeys.map(muscle => {
-    const direct = directSets[muscle];
-    const indirect = indirectSets[muscle];
-    const totalEffective = direct + indirect;
+  return muscleKeys.map((muscle) => {
+    const parentData = unified.byParentGroup[muscle];
+    const direct = parentData.directSets;
+    const indirect = parentData.indirectSets;
+    const totalEffective = parentData.totalSets;
 
     let status: VolumeAudit['status'] = 'ÓPTIMO';
     let advice = 'Volumen dentro del rango ideal (~10-18 series efectivas semanales).';
@@ -239,4 +188,8 @@ export function auditWeeklyVolume(allDays: WorkoutDay[]): VolumeAudit[] {
       advice
     };
   });
+}
+
+export function calculateVolumeAudit(routine: { days: WorkoutDay[] }): VolumeAudit[] {
+  return auditWeeklyVolume(routine.days || []);
 }

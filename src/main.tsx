@@ -9,8 +9,19 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker
       .register('./sw.js')
       .then((reg) => {
-        // Check for updates when user opens the app
+        // Comprobar actualizaciones
         reg.update().catch(() => {});
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // Notificar que hay una nueva versión disponible
+                window.dispatchEvent(new CustomEvent('pwa-new-version-available'));
+              }
+            });
+          }
+        });
       })
       .catch((err) => {
         console.warn('PWA ServiceWorker no disponible en este entorno:', err);

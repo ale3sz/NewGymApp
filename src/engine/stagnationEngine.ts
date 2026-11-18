@@ -23,9 +23,21 @@ import { findBiomechanicalSubstitutes } from './biomechanicsEngine';
  */
 export function analyzeExerciseStagnation(
   exerciseId: string,
-  exerciseName: string,
-  allSessions: SavedSession[]
+  exerciseNameOrSessions: string | SavedSession[],
+  allSessionsParam?: SavedSession[]
 ): StagnationAnalysisResult {
+  let exerciseName: string;
+  let allSessions: SavedSession[];
+
+  if (Array.isArray(exerciseNameOrSessions)) {
+    allSessions = exerciseNameOrSessions;
+    const cat = EXERCISE_CATALOG.find(e => e.id === exerciseId);
+    exerciseName = cat ? cat.name : exerciseId;
+  } else {
+    exerciseName = exerciseNameOrSessions || exerciseId;
+    allSessions = allSessionsParam || [];
+  }
+
   // Filtrar y ordenar cronológicamente
   const exerciseSessions = allSessions
     .filter(s => s.exerciseId === exerciseId && s.sets && s.sets.length > 0)
@@ -69,6 +81,8 @@ export function analyzeExerciseStagnation(
       statusBadgeText: 'Línea Base',
       statusColor: '#38bdf8',
       consecutiveUnchangedSessions: historySnapshots.length,
+      totalSessionsTracked: historySnapshots.length,
+      currentEstimated1RM: historySnapshots.length > 0 ? historySnapshots[0].estimated1RM : 0,
       performanceTrend: 'FLAT',
       historySnapshots,
       analysisNote: 'Estableciendo calibración inicial. Se requieren al menos 2 sesiones para que el algoritmo evalúe la pendiente de sobrecarga progresiva autorregulada.',
@@ -200,6 +214,8 @@ export function analyzeExerciseStagnation(
     statusBadgeText,
     statusColor,
     consecutiveUnchangedSessions: consecutiveUnchanged,
+    totalSessionsTracked: historySnapshots.length,
+    currentEstimated1RM: historySnapshots.length > 0 ? historySnapshots[historySnapshots.length - 1].estimated1RM : 0,
     performanceTrend,
     historySnapshots,
     analysisNote,

@@ -208,10 +208,12 @@ export const fiveDaySplit: WorkoutDay[] = [
         targetRIR: 1
       },
       {
-        id: 'elevaciones_laterales_poleas',
+        id: 'elevaciones_laterales_polea',
         name: 'Elevaciones Laterales en Polea Baja',
         primaryMuscle: 'hombros',
         category: 'polea',
+        baseMovement: 'Elevación lateral',
+        movementPattern: 'lateral_raise',
         targetRepsMin: 12,
         targetRepsMax: 15,
         targetRIR: 0
@@ -221,15 +223,19 @@ export const fiveDaySplit: WorkoutDay[] = [
         name: 'Curl Inclinado en Banco 45°',
         primaryMuscle: 'biceps',
         category: 'mancuerna',
+        baseMovement: 'Curl inclinado',
+        movementPattern: 'biceps_curl_supinated',
         targetRepsMin: 10,
         targetRepsMax: 12,
         targetRIR: 0
       },
       {
-        id: 'press_frances_barra_ez',
+        id: 'skull_crusher_barra_ez',
         name: 'Press Francés con Barra EZ',
         primaryMuscle: 'triceps',
         category: 'barra',
+        baseMovement: 'Skull crusher',
+        movementPattern: 'triceps_skullcrusher',
         targetRepsMin: 10,
         targetRepsMax: 12,
         targetRIR: 0
@@ -251,10 +257,12 @@ export const fiveDaySplit: WorkoutDay[] = [
         targetRIR: 1
       },
       {
-        id: 'sentadilla_bulgara_mancuernas',
+        id: 'bulgara_mancuernas',
         name: 'Sentadilla Búlgara con Mancuernas',
         primaryMuscle: 'cuadriceps',
         category: 'mancuerna',
+        baseMovement: 'Split squat / búlgara',
+        movementPattern: 'split_squat_lunge',
         targetRepsMin: 8,
         targetRepsMax: 10,
         targetRIR: 1

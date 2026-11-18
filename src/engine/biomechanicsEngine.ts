@@ -11,7 +11,7 @@ import {
   SubstituteOption,
   EquipmentCategory
 } from '../types';
-import { EXERCISE_CATALOG } from '../data/exerciseCatalog';
+import { EXERCISE_CATALOG, resolveCatalogExercise } from '../data/exerciseCatalog';
 
 /**
  * MOTOR DE BIOMECÁNICA HUMANA Y SUSTITUCIÓN DE EJERCICIOS (Dr. Marcus Vance, CSCS)
@@ -36,11 +36,20 @@ export interface BiomechanicalProfile {
  * Mapeo de reglas heurísticas para deducir el perfil biomecánico a partir
  * del nombre, baseMovement y categoría del ejercicio.
  */
-export function inferBiomechanicalProfile(exercise: CatalogExercise | Exercise): BiomechanicalProfile {
-  const name = exercise.name.toLowerCase();
-  const base = (exercise.baseMovement || '').toLowerCase();
-  const category = exercise.category;
-  const muscle = exercise.primaryMuscle;
+export function inferBiomechanicalProfile(exerciseOrId: string | CatalogExercise | Exercise): BiomechanicalProfile {
+  const exercise: CatalogExercise | Exercise = typeof exerciseOrId === 'string'
+    ? (resolveCatalogExercise(exerciseOrId) || {
+        id: exerciseOrId,
+        name: exerciseOrId,
+        primaryMuscle: 'pecho',
+        category: 'barra',
+      })
+    : exerciseOrId;
+
+  const name = (exercise?.name || '').toLowerCase();
+  const base = (exercise?.baseMovement || '').toLowerCase();
+  const category = exercise?.category;
+  const muscle = exercise?.primaryMuscle;
 
   // 1. PECHO
   if (muscle === 'pecho') {
@@ -391,14 +400,24 @@ export function inferBiomechanicalProfile(exercise: CatalogExercise | Exercise):
  * - Rotación del perfil de resistencia para desestancar el estímulo hipertrófico.
  */
 export function findBiomechanicalSubstitutes(
-  originalExercise: CatalogExercise | Exercise,
+  originalExerciseOrId: string | CatalogExercise | Exercise,
   options: {
+    equipment?: import('../types').GymEquipmentProfile;
     relieveJoint?: JointRiskZone;
     targetResistanceProfile?: ResistanceProfile;
     preferredCategory?: EquipmentCategory;
     availableCatalog?: CatalogExercise[];
   } = {}
 ): SubstituteOption[] {
+  const originalExercise: CatalogExercise | Exercise = typeof originalExerciseOrId === 'string'
+    ? (resolveCatalogExercise(originalExerciseOrId) || {
+        id: originalExerciseOrId,
+        name: originalExerciseOrId,
+        primaryMuscle: 'pecho',
+        category: 'barra',
+      })
+    : originalExerciseOrId;
+
   const catalog = options.availableCatalog || EXERCISE_CATALOG;
   const originalProfile = inferBiomechanicalProfile(originalExercise);
   const candidates = catalog.filter(c => c.id !== originalExercise.id);
