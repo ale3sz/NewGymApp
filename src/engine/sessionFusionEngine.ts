@@ -63,26 +63,6 @@ export function analyzeWeeklyTrainingState(
   let now = new Date();
   if (referenceDate) {
     now = typeof referenceDate === 'string' ? new Date(referenceDate) : new Date(referenceDate.getTime());
-  } else if (history.length > 0) {
-    // Si no hay logs en la semana calendario actual pero el historial proviene de un periodo mock o anterior,
-    // sincronizar con la semana del log más reciente para garantizar coherencia analítica
-    const weekMon = new Date(now);
-    const cDow = now.getDay();
-    const dToMon = cDow === 0 ? -6 : 1 - cDow;
-    weekMon.setDate(now.getDate() + dToMon);
-    weekMon.setHours(0, 0, 0, 0);
-    const weekSun = new Date(weekMon);
-    weekSun.setDate(weekMon.getDate() + 7);
-
-    const hasLogsCurrentWeek = history.some(l => {
-      const t = new Date(l.date).getTime();
-      return t >= weekMon.getTime() && t <= weekSun.getTime();
-    });
-
-    if (!hasLogsCurrentWeek) {
-      const sorted = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      now = new Date(sorted[0].date);
-    }
   }
 
   const todayKey = formatLocalDateKey(now);
@@ -195,7 +175,7 @@ export function analyzeWeeklyTrainingState(
     const isToday = wd.dateKey === todayKey;
     const isPast = wd.dateKey < todayKey;
     const isFuture = wd.dateKey > todayKey;
-    const isBeforeStart = Boolean(firstLog && wd.dateKey < firstDateKey);
+    const isBeforeStart = Boolean(firstLog ? wd.dateKey < firstDateKey : isPast);
 
     const log = completedInWeek.find(
       (l) => (l.dateKey || formatLocalDateKey(l.date)) === wd.dateKey

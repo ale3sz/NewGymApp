@@ -1164,7 +1164,7 @@ const userHistoryLogs: CompletedDayLog[] = [
   }
 ];
 
-const p14WeeklyState = analyzeWeeklyTrainingState(p14MockRoutine, userHistoryLogs);
+const p14WeeklyState = analyzeWeeklyTrainingState(p14MockRoutine, userHistoryLogs, '2026-10-30T18:00:00.000Z');
 // El día saltado fue el JUEVES, y el día programado para Jueves que quedó pendiente es Jueves – Push 2!
 assert(
   p14WeeklyState.missedCount >= 1,
