@@ -597,10 +597,17 @@ export function solveOptimalNextSetWeight(
   const targetVirtual = targetReps + targetRIR;
   const rawWeight = e1rmDecayed * Math.max(0.3, 1.0278 - 0.0278 * targetVirtual);
 
-  // Redondear a equipamiento disponible respetando saltos biomecánicos reales (Dr. Marcus Vance)
+  // SALVAGUARDA BIOMECÁNICA INTRA-SESIÓN (Dr. Marcus Vance):
+  // Un back-off táctico intra-sesión jamás debe desmoronar la tensión mecánica más de un 15%
+  // de la carga de trabajo efectiva (evita caídas absurdas que anulan el estímulo hipertrófico).
   const isDropAttempt = rawWeight < lastSet.weightKg;
+  const boundedRawWeight = isDropAttempt
+    ? Math.max(lastSet.weightKg * 0.85, rawWeight)
+    : rawWeight;
+
+  // Redondear a equipamiento disponible respetando saltos biomecánicos reales (Dr. Marcus Vance)
   let roundedWeight = quantizeEquipmentWeight(
-    rawWeight,
+    boundedRawWeight,
     exercise.category,
     equipment,
     isDropAttempt ? 'down' : 'nearest'

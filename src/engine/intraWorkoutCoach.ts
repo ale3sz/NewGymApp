@@ -310,8 +310,10 @@ export function evaluateNextSetObjective(
       acuteModifier
     );
 
+    // Salvaguarda biomecánica: acotar caída máxima al 15% de la carga actual (Dr. Marcus Vance)
+    const minAcceptableWeight = currentWeight * 0.85;
     let recommendedWeight = solved.calculatedWeightKg > 0 && solved.calculatedWeightKg < currentWeight
-      ? solved.calculatedWeightKg
+      ? Math.max(minAcceptableWeight, solved.calculatedWeightKg)
       : nextLower;
 
     if (recommendedWeight >= currentWeight) {
@@ -320,6 +322,11 @@ export function evaluateNextSetObjective(
 
     const backoffPred = predictNextSetReps(exercise, workingSets, recommendedWeight, Math.max(120, safeRest), 0, acuteModifier, undefined, crossMuscleFatigueFactor);
     const targetRepsPrescribed = Math.min(exercise.targetRepsMax, Math.max(exercise.targetRepsMin, backoffPred.predictedReps));
+
+    const isRepDeficit = lastSet.repsCompleted < exercise.targetRepsMin;
+    const adviceText = isRepDeficit
+      ? `La caída de reps (${lastSet.repsCompleted} reps) indica fatiga acumulada. Para asegurar volumen efectivo de alta calidad dentro de tu ventana (${exercise.targetRepsMin}–${exercise.targetRepsMax} reps), ajusta a ${recommendedWeight} kg para buscar ~${targetRepsPrescribed} reps limpias.`
+      : `Completaste ${lastSet.repsCompleted} reps pero alcanzaste el fallo concéntrico (RIR 0). Para mantener calidad técnica y evitar colapso prematuro dentro de tu ventana (${exercise.targetRepsMin}–${exercise.targetRepsMax} reps), ajusta a ${recommendedWeight} kg para buscar ~${targetRepsPrescribed} reps con reserva.`;
 
     return {
       nextSetNumber,
@@ -332,7 +339,7 @@ export function evaluateNextSetObjective(
       badgeLabel: `BAJAR A ${recommendedWeight} KG (BACK-OFF TÁCTICO)`,
       badgeColor: 'amber',
       headline: `Ajuste táctico para sostener hipertrofia`,
-      advice: `La caída de reps indica fatiga central pronunciada. Para asegurar volumen efectivo de alta calidad dentro de tu ventana (${exercise.targetRepsMin}-${exercise.targetRepsMax} reps), baja a ${recommendedWeight} kg para buscar ~${targetRepsPrescribed} reps limpias.`,
+      advice: adviceText,
       isDeloadDrop: true,
       predictedReps: targetRepsPrescribed,
       confidencePercent: pred.confidencePercent,

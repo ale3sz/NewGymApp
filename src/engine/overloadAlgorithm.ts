@@ -241,6 +241,8 @@ export function calculateNextSession(
     };
   }
 
+  const isMicroLoad = increment > 0 && increment <= 1.25;
+
   return {
     type: 'WEIGHT_INCREASE',
     recommendedWeightKg: nextWeight,
@@ -248,7 +250,7 @@ export function calculateNextSession(
     recommendedRIR: exercise.targetRIR,
     tempoInstruction: 'Ritmo fluido y concéntrica con intención de máxima velocidad',
     reasoning: `Doble progresión completada con éxito (${avgReps.toFixed(0)} reps promedio con RIR ${avgRIR.toFixed(1)}). Incremento preciso de +${increment} kg para un nuevo peso de ${nextWeight} kg.`,
-    progressionStrategy: 'MICRO_LOAD',
+    progressionStrategy: isMicroLoad ? 'MICRO_LOAD' : 'DOUBLE_PROGRESSION',
     microIncrementKg: increment,
     sfrAnalysis: `Incremento de tensión mecánica controlado (+${jumpPercent.toFixed(1)}%). Estímulo neuromuscular óptimo.`,
   };

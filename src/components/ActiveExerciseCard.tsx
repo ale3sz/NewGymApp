@@ -147,8 +147,12 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
   const currentWorkingSetNumber = workingSets.length + 1;
   const effectiveTargetSets = targetSetsCount || exercise.targetSets || 3;
 
-  // Cálculo directo de sobrecarga progresiva y delta de peso vs sesión previa
-  const lastWorkSet = previousLogs?.find((s) => !s.isWarmup) || previousLogs?.[0];
+  // Cálculo directo de sobrecarga progresiva y delta de peso vs sesión previa:
+  // Tomar el peso de trabajo más alto alcanzado en la sesión previa como referencia de sobrecarga real
+  const prevWorkingSets = (previousLogs || []).filter((s) => !s.isWarmup && s.weightKg > 0);
+  const lastWorkSet = prevWorkingSets.length > 0
+    ? prevWorkingSets.reduce((max, s) => (s.weightKg > max.weightKg ? s : max), prevWorkingSets[prevWorkingSets.length - 1])
+    : previousLogs?.[0];
   const lastWeight = lastWorkSet?.weightKg;
   const lastReps = lastWorkSet?.repsCompleted;
 
@@ -555,31 +559,32 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
           >
             <div className="space-y-1.5 flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                {/* Gran Píldora de Cambio Directo de Peso */}
-                {weightDelta > 0 && (
+                {/* Gran Píldora de Cambio Directo de Peso / Estado de Sesión en Curso */}
+                {workingSets.length > 0 && Math.max(...workingSets.map((s) => s.weightKg)) >= targetWeight ? (
+                  <span className="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-black text-emerald-300 bg-emerald-500/20 border border-emerald-500/50 px-3 py-1.5 rounded-xl shadow-md shadow-emerald-500/10">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>✓ EN CURSO: {Math.max(...workingSets.map((s) => s.weightKg))} kg ({workingSets.length}/{effectiveTargetSets} series)</span>
+                  </span>
+                ) : weightDelta > 0 ? (
                   <span className="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-black text-emerald-300 bg-emerald-500/20 border border-emerald-500/50 px-3 py-1.5 rounded-xl shadow-md shadow-emerald-500/10">
                     <TrendingUp className="w-4 h-4 stroke-[2.5]" />
                     <span>▲ SUBIR +{weightDelta} kg ➔ CARGAR {targetWeight} kg</span>
                   </span>
-                )}
-                {weightDelta < 0 && (
+                ) : weightDelta < 0 ? (
                   <span className="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-black text-rose-300 bg-rose-500/20 border border-rose-500/50 px-3 py-1.5 rounded-xl shadow-md shadow-rose-500/10">
                     <AlertTriangle className="w-4 h-4 stroke-[2.5]" />
                     <span>▼ DESCARGA -{Math.abs(weightDelta)} kg ➔ CARGAR {targetWeight} kg</span>
                   </span>
-                )}
-                {weightDelta === 0 && repsDelta > 0 && (
+                ) : weightDelta === 0 && repsDelta > 0 ? (
                   <span className="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-black text-amber-300 bg-amber-500/20 border border-amber-500/50 px-3 py-1.5 rounded-xl">
                     <TrendingUp className="w-4 h-4 stroke-[2.5]" />
                     <span>▲ +{repsDelta} REPS ➔ Mismo peso ({targetWeight} kg) buscar {targetReps} reps</span>
                   </span>
-                )}
-                {weightDelta === 0 && repsDelta <= 0 && hasPreviousSession && (
+                ) : weightDelta === 0 && repsDelta <= 0 && hasPreviousSession ? (
                   <span className="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-black text-sky-300 bg-sky-500/20 border border-sky-500/50 px-3 py-1.5 rounded-xl">
                     <span>= MANTENER {targetWeight} kg ➔ {targetReps} reps @ RIR {exercise.targetRIR}</span>
                   </span>
-                )}
-                {!hasPreviousSession && (
+                ) : (
                   <span className="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-black text-sky-300 bg-sky-500/20 border border-sky-500/50 px-3 py-1.5 rounded-xl">
                     <Sparkles className="w-4 h-4 text-sky-400" />
                     <span>CARGA OBJETIVO: {targetWeight} kg ({targetReps} reps)</span>
@@ -615,25 +620,27 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
               )}
             </div>
 
-            {/* Botón Táctil de 1 Toque para Pre-Cargar Carga Inmediata */}
-            <button
-              type="button"
-              onClick={() => {
-                setIsWarmupMode(false);
-                if (recommendation) {
-                  onAutoFill(recommendation);
-                } else {
-                  onInputChange('weight', targetWeight.toString());
-                  onInputChange('reps', targetReps.toString());
-                  onInputChange('rir', exercise.targetRIR.toString());
-                }
-              }}
-              className="flex items-center justify-center space-x-1.5 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 active:scale-95 text-white font-black text-xs transition-all shadow-md shadow-red-600/20 shrink-0 touch-manipulation"
-              title="Cargar peso y repeticiones objetivo sugeridos de una en los selectores"
-            >
-              <Sparkles className="w-4 h-4 fill-current" />
-              <span>Cargar {targetWeight} kg</span>
-            </button>
+            {/* Botón Táctil de 1 Toque para Pre-Cargar Carga Inmediata (solo antes de iniciar series) */}
+            {workingSets.length === 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsWarmupMode(false);
+                  if (recommendation) {
+                    onAutoFill(recommendation);
+                  } else {
+                    onInputChange('weight', targetWeight.toString());
+                    onInputChange('reps', targetReps.toString());
+                    onInputChange('rir', exercise.targetRIR.toString());
+                  }
+                }}
+                className="flex items-center justify-center space-x-1.5 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 active:scale-95 text-white font-black text-xs transition-all shadow-md shadow-red-600/20 shrink-0 touch-manipulation"
+                title="Cargar peso y repeticiones objetivo sugeridos de una en los selectores"
+              >
+                <Sparkles className="w-4 h-4 fill-current" />
+                <span>Cargar {targetWeight} kg</span>
+              </button>
+            )}
           </div>
 
         {/* 4. Previous Session Reference Capsules */}

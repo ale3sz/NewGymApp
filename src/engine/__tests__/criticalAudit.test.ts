@@ -5,6 +5,8 @@ import {
   calculateEffectiveReps,
 } from '../../utils/formulas';
 import { calculateNextSession } from '../overloadAlgorithm';
+import { evaluateNextSetObjective } from '../intraWorkoutCoach';
+import { solveOptimalNextSetWeight } from '../bayesianFatigueEngine';
 import { evaluateSystemicFatigue } from '../deloadDetector';
 import {
   saveWorkoutSession,
@@ -198,6 +200,66 @@ describe('Auditoría de Sistemas Críticos y Lógica de Sobrecarga', () => {
       const benchLogs = allLogs.filter(l => l.exerciseId === 'bench_press');
       expect(benchLogs.length).toBe(1);
       expect(benchLogs[0].sets[0].weightKg).toBe(82.5);
+    });
+  });
+
+  describe('Auditoría de Casos Reportados en Capturas (Capturas Usuario)', () => {
+    it('1. Extensión trasnuca con 38kg x 12 @ RIR 0 NO debe desmoronar a 22kg ni mentir con caída de reps', () => {
+      const overheadExtension: Exercise = {
+        id: 'extension_overhead_mancuerna',
+        name: 'Extensión Trasnuca con Mancuerna',
+        primaryMuscle: 'triceps',
+        category: 'mancuerna',
+        targetRepsMin: 10,
+        targetRepsMax: 12,
+        targetRIR: 2,
+      };
+
+      const sets: SetLog[] = [
+        { setNumber: 1, weightKg: 38, repsCompleted: 12, rirLogged: 2, completedAt: new Date().toISOString() },
+        { setNumber: 2, weightKg: 38, repsCompleted: 12, rirLogged: 0, completedAt: new Date().toISOString() },
+      ];
+
+      const objective = evaluateNextSetObjective(
+        overheadExtension,
+        sets,
+        3,
+        standardEquipment,
+        1.15, // Acute fatigue modifier por descanso extendido
+        276   // 276 segundos de descanso
+      );
+
+      // Si prescribe DROP_WEIGHT (back-off táctico), jamás debe caer más del 15% (debe quedar en >= 32kg, nunca 22kg)
+      if (objective.action === 'DROP_WEIGHT') {
+        expect(objective.recommendedWeightKg).toBeGreaterThanOrEqual(32);
+        expect(objective.recommendedWeightKg).toBeLessThan(38);
+        // El texto NO debe decir que cayeron las reps porque hizo 12 reps
+        expect(objective.advice).not.toContain('La caída de reps');
+        expect(objective.advice).toContain('Completaste 12 reps');
+      }
+    });
+
+    it('2. Subida de +5kg en prensa de 160kg a 165kg debe catalogarse como DOUBLE_PROGRESSION y no MICRO_LOAD', () => {
+      const legPress: Exercise = {
+        id: 'prensa_45',
+        name: 'Prensa Inclinada 45°',
+        primaryMuscle: 'cuadriceps',
+        category: 'maquina',
+        targetRepsMin: 10,
+        targetRepsMax: 12,
+        targetRIR: 2,
+      };
+
+      const prevSets: SetLog[] = [
+        { setNumber: 1, weightKg: 150, repsCompleted: 12, rirLogged: 2 },
+        { setNumber: 2, weightKg: 160, repsCompleted: 13, rirLogged: 1 },
+      ];
+
+      const next = calculateNextSession(legPress, prevSets, standardEquipment);
+      expect(next.type).toBe('WEIGHT_INCREASE');
+      expect(next.recommendedWeightKg).toBe(165);
+      // Salto de 5kg en máquina pesada es DOUBLE_PROGRESSION, no MICRO_LOAD
+      expect(next.progressionStrategy).toBe('DOUBLE_PROGRESSION');
     });
   });
 });
