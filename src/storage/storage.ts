@@ -20,7 +20,7 @@ const ACTIVE_ROUTINE_KEY = 'gymscience_active_routine';
 const EQUIPMENT_KEY = 'gymscience_equipment';
 const CUSTOM_CATALOG_KEY = 'gymscience_custom_catalog';
 export const SCHEMA_VERSION_KEY = 'gymscience_schema_version';
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 3;
 export const AUTO_BACKUP_KEY = 'gymscience_auto_backup';
 export const EXERCISE_STEP_PREFERENCES_KEY = 'gymscience_exercise_weight_steps';
 export const EXERCISE_GOAL_PREFERENCES_KEY = 'gymscience_exercise_goals';
@@ -448,25 +448,39 @@ export function runStorageMigrations(): void {
         }
       }
 
-      // 2. Migrar rutinas guardadas
+      // 2. Migrar rutinas guardadas (IDs legacy + actualización v3 de mi_rutina_ppl_optimizada)
       const rawRoutines = safeGetItem(ROUTINES_KEY);
       if (rawRoutines) {
         try {
           const routines: Routine[] = JSON.parse(rawRoutines);
           let changed = false;
-          const migratedRoutines = routines.map(r => ({
-            ...r,
-            days: (r.days || []).map(d => ({
-              ...d,
-              exercises: (d.exercises || []).map(e => {
-                if (LEGACY_ID_MAP[e.id]) {
-                  changed = true;
-                  return { ...e, id: LEGACY_ID_MAP[e.id] };
-                }
-                return e;
-              })
-            }))
-          }));
+          const migratedRoutines = routines.map(r => {
+            if (currentVersion < 3 && r.id === MI_RUTINA_PPL_OPTIMIZADA.id) {
+              changed = true;
+              return {
+                ...r,
+                description: MI_RUTINA_PPL_OPTIMIZADA.description,
+                days: MI_RUTINA_PPL_OPTIMIZADA.days.map(d => ({
+                  ...d,
+                  exercises: d.exercises.map(e => ({ ...e }))
+                })),
+                updatedAt: new Date().toISOString()
+              };
+            }
+            return {
+              ...r,
+              days: (r.days || []).map(d => ({
+                ...d,
+                exercises: (d.exercises || []).map(e => {
+                  if (LEGACY_ID_MAP[e.id]) {
+                    changed = true;
+                    return { ...e, id: LEGACY_ID_MAP[e.id] };
+                  }
+                  return e;
+                })
+              }))
+            };
+          });
           if (changed) {
             safeSetItem(ROUTINES_KEY, JSON.stringify(migratedRoutines));
           }
@@ -475,7 +489,7 @@ export function runStorageMigrations(): void {
         }
       }
 
-      // Actualizar a esquema v2
+      // Actualizar al esquema vigente
       safeSetItem(SCHEMA_VERSION_KEY, String(CURRENT_SCHEMA_VERSION));
       createAutoBackupSnapshot();
     }

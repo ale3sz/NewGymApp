@@ -301,23 +301,28 @@ export const fiveDaySplit: WorkoutDay[] = [
 export const myCustomPplSplit: WorkoutDay[] = [
   {
     id: 'custom_push_1',
-    name: 'Lunes – Push 1 (Pecho Plano + Tríceps)',
-    description: 'Press plano, press inclinado con mancuernas, aperturas en polea, laterales y tríceps completo (polea + trasnuca).',
+    name: 'Lunes – Push 1 (Fuerza Press Plano + Pecho/Tríceps)',
+    description: 'Press plano enfoque fuerza (3-6 reps), press inclinado, aperturas, laterales y tríceps optimizado (2+2 series).',
     exercises: [
       {
         id: 'press_plano_barra',
-        name: 'Press Plano con Barra',
+        name: 'Press Plano con Barra (Fuerza)',
         primaryMuscle: 'pecho',
         category: 'barra',
-        targetRepsMin: 6,
-        targetRepsMax: 8,
-        targetRIR: 2
+        goal: 'fuerza',
+        targetSets: 4,
+        targetRepsMin: 3,
+        targetRepsMax: 6,
+        targetRIR: 2,
+        restSeconds: 210
       },
       {
         id: 'press_inclinado_mancuernas',
         name: 'Press Inclinado con Mancuernas',
         primaryMuscle: 'pecho',
         category: 'mancuerna',
+        goal: 'hipertrofia',
+        targetSets: 3,
         targetRepsMin: 8,
         targetRepsMax: 10,
         targetRIR: 1
@@ -327,6 +332,8 @@ export const myCustomPplSplit: WorkoutDay[] = [
         name: 'Aperturas en Polea',
         primaryMuscle: 'pecho',
         category: 'polea',
+        goal: 'hipertrofia',
+        targetSets: 3,
         targetRepsMin: 10,
         targetRepsMax: 12,
         targetRIR: 0
@@ -336,6 +343,8 @@ export const myCustomPplSplit: WorkoutDay[] = [
         name: 'Elevaciones Laterales con Mancuernas',
         primaryMuscle: 'hombros',
         category: 'mancuerna',
+        goal: 'hipertrofia',
+        targetSets: 3,
         targetRepsMin: 12,
         targetRepsMax: 15,
         targetRIR: 0
@@ -345,6 +354,8 @@ export const myCustomPplSplit: WorkoutDay[] = [
         name: 'Extensión de Codo en Polea (Tríceps)',
         primaryMuscle: 'triceps',
         category: 'polea',
+        goal: 'hipertrofia',
+        targetSets: 2,
         targetRepsMin: 10,
         targetRepsMax: 12,
         targetRIR: 0
@@ -354,6 +365,8 @@ export const myCustomPplSplit: WorkoutDay[] = [
         name: 'Extensión Trasnuca con Mancuerna',
         primaryMuscle: 'triceps',
         category: 'mancuerna',
+        goal: 'hipertrofia',
+        targetSets: 2,
         targetRepsMin: 8,
         targetRepsMax: 10,
         targetRIR: 1
@@ -454,44 +467,75 @@ export const myCustomPplSplit: WorkoutDay[] = [
         targetRIR: 0
       },
       {
-        id: 'sentadilla_mancuernas',
-        name: 'Sentadilla con Mancuerna (Goblet)',
+        id: 'bulgara_mancuernas',
+        name: 'Sentadilla Búlgara con Mancuernas',
         primaryMuscle: 'cuadriceps',
         category: 'mancuerna',
-        targetRepsMin: 10,
-        targetRepsMax: 12,
+        goal: 'hipertrofia',
+        targetSets: 2,
+        targetRepsMin: 8,
+        targetRepsMax: 10,
         targetRIR: 1
       },
       {
         id: 'gemelos_pie_mancuernas',
-        name: 'Elevación de Talones (Gemelos)',
+        name: 'Elevación de Talones (Gemelos / En Prensa)',
         primaryMuscle: 'pantorrillas',
         category: 'mancuerna',
+        goal: 'hipertrofia',
+        targetSets: 3,
         targetRepsMin: 12,
         targetRepsMax: 15,
         targetRIR: 0
+      },
+      {
+        id: 'crunch_polea',
+        name: 'Crunch en Polea Alta con Cuerda (Abdomen)',
+        primaryMuscle: 'abdomen',
+        category: 'polea',
+        goal: 'hipertrofia',
+        targetSets: 3,
+        targetRepsMin: 10,
+        targetRepsMax: 15,
+        targetRIR: 1
       }
     ]
   },
   {
     id: 'custom_push_2',
-    name: 'Jueves – Push 2 (Pecho Inclinado + Hombros + Tríceps)',
-    description: 'Press inclinado con mancuernas, fondos o press plano, aperturas, laterales y extensiones de tríceps.',
+    name: 'Jueves – Push 2 (Fuerza Hombros + Pecho/Tríceps)',
+    description: 'Press militar de pie en fuerza (4-6 reps) para empuje vertical real, press inclinado, press plano con mancuernas, laterales y tríceps optimizado.',
     exercises: [
       {
+        id: 'press_militar_barra',
+        name: 'Press Militar de Pie con Barra (Fuerza)',
+        primaryMuscle: 'hombros',
+        category: 'barra',
+        goal: 'fuerza',
+        targetSets: 4,
+        targetRepsMin: 4,
+        targetRepsMax: 6,
+        targetRIR: 2,
+        restSeconds: 210
+      },
+      {
         id: 'press_inclinado_mancuernas',
-        name: 'Press Inclinado con Mancuernas (Fuerza)',
+        name: 'Press Inclinado con Mancuernas',
         primaryMuscle: 'pecho',
         category: 'mancuerna',
-        targetRepsMin: 6,
-        targetRepsMax: 8,
+        goal: 'hipertrofia',
+        targetSets: 3,
+        targetRepsMin: 8,
+        targetRepsMax: 10,
         targetRIR: 1
       },
       {
-        id: 'fondos_paralelas',
-        name: 'Fondos en Paralelas (o Press Plano Mancuernas)',
+        id: 'press_plano_mancuernas',
+        name: 'Press Plano con Mancuernas',
         primaryMuscle: 'pecho',
-        category: 'corporal',
+        category: 'mancuerna',
+        goal: 'hipertrofia',
+        targetSets: 3,
         targetRepsMin: 8,
         targetRepsMax: 10,
         targetRIR: 1
@@ -501,6 +545,8 @@ export const myCustomPplSplit: WorkoutDay[] = [
         name: 'Aperturas en Polea',
         primaryMuscle: 'pecho',
         category: 'polea',
+        goal: 'hipertrofia',
+        targetSets: 2,
         targetRepsMin: 10,
         targetRepsMax: 12,
         targetRIR: 0
@@ -510,6 +556,8 @@ export const myCustomPplSplit: WorkoutDay[] = [
         name: 'Elevaciones Laterales con Mancuernas',
         primaryMuscle: 'hombros',
         category: 'mancuerna',
+        goal: 'hipertrofia',
+        targetSets: 3,
         targetRepsMin: 12,
         targetRepsMax: 15,
         targetRIR: 0
@@ -519,6 +567,8 @@ export const myCustomPplSplit: WorkoutDay[] = [
         name: 'Extensión Trasnuca (Cabeza Larga Tríceps)',
         primaryMuscle: 'triceps',
         category: 'mancuerna',
+        goal: 'hipertrofia',
+        targetSets: 2,
         targetRepsMin: 10,
         targetRepsMax: 12,
         targetRIR: 0
@@ -528,6 +578,8 @@ export const myCustomPplSplit: WorkoutDay[] = [
         name: 'Extensión de Codo en Polea (Pushdown)',
         primaryMuscle: 'triceps',
         category: 'polea',
+        goal: 'hipertrofia',
+        targetSets: 2,
         targetRepsMin: 10,
         targetRepsMax: 12,
         targetRIR: 0
@@ -536,16 +588,18 @@ export const myCustomPplSplit: WorkoutDay[] = [
   },
   {
     id: 'custom_pull_2',
-    name: 'Viernes – Pull 2 (Barra Larga + Espalda Media + Bíceps)',
-    description: 'Remo en punta abierto para densidad, jalón con barra larga, deltoides posterior, curl inclinado y martillo.',
+    name: 'Viernes – Pull 2 (Espalda sin Carga Lumbar + Bíceps + Core)',
+    description: 'Remo con mancuerna apoyado (cuida el lumbar tras Legs), jalón barra larga, deltoides posterior, bíceps y abdomen.',
     exercises: [
       {
-        id: 'landmine_row',
-        name: 'Remo en Punta / Landmine Row (Agarre abierto al esternón)',
+        id: 'remo_mancuernas',
+        name: 'Remo con Mancuerna a 1 Mano (Apoyado en Banco)',
         primaryMuscle: 'espalda',
-        category: 'barra',
-        targetRepsMin: 6,
-        targetRepsMax: 8,
+        category: 'mancuerna',
+        goal: 'hipertrofia',
+        targetSets: 3,
+        targetRepsMin: 8,
+        targetRepsMax: 10,
         targetRIR: 1
       },
       {
@@ -553,6 +607,8 @@ export const myCustomPplSplit: WorkoutDay[] = [
         name: 'Jalón al Pecho con Barra Larga',
         primaryMuscle: 'espalda',
         category: 'polea',
+        goal: 'hipertrofia',
+        targetSets: 3,
         targetRepsMin: 8,
         targetRepsMax: 10,
         targetRIR: 1
@@ -562,6 +618,8 @@ export const myCustomPplSplit: WorkoutDay[] = [
         name: 'Hombro Trasero en Banco Inclinado',
         primaryMuscle: 'hombros',
         category: 'mancuerna',
+        goal: 'hipertrofia',
+        targetSets: 3,
         targetRepsMin: 12,
         targetRepsMax: 15,
         targetRIR: 0
@@ -571,6 +629,8 @@ export const myCustomPplSplit: WorkoutDay[] = [
         name: 'Curl en Banco Inclinado con Mancuernas (Cabeza Larga)',
         primaryMuscle: 'biceps',
         category: 'mancuerna',
+        goal: 'hipertrofia',
+        targetSets: 3,
         targetRepsMin: 8,
         targetRepsMax: 10,
         targetRIR: 0
@@ -580,9 +640,22 @@ export const myCustomPplSplit: WorkoutDay[] = [
         name: 'Curl Martillo con Mancuernas',
         primaryMuscle: 'biceps',
         category: 'mancuerna',
+        goal: 'hipertrofia',
+        targetSets: 3,
         targetRepsMin: 10,
         targetRepsMax: 12,
         targetRIR: 0
+      },
+      {
+        id: 'elevacion_piernas_colgado',
+        name: 'Elevación de Piernas Colgado (Abdomen)',
+        primaryMuscle: 'abdomen',
+        category: 'corporal',
+        goal: 'hipertrofia',
+        targetSets: 3,
+        targetRepsMin: 10,
+        targetRepsMax: 15,
+        targetRIR: 1
       }
     ]
   }
