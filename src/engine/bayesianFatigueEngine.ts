@@ -237,45 +237,62 @@ export function getPrescribedOptimalRest(
   const lowerName = exercise.name.toLowerCase();
   const muscle = exercise.primaryMuscle;
 
-  // 1. Descanso fisiológico basal según demanda biomecánica y carga axial
+  // 1. Descanso fisiológico basal y techo realista según demanda biomecánica y objetivo
   let baseSeconds = 90;
+  let maxSeconds = 135; // 2:15 máx para aislamiento / polea / analíticos
+
   const isHeavyCompound =
     lowerName.includes('sentadilla') ||
     lowerName.includes('peso muerto') ||
     lowerName.includes('press banca') ||
     lowerName.includes('press plano') ||
+    lowerName.includes('press militar') ||
     lowerName.includes('remo con barra') ||
     lowerName.includes('hip thrust');
 
-  if (isHeavyCompound) {
-    baseSeconds = 180; // 3 min
-  } else if (exercise.category === 'barra' || exercise.category === 'smith') {
-    baseSeconds = 120;
-  } else if (exercise.category === 'mancuerna') {
-    baseSeconds = lowerName.includes('press') ? 120 : 90;
-  } else if (exercise.category === 'polea' || exercise.category === 'maquina') {
-    baseSeconds = 90;
+  const isModerateCompound =
+    lowerName.includes('prensa') ||
+    lowerName.includes('rdl') ||
+    lowerName.includes('bulgara') ||
+    lowerName.includes('búlgara') ||
+    lowerName.includes('remo') ||
+    lowerName.includes('jalon') ||
+    lowerName.includes('jalón') ||
+    lowerName.includes('dominada') ||
+    lowerName.includes('press');
+
+  if (exercise.goal === 'fuerza' || isHeavyCompound) {
+    baseSeconds = exercise.goal === 'fuerza' ? 210 : 180; // 3:00 - 3:30 min
+    maxSeconds = 240; // Techo estricto: 4:00 min (nunca 5-6 min)
+  } else if (isModerateCompound || exercise.category === 'barra' || exercise.category === 'smith') {
+    baseSeconds = 120; // 2:00 min
+    maxSeconds = 180; // Techo estricto: 3:00 min
+  } else if (exercise.category === 'mancuerna' || exercise.category === 'polea' || exercise.category === 'maquina') {
+    baseSeconds = 90; // 1:30 min
+    maxSeconds = 135; // Techo estricto: 2:15 min
   } else {
     baseSeconds = 75;
+    maxSeconds = 120;
   }
 
-  // 2. Personalización según histórico aprendido de este músculo
+  // 2. Personalización acotada según histórico aprendido (sin permitir feedback loop infinito)
   const calibration = profile.muscleCalibrations[muscle];
   let personalizedBase = baseSeconds;
   let isPersonalized = false;
 
   if (calibration && calibration.optimalRestSeconds && calibration.samplesCount >= 4) {
-    const userWeight = calibration.samplesCount / (calibration.samplesCount + 4);
-    personalizedBase = Math.round((1 - userWeight) * baseSeconds + userWeight * calibration.optimalRestSeconds);
+    const clampedLearned = Math.max(60, Math.min(maxSeconds, calibration.optimalRestSeconds));
+    const userWeight = Math.min(0.5, calibration.samplesCount / (calibration.samplesCount + 6));
+    personalizedBase = Math.round((1 - userWeight) * baseSeconds + userWeight * clampedLearned);
     isPersonalized = true;
   }
 
-  // 3. Modulación por fatiga aguda en tiempo real de la sesión
-  const safeAcute = Math.max(1.0, acuteModifier || 1.0);
+  // 3. Modulación por fatiga aguda en tiempo real de la sesión (acotada al techo biomecánico)
+  const safeAcute = Math.max(1.0, Math.min(1.25, acuteModifier || 1.0));
   let finalSeconds = Math.round(personalizedBase * safeAcute);
   // Redondear a múltiplos de 15 segundos
   finalSeconds = Math.round(finalSeconds / 15) * 15;
-  finalSeconds = Math.max(45, Math.min(360, finalSeconds));
+  finalSeconds = Math.max(45, Math.min(maxSeconds, finalSeconds));
 
   let adjustmentReason: string | undefined;
   if (safeAcute > 1.05) {
@@ -395,10 +412,11 @@ export function recordObservedFatigue(
         : (1 - alpha) * prevCalibration.observedDecayRate + alpha * (observedSum / count))
     : prevCalibration.observedDecayRate;
 
-  // Actualizar descanso óptimo aprendido para este músculo
-  const sessionAvgRest = restCount > 0 ? restTimeSum / restCount : restSeconds;
-  const currentOptimalRest = prevCalibration.optimalRestSeconds || restSeconds;
-  const newOptimalRest = Math.round((1 - alpha) * currentOptimalRest + alpha * sessionAvgRest);
+  // Actualizar descanso óptimo aprendido para este músculo (acotado para evitar outliers de >3.5 min)
+  const rawSessionAvgRest = restCount > 0 ? restTimeSum / restCount : restSeconds;
+  const sessionAvgRest = Math.max(60, Math.min(210, rawSessionAvgRest));
+  const currentOptimalRest = Math.max(60, Math.min(210, prevCalibration.optimalRestSeconds || restSeconds));
+  const newOptimalRest = Math.max(60, Math.min(210, Math.round((1 - alpha) * currentOptimalRest + alpha * sessionAvgRest)));
 
   // Actualizar ratio medio de extensión de descanso
   const sessionAvgRatio = restCount > 0 ? extensionRatioSum / restCount : 1.0;
