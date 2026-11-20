@@ -15,7 +15,8 @@ import {
   ChevronRight,
   List,
   Eye,
-  Trash2
+  Trash2,
+  Plus
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import {
@@ -76,6 +77,7 @@ import { ActiveExerciseCard } from '../components/ActiveExerciseCard';
 import { WorkoutSummaryModal, WorkoutSummaryData } from '../components/WorkoutSummaryModal';
 import { ExerciseTechniqueModal } from '../components/ExerciseTechniqueModal';
 import { SupersetLinkModal } from '../components/SupersetLinkModal';
+import { AddExerciseInWorkoutModal } from '../components/AddExerciseInWorkoutModal';
 
 interface ActiveWorkoutPageProps {
   routine: Routine | null;
@@ -174,6 +176,8 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   // Substitute Modal State
   const [substituteModalOpen, setSubstituteModalOpen] = useState<boolean>(false);
   const [exerciseToSubstitute, setExerciseToSubstitute] = useState<Exercise | null>(null);
+  // Add Extra Exercise In-Workout Modal State
+  const [addExerciseModalOpen, setAddExerciseModalOpen] = useState<boolean>(false);
 
   // Technique / Video Demo Modal State
   const [techniqueExercise, setTechniqueExercise] = useState<Exercise | null>(null);
@@ -1005,6 +1009,72 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
     setExerciseToRemove(null);
   };
 
+  const handleAddExtraExercise = (catalogItem: CatalogExercise) => {
+    if (!workoutDay) return;
+    if (workoutDay.exercises.some((e) => e.id === catalogItem.id)) return;
+
+    const prescription = prescribeExerciseParameters(
+      catalogItem.name,
+      catalogItem.category,
+      catalogItem.primaryMuscle
+    );
+    const newExercise: Exercise = {
+      ...catalogItem,
+      targetSets: prescription.targetSets,
+      targetRepsMin: prescription.targetRepsMin,
+      targetRepsMax: prescription.targetRepsMax,
+      targetRIR: prescription.targetRIR,
+      restSeconds: prescription.restSeconds,
+    };
+
+    const updatedExercises = [...workoutDay.exercises, newExercise];
+    setWorkoutDay({ ...workoutDay, exercises: updatedExercises });
+
+    // Cargar contexto histórico o inferido para el ejercicio añadido en vivo
+    const allLogs = getAllWorkoutLogs();
+    const prev = getLastSessionLogs(newExercise.id);
+    if (prev && prev.length > 0) {
+      setPreviousLogs((prevLogs) => ({ ...prevLogs, [newExercise.id]: prev }));
+      const rec = calculateNextSession(newExercise, prev, equipment);
+      setRecommendations((r) => ({ ...r, [newExercise.id]: rec }));
+      setInputs((inp) => ({
+        ...inp,
+        [newExercise.id]: {
+          weight: rec.recommendedWeightKg.toString(),
+          reps: rec.recommendedReps.toString(),
+          rir: rec.recommendedRIR.toString(),
+        },
+      }));
+    } else {
+      const inferredPred = inferWeightFromUserHistory(newExercise, allLogs, completedSets, updatedExercises);
+      if (inferredPred) {
+        const inferredRec = buildInferredRecommendationResult(inferredPred);
+        setRecommendations((r) => ({ ...r, [newExercise.id]: inferredRec }));
+        setInputs((inp) => ({
+          ...inp,
+          [newExercise.id]: {
+            weight: inferredRec.recommendedWeightKg.toString(),
+            reps: inferredRec.recommendedReps.toString(),
+            rir: inferredRec.recommendedRIR.toString(),
+          },
+        }));
+      } else {
+        setInputs((inp) => ({
+          ...inp,
+          [newExercise.id]: {
+            weight: newExercise.category === 'corporal' ? '0' : '',
+            reps: prescription.targetRepsMin.toString(),
+            rir: prescription.targetRIR.toString(),
+          },
+        }));
+      }
+    }
+
+    const stag = analyzeExerciseStagnation(newExercise.id, newExercise.name, allLogs);
+    setStagnationData((s) => ({ ...s, [newExercise.id]: stag }));
+    setActiveExerciseIndex(updatedExercises.length - 1);
+  };
+
   const handleSelectSubstitute = (substitute: CatalogExercise) => {
     if (!workoutDay || !exerciseToSubstitute) return;
 
@@ -1397,6 +1467,17 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
               </button>
             );
           })}
+
+          {/* Botón rápido para agregar ejercicio extra en vivo (abdomen, variante, etc.) */}
+          <button
+            type="button"
+            onClick={() => setAddExerciseModalOpen(true)}
+            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl border border-dashed border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 transition-all shrink-0 text-xs font-extrabold select-none touch-manipulation"
+            title="Agregar un ejercicio extra a la sesión de hoy"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Agregar</span>
+          </button>
         </div>
       </div>
 
@@ -1655,6 +1736,14 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
         onClose={() => setSubstituteModalOpen(false)}
         originalExercise={exerciseToSubstitute}
         onSelectSubstitute={handleSelectSubstitute}
+      />
+
+      {/* 6b. Add Extra Exercise In-Workout Modal */}
+      <AddExerciseInWorkoutModal
+        isOpen={addExerciseModalOpen}
+        onClose={() => setAddExerciseModalOpen(false)}
+        existingExerciseIds={workoutDay.exercises.map((e) => e.id)}
+        onAddExercise={handleAddExtraExercise}
       />
 
       {/* 7. Full Celebratory Workout Summary Modal */}

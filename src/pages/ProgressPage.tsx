@@ -75,7 +75,8 @@ const InteractiveTrendChart: React.FC<{
   unit: string;
   accentColor?: 'red' | 'emerald' | 'amber';
   emptyMessage: string;
-}> = ({ data, unit, accentColor = 'red', emptyMessage }) => {
+  isSignedPercent?: boolean;
+}> = ({ data, unit, accentColor = 'red', emptyMessage, isSignedPercent = false }) => {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
   if (!data || data.length === 0) {
@@ -93,9 +94,9 @@ const InteractiveTrendChart: React.FC<{
   const values = data.map((d) => d.value);
   const minVal = Math.min(...values);
   const maxVal = Math.max(...values);
-  const padding = maxVal === minVal ? Math.max(5, maxVal * 0.15) : (maxVal - minVal) * 0.2;
-  const yMin = Math.max(0, minVal - padding);
-  const yMax = maxVal + padding;
+  const padding = maxVal === minVal ? Math.max(5, Math.abs(maxVal) * 0.15) : (maxVal - minVal) * 0.2;
+  const yMin = isSignedPercent ? Math.min(0, minVal - padding) : Math.max(0, minVal - padding);
+  const yMax = isSignedPercent ? Math.max(5, maxVal + padding) : maxVal + padding;
 
   const width = 640;
   const height = 210;
@@ -130,8 +131,15 @@ const InteractiveTrendChart: React.FC<{
 
   const firstVal = data[0].value;
   const lastVal = data[data.length - 1].value;
-  const deltaPercent =
-    firstVal > 0 ? Math.round(((lastVal - firstVal) / firstVal) * 1000) / 10 : 0;
+  const deltaPercent = isSignedPercent
+    ? Math.round((lastVal - firstVal) * 10) / 10
+    : firstVal > 0
+    ? Math.round(((lastVal - firstVal) / firstVal) * 1000) / 10
+    : 0;
+
+  const formattedSelectedVal = isSignedPercent
+    ? `${selectedPoint.value >= 0 ? '+' : ''}${Math.round(selectedPoint.value * 10) / 10}%`
+    : `${Math.round(selectedPoint.value * 10) / 10} ${unit}`;
 
   return (
     <div className="space-y-3">
@@ -151,7 +159,7 @@ const InteractiveTrendChart: React.FC<{
         </div>
         <div className="flex items-center space-x-3">
           <span className="text-sm font-black font-mono text-white">
-            {Math.round(selectedPoint.value * 10) / 10} {unit}
+            {formattedSelectedVal}
           </span>
           {data.length >= 2 && (
             <span
@@ -161,7 +169,7 @@ const InteractiveTrendChart: React.FC<{
                   : 'text-rose-400 bg-rose-500/10 border-rose-500/30'
               }`}
             >
-              {deltaPercent >= 0 ? `+${deltaPercent}%` : `${deltaPercent}%`} total
+              {deltaPercent >= 0 ? `+${deltaPercent}%` : `${deltaPercent}%`} {isSignedPercent ? 'vs base' : 'total'}
             </span>
           )}
         </div>
@@ -312,8 +320,8 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
   );
 
   // View & Chart states
-  const [globalMetric, setGlobalMetric] = useState<'tonnage' | 'strength'>('strength');
-  const [exerciseMetric, setExerciseMetric] = useState<'reps' | 'weight' | 'e1rm'>('reps');
+  const [globalMetric, setGlobalMetric] = useState<'progress' | 'sets'>('progress');
+  const [exerciseMetric, setExerciseMetric] = useState<'overload' | 'weight' | 'reps'>('overload');
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup>('pecho');
   const [detailMode, setDetailMode] = useState<MuscleDetailMode>(() => {
     try {
@@ -381,28 +389,55 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
     );
   }, 0);
 
-  // ==================== 1. DATOS PARA EL GRÁFICO GENERAL ====================
+  // ==================== 1. DATOS PARA EL GRÁFICO GENERAL (PROGRESO RELATIVO REAL) ====================
   const globalTimelineData = useMemo(() => {
-    // Agrupar logs por fecha (YYYY-MM-DD)
+    // Ordenar cronológicamente para fijar la línea base (0%) de cada ejercicio en su primera sesión
+    const sortedLogs = [...rawLogs].sort((a, b) => {
+      const da = a.dateKey || (a.date || '').slice(0, 10);
+      const db = b.dateKey || (b.date || '').slice(0, 10);
+      return da.localeCompare(db);
+    });
+
+    const baselineByExercise = new Map<string, number>();
     const byDate = new Map<
       string,
-      { tonnage: number; e1rms: number[]; setsCount: number }
+      { deltas: number[]; progressedCount: number; setsCount: number; exercisesCount: number }
     >();
 
-    for (const log of rawLogs) {
-      const dateKey = (log.date || '').slice(0, 10) || 'Sesión';
+    for (const log of sortedLogs) {
+      const dateKey = log.dateKey || (log.date || '').slice(0, 10) || 'Sesión';
       const workingSets = (log.sets || []).filter((s) => !s.isWarmup && s.repsCompleted > 0);
       if (workingSets.length === 0) continue;
 
-      const entry = byDate.get(dateKey) || { tonnage: 0, e1rms: [], setsCount: 0 };
-      let bestEx1RM = 0;
+      let bestScore = 0;
       for (const s of workingSets) {
-        entry.tonnage += s.weightKg * s.repsCompleted;
-        entry.setsCount += 1;
-        const e1 = estimateAutoregulated1RM(s.weightKg, s.repsCompleted, s.rirLogged).e1rm;
-        if (e1 > bestEx1RM) bestEx1RM = e1;
+        const score =
+          s.weightKg > 0
+            ? estimateAutoregulated1RM(s.weightKg, s.repsCompleted, s.rirLogged ?? 1).e1rm
+            : s.repsCompleted;
+        if (score > bestScore) bestScore = score;
       }
-      if (bestEx1RM > 0) entry.e1rms.push(bestEx1RM);
+      if (bestScore <= 0) continue;
+
+      let deltaPct = 0;
+      if (!baselineByExercise.has(log.exerciseId)) {
+        baselineByExercise.set(log.exerciseId, bestScore);
+        deltaPct = 0;
+      } else {
+        const base = baselineByExercise.get(log.exerciseId)!;
+        deltaPct = base > 0 ? ((bestScore - base) / base) * 100 : 0;
+      }
+
+      const entry = byDate.get(dateKey) || {
+        deltas: [],
+        progressedCount: 0,
+        setsCount: 0,
+        exercisesCount: 0,
+      };
+      entry.deltas.push(deltaPct);
+      if (deltaPct > 0.5) entry.progressedCount += 1;
+      entry.setsCount += workingSets.length;
+      entry.exercisesCount += 1;
       byDate.set(dateKey, entry);
     }
 
@@ -410,21 +445,21 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([dateKey, stats]) => {
         const shortDate = dateKey.length >= 10 ? dateKey.slice(5) : dateKey; // MM-DD
-        const avg1RM =
-          stats.e1rms.length > 0
-            ? stats.e1rms.reduce((s, v) => s + v, 0) / stats.e1rms.length
+        const avgDelta =
+          stats.deltas.length > 0
+            ? Math.round((stats.deltas.reduce((s, v) => s + v, 0) / stats.deltas.length) * 10) / 10
             : 0;
         return {
           label: shortDate,
-          tonnagePoint: {
+          progressPoint: {
             label: shortDate,
-            value: Math.round(stats.tonnage),
-            secondaryText: `${stats.setsCount} series efectivas`,
+            value: avgDelta,
+            secondaryText: `${stats.exercisesCount} ej. (${stats.progressedCount} superaron base)`,
           },
-          strengthPoint: {
+          setsPoint: {
             label: shortDate,
-            value: Math.round(avg1RM * 10) / 10,
-            secondaryText: `${stats.e1rms.length} ejercicios medidos`,
+            value: stats.setsCount,
+            secondaryText: `${stats.exercisesCount} ejercicios completados`,
           },
         };
       });
@@ -447,9 +482,19 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
     };
   }, [selectedMuscle, subMuscleOverviewStats]);
 
-  // ==================== 2. DATOS INDIVIDUALES POR MÚSCULO ====================
+  // ==================== 2. DATOS INDIVIDUALES POR MÚSCULO (PROGRESO RELATIVO) ====================
   const selectedMuscleData = useMemo(() => {
-    const byDate = new Map<string, { peak1RM: number; bestEx: string; sets: number; tonnage: number }>();
+    const sortedLogs = [...rawLogs].sort((a, b) => {
+      const da = a.dateKey || (a.date || '').slice(0, 10);
+      const db = b.dateKey || (b.date || '').slice(0, 10);
+      return da.localeCompare(db);
+    });
+
+    const baselineByExercise = new Map<string, number>();
+    const byDate = new Map<
+      string,
+      { deltas: number[]; bestHighlight: string; bestDelta: number; sets: number }
+    >();
     const loggedExercisesMap = new Map<
       string,
       {
@@ -463,7 +508,7 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
       }
     >();
 
-    for (const log of rawLogs) {
+    for (const log of sortedLogs) {
       const cat = resolveExerciseInfo(log.exerciseId);
       if (!cat) continue;
 
@@ -476,30 +521,51 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
       const workingSets = (log.sets || []).filter((s) => !s.isWarmup && s.repsCompleted > 0);
       if (workingSets.length === 0) continue;
 
-      const dateKey = (log.date || '').slice(0, 10) || 'Sesión';
-      const dayEntry = byDate.get(dateKey) || {
-        peak1RM: 0,
-        bestEx: isSecondary ? `${cat.name} (Sinergista)` : cat.name,
-        sets: 0,
-        tonnage: 0,
-      };
-
-      let sessionBest1RM = 0;
-      let sessionLastW = 0;
-      let sessionLastR = 0;
+      const dateKey = log.dateKey || (log.date || '').slice(0, 10) || 'Sesión';
       const setFactor = isSecondary ? 0.5 : 1;
 
-      for (const s of workingSets) {
-        dayEntry.sets += setFactor;
-        dayEntry.tonnage += s.weightKg * s.repsCompleted * setFactor;
-        const e1 = estimateAutoregulated1RM(s.weightKg, s.repsCompleted, s.rirLogged).e1rm;
-        if (e1 > dayEntry.peak1RM) {
-          dayEntry.peak1RM = e1;
-          dayEntry.bestEx = isSecondary ? `${cat.name} (Sinergista)` : cat.name;
+      // Encontrar la Mejor Serie Real (Top Set) de este ejercicio en esta sesión
+      let topSet = workingSets[0];
+      let topScore =
+        topSet.weightKg > 0
+          ? estimateAutoregulated1RM(topSet.weightKg, topSet.repsCompleted, topSet.rirLogged ?? 1).e1rm
+          : topSet.repsCompleted;
+
+      for (let i = 1; i < workingSets.length; i++) {
+        const s = workingSets[i];
+        const score =
+          s.weightKg > 0
+            ? estimateAutoregulated1RM(s.weightKg, s.repsCompleted, s.rirLogged ?? 1).e1rm
+            : s.repsCompleted;
+        if (score > topScore) {
+          topScore = score;
+          topSet = s;
         }
-        if (e1 > sessionBest1RM) sessionBest1RM = e1;
-        sessionLastW = s.weightKg;
-        sessionLastR = s.repsCompleted;
+      }
+
+      if (topScore <= 0) continue;
+
+      let deltaPct = 0;
+      if (!baselineByExercise.has(cat.id)) {
+        baselineByExercise.set(cat.id, topScore);
+        deltaPct = 0;
+      } else {
+        const base = baselineByExercise.get(cat.id)!;
+        deltaPct = base > 0 ? ((topScore - base) / base) * 100 : 0;
+      }
+
+      const topLabel = `${cat.name}: ${topSet.weightKg}kg × ${topSet.repsCompleted}`;
+      const dayEntry = byDate.get(dateKey) || {
+        deltas: [],
+        bestHighlight: topLabel,
+        bestDelta: -999,
+        sets: 0,
+      };
+      dayEntry.sets += workingSets.length * setFactor;
+      dayEntry.deltas.push(deltaPct);
+      if (deltaPct >= dayEntry.bestDelta) {
+        dayEntry.bestDelta = deltaPct;
+        dayEntry.bestHighlight = topLabel;
       }
       byDate.set(dateKey, dayEntry);
 
@@ -513,19 +579,25 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
         isSecondary,
       };
       exInfo.sessions += 1;
-      exInfo.lastWeight = sessionLastW;
-      exInfo.lastReps = sessionLastR;
-      if (sessionBest1RM > exInfo.peak1RM) exInfo.peak1RM = sessionBest1RM;
+      exInfo.lastWeight = topSet.weightKg;
+      exInfo.lastReps = topSet.repsCompleted;
+      if (topScore > exInfo.peak1RM) exInfo.peak1RM = topScore;
       loggedExercisesMap.set(cat.id, exInfo);
     }
 
     const chartPoints: ChartDataPoint[] = Array.from(byDate.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([d, info]) => ({
-        label: d.length >= 10 ? d.slice(5) : d,
-        value: Math.round(info.peak1RM * 10) / 10,
-        secondaryText: `${info.bestEx} (${info.sets % 1 === 0 ? info.sets : info.sets.toFixed(1)} series)`,
-      }));
+      .map(([d, info]) => {
+        const avgDelta =
+          info.deltas.length > 0
+            ? Math.round((info.deltas.reduce((s, v) => s + v, 0) / info.deltas.length) * 10) / 10
+            : 0;
+        return {
+          label: d.length >= 10 ? d.slice(5) : d,
+          value: avgDelta,
+          secondaryText: `${info.bestHighlight} (${info.sets % 1 === 0 ? info.sets : info.sets.toFixed(1)} series)`,
+        };
+      });
 
     // Cargas deducidas por IA para variantes de este músculo que el usuario aún NO probó
     const unloggedMuscleCatalog = EXERCISE_CATALOG.filter(
@@ -642,12 +714,28 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
   const selectedAnalysis = analyzeExerciseStagnation(selectedExerciseId, selectedExName, rawLogs);
   const exerciseHistory = selectedAnalysis.historySnapshots;
 
-  // Comparación detallada sesión a sesión para detectar sobrecarga progresiva real (reps & peso)
+  // Comparación detallada sesión a sesión basada en la Mejor Serie Real (Top Set)
   const progressiveOverloadDiffs = useMemo(() => {
+    const baseScore =
+      exerciseHistory.length > 0
+        ? exerciseHistory[0].estimated1RM > 0
+          ? exerciseHistory[0].estimated1RM
+          : exerciseHistory[0].topSetReps ?? exerciseHistory[0].avgReps
+        : 0;
+
     return exerciseHistory.map((snap, idx) => {
+      const topW = snap.topSetWeightKg ?? snap.weightKg;
+      const topR = snap.topSetReps ?? snap.avgReps;
+      const curScore = snap.estimated1RM > 0 ? snap.estimated1RM : topR;
+      const overloadPct =
+        baseScore > 0 ? Math.round(((curScore - baseScore) / baseScore) * 1000) / 10 : 0;
+
       if (idx === 0) {
         return {
           ...snap,
+          topW,
+          topR,
+          overloadPct: 0,
           status: 'BASE' as const,
           label: 'Línea Base',
           deltaWeight: 0,
@@ -656,14 +744,19 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
         };
       }
       const prev = exerciseHistory[idx - 1];
-      const dWeight = Math.round((snap.weightKg - prev.weightKg) * 10) / 10;
-      const dReps = Math.round((snap.avgReps - prev.avgReps) * 10) / 10;
+      const prevW = prev.topSetWeightKg ?? prev.weightKg;
+      const prevR = prev.topSetReps ?? prev.avgReps;
+      const dWeight = Math.round((topW - prevW) * 10) / 10;
+      const dReps = Math.round((topR - prevR) * 10) / 10;
 
       if (dWeight > 0) {
         return {
           ...snap,
+          topW,
+          topR,
+          overloadPct,
           status: 'WEIGHT_UP' as const,
-          label: `+${dWeight} kg (Sobrecarga Carga)`,
+          label: dReps > 0 ? `+${dWeight} kg y +${dReps} reps` : `+${dWeight} kg (Subiste Carga)`,
           deltaWeight: dWeight,
           deltaReps: dReps,
           color: 'emerald' as const,
@@ -672,8 +765,11 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
       if (dWeight === 0 && dReps > 0) {
         return {
           ...snap,
+          topW,
+          topR,
+          overloadPct,
           status: 'REPS_UP' as const,
-          label: `+${dReps} reps (Sobrecarga Reps)`,
+          label: `+${dReps} reps (Subiste Reps)`,
           deltaWeight: 0,
           deltaReps: dReps,
           color: 'emerald' as const,
@@ -682,8 +778,11 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
       if (dWeight === 0 && dReps === 0) {
         return {
           ...snap,
+          topW,
+          topR,
+          overloadPct,
           status: 'MAINTAINED' as const,
-          label: 'Rendimiento Consolidado',
+          label: 'Misma Marca (Consolidando)',
           deltaWeight: 0,
           deltaReps: 0,
           color: 'amber' as const,
@@ -691,6 +790,9 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
       }
       return {
         ...snap,
+        topW,
+        topR,
+        overloadPct,
         status: 'DROP' as const,
         label: dWeight < 0 ? `${dWeight} kg` : `${dReps} reps`,
         deltaWeight: dWeight,
@@ -809,9 +911,9 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
           <div className="flex items-center space-x-2.5">
             <BarChart3 className="w-5 h-5 text-red-500 shrink-0" />
             <div>
-              <h2 className="text-lg font-bold text-white">Gráfico General de Rendimiento</h2>
+              <h2 className="text-lg font-bold text-white">Gráfico General de Progreso</h2>
               <p className="text-xs text-zinc-400">
-                Evolución histórica sesión a sesión de toda tu fuerza y volumen de trabajo.
+                Cada ejercicio se compara solo contra tu propia marca inicial (0%), sin sesgos por cambiar de día o músculo.
               </p>
             </div>
           </div>
@@ -819,38 +921,39 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
           <div className="flex items-center space-x-1.5 bg-zinc-950 p-1 rounded-2xl border border-zinc-800 self-start sm:self-auto text-xs font-bold">
             <button
               type="button"
-              onClick={() => setGlobalMetric('strength')}
+              onClick={() => setGlobalMetric('progress')}
               className={`px-3 py-1.5 rounded-xl transition ${
-                globalMetric === 'strength'
-                  ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                globalMetric === 'progress'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Índice Fuerza (e1RM)
+              Progreso Real (%)
             </button>
             <button
               type="button"
-              onClick={() => setGlobalMetric('tonnage')}
+              onClick={() => setGlobalMetric('sets')}
               className={`px-3 py-1.5 rounded-xl transition ${
-                globalMetric === 'tonnage'
+                globalMetric === 'sets'
                   ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Tonelaje por Sesión
+              Series por Sesión
             </button>
           </div>
         </div>
 
         <InteractiveTrendChart
           data={
-            globalMetric === 'strength'
-              ? globalTimelineData.map((d) => d.strengthPoint)
-              : globalTimelineData.map((d) => d.tonnagePoint)
+            globalMetric === 'progress'
+              ? globalTimelineData.map((d) => d.progressPoint)
+              : globalTimelineData.map((d) => d.setsPoint)
           }
-          unit={globalMetric === 'strength' ? 'kg e1RM medio' : 'kg movidos'}
-          accentColor={globalMetric === 'strength' ? 'red' : 'amber'}
-          emptyMessage="Registra tu primera sesión de entrenamiento para visualizar tu curva global de fuerza y tonelaje."
+          unit={globalMetric === 'progress' ? '%' : 'series'}
+          isSignedPercent={globalMetric === 'progress'}
+          accentColor={globalMetric === 'progress' ? 'emerald' : 'amber'}
+          emptyMessage="Registra tu primera sesión de entrenamiento para visualizar tu progreso real sesión a sesión."
         />
 
         {/* Selector de Nivel de Análisis: General vs Anatómico Avanzado */}
@@ -1073,16 +1176,17 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
-              Curva de Fuerza (Mejor e1RM) — {MUSCLE_LIST.find((m) => m.id === selectedMuscle)?.label}
+              Progreso Real (% vs base) — {MUSCLE_LIST.find((m) => m.id === selectedMuscle)?.label}
             </span>
             <span className="text-[11px] font-mono text-zinc-400">
-              Tonelaje acumulado: {Math.round(muscleOverviewStats[selectedMuscle]?.tonnage || 0).toLocaleString()} kg
+              {selectedMuscleData.loggedExercises.length} ejercicios registrados
             </span>
           </div>
 
           <InteractiveTrendChart
             data={selectedMuscleData.chartPoints}
-            unit="kg e1RM"
+            unit="%"
+            isSignedPercent={true}
             accentColor="emerald"
             emptyMessage={`Todavía no tienes series registradas en ${MUSCLE_LIST.find((m) => m.id === selectedMuscle)?.label}. Registra un ejercicio de este grupo para desbloquear su curva individual.`}
           />
@@ -1576,20 +1680,20 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
 
           {exerciseHistory.length > 0 ? (
             <div className="space-y-4">
-              {/* Selector de Métrica: Repeticiones vs Carga Real vs 1RM */}
+              {/* Selector de Métrica: Sobrecarga Combinada (Peso + Reps) vs Peso vs Reps */}
               <div className="flex flex-wrap items-center justify-between gap-2 p-1 bg-zinc-950 rounded-2xl border border-zinc-800 text-xs font-bold">
                 <span className="px-3 text-zinc-400">Ver evolución en:</span>
-                <div className="flex items-center space-x-1">
+                <div className="flex flex-wrap items-center gap-1">
                   <button
                     type="button"
-                    onClick={() => setExerciseMetric('reps')}
+                    onClick={() => setExerciseMetric('overload')}
                     className={`px-3 py-1.5 rounded-xl transition ${
-                      exerciseMetric === 'reps'
+                      exerciseMetric === 'overload'
                         ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                         : 'text-zinc-400 hover:text-white'
                     }`}
                   >
-                    Repeticiones Logradas
+                    Sobrecarga (Peso + Reps)
                   </button>
                   <button
                     type="button"
@@ -1600,42 +1704,43 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
                         : 'text-zinc-400 hover:text-white'
                     }`}
                   >
-                    Peso Levantado (kg)
+                    Peso Top Set (kg)
                   </button>
                   <button
                     type="button"
-                    onClick={() => setExerciseMetric('e1rm')}
+                    onClick={() => setExerciseMetric('reps')}
                     className={`px-3 py-1.5 rounded-xl transition ${
-                      exerciseMetric === 'e1rm'
+                      exerciseMetric === 'reps'
                         ? 'bg-red-500/20 text-red-300 border border-red-500/40'
                         : 'text-zinc-400 hover:text-white'
                     }`}
                   >
-                    Fuerza Estimada (1RM)
+                    Reps Top Set
                   </button>
                 </div>
               </div>
 
               <InteractiveTrendChart
-                data={exerciseHistory.map((snap) => ({
-                  label: snap.dateKey.slice(5),
+                data={progressiveOverloadDiffs.map((diff) => ({
+                  label: diff.dateKey.slice(5),
                   value:
-                    exerciseMetric === 'reps'
-                      ? snap.avgReps
+                    exerciseMetric === 'overload'
+                      ? diff.overloadPct
                       : exerciseMetric === 'weight'
-                      ? snap.weightKg
-                      : snap.estimated1RM,
-                  secondaryText: `${snap.weightKg} kg × ${snap.avgReps} reps`,
+                      ? diff.topW
+                      : diff.topR,
+                  secondaryText: `Mejor serie: ${diff.topW} kg × ${diff.topR} reps`,
                 }))}
                 unit={
-                  exerciseMetric === 'reps'
-                    ? 'reps'
+                  exerciseMetric === 'overload'
+                    ? '%'
                     : exerciseMetric === 'weight'
                     ? 'kg'
-                    : 'kg 1RM'
+                    : 'reps'
                 }
+                isSignedPercent={exerciseMetric === 'overload'}
                 accentColor={
-                  exerciseMetric === 'reps'
+                  exerciseMetric === 'overload'
                     ? 'emerald'
                     : exerciseMetric === 'weight'
                     ? 'amber'
@@ -1644,10 +1749,10 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
                 emptyMessage="Sin registros en este ejercicio."
               />
 
-              {/* Registro Sesión a Sesión de Sobrecarga Progresiva Real */}
+              {/* Registro Sesión a Sesión de Sobrecarga Progresiva Real (Top Set Real) */}
               <div className="space-y-2 pt-2 border-t border-zinc-800">
                 <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
-                  Auditoría de Sobrecarga Progresiva (Sesión a Sesión)
+                  Mejor Serie Real por Sesión (Peso × Reps)
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
                   {progressiveOverloadDiffs.map((diff, dIdx) => (
@@ -1673,14 +1778,19 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
                       </div>
                       <div className="flex items-baseline space-x-2">
                         <span className="text-lg font-black font-mono text-white">
-                          {diff.weightKg} kg
+                          {diff.topW} kg
                         </span>
                         <span className="text-sm font-bold text-zinc-300">
-                          × {diff.avgReps} reps
+                          × {diff.topR} reps
                         </span>
+                        {diff.topSetRir !== undefined && (
+                          <span className="text-[10px] font-mono text-zinc-500">
+                            (RIR {diff.topSetRir})
+                          </span>
+                        )}
                       </div>
                       <span className="text-[10px] font-mono text-zinc-500">
-                        {diff.totalVolume} kg volumen total
+                        {diff.workingSetsCount || 1} series • {diff.overloadPct >= 0 ? `+${diff.overloadPct}%` : `${diff.overloadPct}%`} vs inicio
                       </span>
                     </div>
                   ))}

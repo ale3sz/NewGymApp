@@ -51,27 +51,47 @@ export function analyzeExerciseStagnation(
       category: 'barra' as const,
     };
 
-  // Mapear cada sesión a un snapshot de rendimiento con e1RM autorregulado
-  const historySnapshots: SessionPerformanceSnapshot[] = exerciseSessions.map(session => {
-    const sets = session.sets;
-    const maxWeight = Math.max(...sets.map(s => s.weightKg));
-    const avgReps = Math.round((sets.reduce((sum, s) => sum + s.repsCompleted, 0) / sets.length) * 10) / 10;
-    const avgRIR = Math.round((sets.reduce((sum, s) => sum + (s.rirLogged ?? 1), 0) / sets.length) * 10) / 10;
-    const totalVolume = Math.round(sets.reduce((sum, s) => sum + (s.weightKg * s.repsCompleted), 0));
-    
-    // e1RM corregido por el RIR medio de la sesión
-    const e1RM = estimateAutoregulated1RM(maxWeight, avgReps, avgRIR).e1rm;
+  // Mapear cada sesión a un snapshot de rendimiento basado en la Mejor Serie Real (Top Set)
+  const historySnapshots: SessionPerformanceSnapshot[] = exerciseSessions
+    .map(session => {
+      const workingSets = (session.sets || []).filter(s => !s.isWarmup && s.repsCompleted > 0);
+      const sets = workingSets.length > 0 ? workingSets : session.sets;
+      if (!sets || sets.length === 0) return null;
 
-    return {
-      date: session.date,
-      dateKey: session.dateKey || formatLocalDateKey(session.date),
-      weightKg: maxWeight,
-      avgReps,
-      estimated1RM: e1RM,
-      totalVolume,
-      avgRIR,
-    };
-  });
+      let topSet = sets[0];
+      let topE1RM = estimateAutoregulated1RM(topSet.weightKg, topSet.repsCompleted, topSet.rirLogged ?? 1).e1rm;
+
+      for (let i = 1; i < sets.length; i++) {
+        const s = sets[i];
+        const e1 = estimateAutoregulated1RM(s.weightKg, s.repsCompleted, s.rirLogged ?? 1).e1rm;
+        if (
+          e1 > topE1RM ||
+          (e1 === topE1RM && (s.weightKg > topSet.weightKg || (s.weightKg === topSet.weightKg && s.repsCompleted > topSet.repsCompleted)))
+        ) {
+          topE1RM = e1;
+          topSet = s;
+        }
+      }
+
+      const avgReps = Math.round((sets.reduce((sum, s) => sum + s.repsCompleted, 0) / sets.length) * 10) / 10;
+      const avgRIR = Math.round((sets.reduce((sum, s) => sum + (s.rirLogged ?? 1), 0) / sets.length) * 10) / 10;
+      const totalVolume = Math.round(sets.reduce((sum, s) => sum + (s.weightKg * s.repsCompleted), 0));
+
+      return {
+        date: session.date,
+        dateKey: session.dateKey || formatLocalDateKey(session.date),
+        weightKg: topSet.weightKg,
+        avgReps,
+        topSetWeightKg: topSet.weightKg,
+        topSetReps: topSet.repsCompleted,
+        topSetRir: topSet.rirLogged ?? 1,
+        workingSetsCount: sets.length,
+        estimated1RM: Math.round(topE1RM * 10) / 10,
+        totalVolume,
+        avgRIR,
+      };
+    })
+    .filter((snap): snap is NonNullable<typeof snap> => snap !== null);
 
   if (historySnapshots.length < 2) {
     return {

@@ -318,6 +318,10 @@ export interface SessionPerformanceSnapshot {
   dateKey: string;
   weightKg: number;
   avgReps: number;
+  topSetWeightKg?: number;
+  topSetReps?: number;
+  topSetRir?: number;
+  workingSetsCount?: number;
   estimated1RM: number;
   totalVolume: number;
   avgRIR: number;
