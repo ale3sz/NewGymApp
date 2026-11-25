@@ -16,7 +16,8 @@ import {
   List,
   Eye,
   Trash2,
-  Plus
+  Plus,
+  Home
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import {
@@ -78,6 +79,7 @@ import { WorkoutSummaryModal, WorkoutSummaryData } from '../components/WorkoutSu
 import { ExerciseTechniqueModal } from '../components/ExerciseTechniqueModal';
 import { SupersetLinkModal } from '../components/SupersetLinkModal';
 import { AddExerciseInWorkoutModal } from '../components/AddExerciseInWorkoutModal';
+import { HomeWorkoutModal } from '../components/HomeWorkoutModal';
 
 interface ActiveWorkoutPageProps {
   routine: Routine | null;
@@ -178,6 +180,9 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   const [exerciseToSubstitute, setExerciseToSubstitute] = useState<Exercise | null>(null);
   // Add Extra Exercise In-Workout Modal State
   const [addExerciseModalOpen, setAddExerciseModalOpen] = useState<boolean>(false);
+  // Home Equivalent Workout Mode State
+  const [homeModalOpen, setHomeModalOpen] = useState<boolean>(false);
+  const [originalGymDayBeforeHome, setOriginalGymDayBeforeHome] = useState<WorkoutDay | null>(null);
 
   // Technique / Video Demo Modal State
   const [techniqueExercise, setTechniqueExercise] = useState<Exercise | null>(null);
@@ -1075,6 +1080,25 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
     setActiveExerciseIndex(updatedExercises.length - 1);
   };
 
+  const handleActivateHomeMode = (homeDay: WorkoutDay) => {
+    if (!workoutDay) return;
+    if (!originalGymDayBeforeHome) {
+      setOriginalGymDayBeforeHome(workoutDay);
+    }
+    setWorkoutDay(homeDay);
+    setActiveExerciseIndex(0);
+    loadExerciseContexts(homeDay);
+  };
+
+  const handleRevertToGymMode = () => {
+    if (!originalGymDayBeforeHome) return;
+    const restored = originalGymDayBeforeHome;
+    setOriginalGymDayBeforeHome(null);
+    setWorkoutDay(restored);
+    setActiveExerciseIndex(0);
+    loadExerciseContexts(restored);
+  };
+
   const handleSelectSubstitute = (substitute: CatalogExercise) => {
     if (!workoutDay || !exerciseToSubstitute) return;
 
@@ -1330,23 +1354,61 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
           </div>
         </div>
 
-        {/* Change Day Dropdown */}
-        {availableDays && availableDays.length > 1 && (
-          <div className="flex items-center space-x-2.5 self-stretch sm:self-start md:self-auto bg-zinc-950 px-3 py-2 rounded-2xl border border-zinc-800 w-full sm:w-auto max-w-full">
-            <label className="text-xs text-zinc-400 font-bold whitespace-nowrap shrink-0">Día:</label>
-            <select
-              value={selectedDayId}
-              onChange={(e) => handleSelectDay(e.target.value)}
-              className="bg-transparent text-xs font-black text-zinc-200 focus:outline-none cursor-pointer truncate w-full sm:max-w-xs md:max-w-sm"
+        {/* Change Day Dropdown & Home Mode Button */}
+        <div className="flex flex-wrap items-center gap-2 self-stretch sm:self-start md:self-auto">
+          {!originalGymDayBeforeHome ? (
+            <button
+              type="button"
+              onClick={() => setHomeModalOpen(true)}
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-xs font-extrabold transition active:scale-95 shrink-0"
+              title="Reemplazar los ejercicios de hoy por equivalentes en casa"
             >
-              {availableDays.map((d) => (
-                <option key={d.id} value={d.id} className="bg-zinc-900 text-white">
-                  {d.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+              <Home className="w-3.5 h-3.5" />
+              <span>Entrenar en Casa</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setHomeModalOpen(true)}
+                className="flex items-center space-x-1.5 px-3 py-2 rounded-2xl bg-sky-500/20 border border-sky-400/50 text-sky-200 text-xs font-extrabold transition"
+                title="Cambiar equipamiento en casa"
+              >
+                <Home className="w-3.5 h-3.5" />
+                <span>Cambiar equipo</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleRevertToGymMode}
+                className="flex items-center space-x-1 px-3 py-2 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 text-xs font-bold transition"
+                title="Volver a la rutina original de gimnasio"
+              >
+                <Dumbbell className="w-3.5 h-3.5" />
+                <span>Volver a Gym</span>
+              </button>
+            </div>
+          )}
+
+          {availableDays && availableDays.length > 1 && (
+            <div className="flex items-center space-x-2.5 bg-zinc-950 px-3 py-2 rounded-2xl border border-zinc-800 flex-1 sm:flex-initial max-w-full">
+              <label className="text-xs text-zinc-400 font-bold whitespace-nowrap shrink-0">Día:</label>
+              <select
+                value={selectedDayId}
+                onChange={(e) => {
+                  setOriginalGymDayBeforeHome(null);
+                  handleSelectDay(e.target.value);
+                }}
+                className="bg-transparent text-xs font-black text-zinc-200 focus:outline-none cursor-pointer truncate w-full sm:max-w-xs md:max-w-sm"
+              >
+                {availableDays.map((d) => (
+                  <option key={d.id} value={d.id} className="bg-zinc-900 text-white">
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 2. Quick Jump Carousel & Focus Mode Switcher */}
@@ -1744,6 +1806,14 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
         onClose={() => setAddExerciseModalOpen(false)}
         existingExerciseIds={workoutDay.exercises.map((e) => e.id)}
         onAddExercise={handleAddExtraExercise}
+      />
+
+      {/* 6c. Home Equivalent Workout Modal */}
+      <HomeWorkoutModal
+        isOpen={homeModalOpen}
+        onClose={() => setHomeModalOpen(false)}
+        originalDay={originalGymDayBeforeHome || workoutDay}
+        onConfirmHomeDay={handleActivateHomeMode}
       />
 
       {/* 7. Full Celebratory Workout Summary Modal */}

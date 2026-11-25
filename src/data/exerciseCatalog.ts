@@ -346,7 +346,24 @@ const RAW_EXERCISE_CATALOG: CatalogExercise[] = [
   // Compatibilidad hacia atras y alias frecuentes
   { id: 'press_frances_barra_ez', name: 'Press Frances con Barra EZ', primaryMuscle: 'triceps', category: 'barra', baseMovement: 'Skull crusher' },
   { id: 'elevaciones_laterales_poleas', name: 'Elevaciones Laterales en Polea', primaryMuscle: 'hombros', category: 'polea', baseMovement: 'Elevacion lateral' },
-  { id: 'sentadilla_bulgara_mancuernas', name: 'Sentadilla Bulgara con Mancuernas', primaryMuscle: 'cuadriceps', category: 'mancuerna', baseMovement: 'Split squat / bulgara' }
+  { id: 'sentadilla_bulgara_mancuernas', name: 'Sentadilla Bulgara con Mancuernas', primaryMuscle: 'cuadriceps', category: 'mancuerna', baseMovement: 'Split squat / bulgara' },
+  // 44. Equivalentes de Entrenamiento en Casa (Peso Corporal / Mochila)
+  { id: 'flexiones_clasicas', name: 'Flexiones de Brazos (Push-ups)', primaryMuscle: 'pecho', category: 'corporal', baseMovement: 'Press plano / horizontal' },
+  { id: 'flexiones_declinadas', name: 'Flexiones Declinadas (Pies Elevados)', primaryMuscle: 'pecho', category: 'corporal', baseMovement: 'Press inclinado' },
+  { id: 'flexiones_arqueras', name: 'Flexiones Arqueras / Aperturas en Suelo', primaryMuscle: 'pecho', category: 'corporal', baseMovement: 'Aperturas' },
+  { id: 'pike_pushups', name: 'Flexiones en Pica (Pike Push-ups)', primaryMuscle: 'hombros', category: 'corporal', baseMovement: 'Press vertical' },
+  { id: 'elevaciones_laterales_casa', name: 'Elevaciones Laterales con Mochila / Botellas', primaryMuscle: 'hombros', category: 'corporal', baseMovement: 'Elevación lateral' },
+  { id: 'pajaros_casa_botellas', name: 'Pájaros Inclinado con Botellas / Mochila', primaryMuscle: 'hombros', category: 'corporal', baseMovement: 'Deltoide posterior' },
+  { id: 'remo_invertido_casa', name: 'Remo Invertido Bajo Mesa / Sábana en Puerta', primaryMuscle: 'espalda', category: 'corporal', baseMovement: 'Remo horizontal' },
+  { id: 'pulldown_toalla_casa', name: 'Jalón Deslizante en Suelo (Toalla / Superman Pull)', primaryMuscle: 'espalda', category: 'corporal', baseMovement: 'Jalón vertical' },
+  { id: 'curl_biceps_mochila', name: 'Curl de Bíceps con Mochila Cargada', primaryMuscle: 'biceps', category: 'corporal', baseMovement: 'Curl de bíceps' },
+  { id: 'curl_martillo_mochila', name: 'Curl Martillo con Mochila / Bidones', primaryMuscle: 'biceps', category: 'corporal', baseMovement: 'Curl martillo' },
+  { id: 'flexiones_diamante', name: 'Flexiones Diamante (Tríceps)', primaryMuscle: 'triceps', category: 'corporal', baseMovement: 'Pushdown' },
+  { id: 'extension_triceps_suelo_casa', name: 'Extensión de Tríceps en Suelo / Contra Mesa', primaryMuscle: 'triceps', category: 'corporal', baseMovement: 'Extensión por encima de la cabeza' },
+  { id: 'sentadilla_peso_corporal', name: 'Sentadilla Profunda (Peso Corporal / Mochila)', primaryMuscle: 'cuadriceps', category: 'corporal', baseMovement: 'Sentadilla' },
+  { id: 'sentadilla_sissy_casa', name: 'Sentadilla Sissy Apoyado (Recto Femoral)', primaryMuscle: 'cuadriceps', category: 'corporal', baseMovement: 'Extensión de rodilla' },
+  { id: 'rdl_unilateral_corporal', name: 'Peso Muerto Rumano a 1 Pierna (RDL Casa)', primaryMuscle: 'femorales', category: 'corporal', baseMovement: 'Peso muerto rumano' },
+  { id: 'gemelos_escalon_corporal', name: 'Elevación de Talones a 1 Pierna en Escalón', primaryMuscle: 'pantorrillas', category: 'corporal', baseMovement: 'Elevación de talones de pie' }
 ];
 
 export function getBaseMovementPattern(

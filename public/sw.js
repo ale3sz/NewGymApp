@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gymscience-pwa-v9';
+const CACHE_NAME = 'gymscience-pwa-v10';
 
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {

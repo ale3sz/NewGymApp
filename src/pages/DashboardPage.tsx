@@ -19,7 +19,8 @@ import {
   ArrowRight,
   Zap,
   HelpCircle,
-  XCircle
+  XCircle,
+  Home
 } from 'lucide-react';
 import { Routine, CompletedDayLog, ScheduleRecommendation, AppTab, WorkoutDay } from '../types';
 import { getCurrentWeekDays } from '../engine/smartScheduleEngine';
@@ -32,6 +33,7 @@ import {
   WeeklyCycleAnalysis,
 } from '../engine/sessionFusionEngine';
 import { SessionFusionModal } from '../components/SessionFusionModal';
+import { HomeWorkoutModal } from '../components/HomeWorkoutModal';
 
 interface DashboardPageProps {
   activeRoutine: Routine | null;
@@ -51,6 +53,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   onOpenInstallModal
 }) => {
   const [fusionModalOpen, setFusionModalOpen] = useState<boolean>(false);
+  const [homeModalDay, setHomeModalDay] = useState<WorkoutDay | null>(null);
   const weekDays = getCurrentWeekDays();
   const allWorkoutLogs = getAllWorkoutLogs();
   const deloadEval = evaluateSystemicFatigue(allWorkoutLogs, completedLogs);
@@ -458,17 +461,34 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             </div>
 
             {recommendation.actionType !== 'REST_SUGGESTION' && recommendation.recommendedDayId ? (
-              <button
-                onClick={() => {
-                  if (activeRoutine) {
-                    onStartDayWorkout(activeRoutine.id, recommendation.recommendedDayId);
-                  }
-                }}
-                className="flex items-center justify-center space-x-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-extrabold text-xs sm:text-sm hover:scale-[1.02] shadow-lg shadow-red-600/30 transition-all w-full sm:w-auto shrink-0"
-              >
-                <Play className="w-4 h-4 fill-current shrink-0" />
-                <span className="truncate">Iniciar: {recommendation.recommendedDayName}</span>
-              </button>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto shrink-0">
+                <button
+                  onClick={() => {
+                    if (activeRoutine) {
+                      onStartDayWorkout(activeRoutine.id, recommendation.recommendedDayId);
+                    }
+                  }}
+                  className="flex items-center justify-center space-x-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-extrabold text-xs sm:text-sm hover:scale-[1.02] shadow-lg shadow-red-600/30 transition-all shrink-0"
+                >
+                  <Play className="w-4 h-4 fill-current shrink-0" />
+                  <span className="truncate">Iniciar: {recommendation.recommendedDayName}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!activeRoutine) return;
+                    const target =
+                      activeRoutine.days.find((d) => d.id === recommendation.recommendedDayId) ||
+                      activeRoutine.days[0];
+                    if (target) setHomeModalDay(target);
+                  }}
+                  className="flex items-center justify-center space-x-1.5 px-4 py-3 sm:py-3.5 rounded-2xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 font-extrabold text-xs transition shrink-0"
+                  title="Reemplazar el entrenamiento de hoy por su equivalente en casa"
+                >
+                  <Home className="w-4 h-4 shrink-0" />
+                  <span>Hacer en Casa</span>
+                </button>
+              </div>
             ) : (
               <div className="flex items-center space-x-2 text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-4 py-3 rounded-2xl border border-emerald-500/20">
                 <CheckCircle2 className="w-4 h-4" />
@@ -666,6 +686,19 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           routine={activeRoutine}
           weeklyAnalysis={weeklyAnalysis}
           onStartFusionDay={onStartDayWorkout}
+        />
+      )}
+
+      {/* Modal de Equivalente en Casa */}
+      {activeRoutine && (
+        <HomeWorkoutModal
+          isOpen={Boolean(homeModalDay)}
+          onClose={() => setHomeModalDay(null)}
+          originalDay={homeModalDay}
+          onConfirmHomeDay={(homeDay) => {
+            onStartDayWorkout(activeRoutine.id, homeDay.id, homeDay);
+            setHomeModalDay(null);
+          }}
         />
       )}
     </div>
