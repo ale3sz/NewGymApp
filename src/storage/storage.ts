@@ -6,7 +6,8 @@ import {
   CompletedDayLog,
   GymEquipmentProfile,
   CatalogExercise,
-  UserFatigueProfile
+  UserFatigueProfile,
+  DeloadState
 } from '../types';
 import { INITIAL_PRESET_ROUTINES, MI_RUTINA_PPL_OPTIMIZADA } from '../data/routines';
 import { DEFAULT_EQUIPMENT } from '../constants/equipment';
@@ -24,6 +25,7 @@ export const CURRENT_SCHEMA_VERSION = 3;
 export const AUTO_BACKUP_KEY = 'gymscience_auto_backup';
 export const EXERCISE_STEP_PREFERENCES_KEY = 'gymscience_exercise_weight_steps';
 export const EXERCISE_GOAL_PREFERENCES_KEY = 'gymscience_exercise_goals';
+export const DELOAD_STATE_KEY = 'gymscience_deload_state';
 
 export interface SavedSession {
   id: string;
@@ -32,6 +34,7 @@ export interface SavedSession {
   exerciseId: string;
   sets: SetLog[];
   dayId?: string;
+  isDeload?: boolean;
 }
 
 // In-memory fallback in case localStorage is disabled or restricted
@@ -75,7 +78,13 @@ export function getAllWorkoutLogs(): SavedSession[] {
 /**
  * Guarda o actualiza la sesión de un ejercicio para un día específico con fecha local consistente.
  */
-export function saveWorkoutSession(exerciseId: string, sets: SetLog[], customDate?: string, dayId?: string): boolean {
+export function saveWorkoutSession(
+  exerciseId: string,
+  sets: SetLog[],
+  customDate?: string,
+  dayId?: string,
+  isDeload?: boolean
+): boolean {
   try {
     const logs = getAllWorkoutLogs();
     const dateObj = customDate ? new Date(customDate) : new Date();
@@ -88,13 +97,16 @@ export function saveWorkoutSession(exerciseId: string, sets: SetLog[], customDat
       return !(logDateKey === dateKey && l.exerciseId === exerciseId);
     });
 
+    const taggedSets = isDeload ? sets.map(s => ({ ...s, isDeload: true })) : sets;
+
     const newSession: SavedSession = {
       id: `session_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       date: dateStr,
       dateKey,
       exerciseId,
-      sets,
-      dayId
+      sets: taggedSets,
+      dayId,
+      ...(isDeload ? { isDeload: true } : {})
     };
 
     cleanLogs.push(newSession);
@@ -131,7 +143,13 @@ export function removeExerciseSessionToday(exerciseId: string, dayId?: string): 
 
 export function getLastSessionLogs(exerciseId: string): SetLog[] | null {
   const logs = getAllWorkoutLogs();
-  const exerciseLogs = logs.filter(log => log.exerciseId === exerciseId);
+  // Blindaje de descarga: ignorar sesiones marcadas como Deload para no bajar la carga base real
+  const nonDeloadLogs = logs.filter(
+    log => log.exerciseId === exerciseId && !log.isDeload && !(log.sets || []).every(s => s.isDeload)
+  );
+  const exerciseLogs = nonDeloadLogs.length > 0
+    ? nonDeloadLogs
+    : logs.filter(log => log.exerciseId === exerciseId);
   if (exerciseLogs.length === 0) return null;
 
   exerciseLogs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -764,6 +782,33 @@ export function getSimplifiedGymMode(): boolean {
 
 export function saveSimplifiedGymMode(enabled: boolean): void {
   safeSetItem(SIMPLIFIED_GYM_MODE_KEY, String(enabled));
+}
+
+// ==================== ESTADO DE DESCARGA AUTÓNOMA (DELOAD) ====================
+
+export function getDeloadState(): DeloadState | null {
+  const data = safeGetItem(DELOAD_STATE_KEY);
+  if (!data) return null;
+  try {
+    return JSON.parse(data) as DeloadState;
+  } catch {
+    return null;
+  }
+}
+
+export function saveDeloadState(state: DeloadState): void {
+  safeSetItem(DELOAD_STATE_KEY, JSON.stringify(state));
+}
+
+export function clearDeloadState(): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.removeItem(DELOAD_STATE_KEY);
+    }
+  } catch {
+    // Ignore
+  }
+  delete memoryFallback[DELOAD_STATE_KEY];
 }
 
 

@@ -1,6 +1,20 @@
-import { SavedSession } from '../storage/storage';
-import { CompletedDayLog, Routine } from '../types';
+import {
+  SavedSession,
+  getDeloadState,
+  saveDeloadState,
+  clearDeloadState
+} from '../storage/storage';
+import {
+  CompletedDayLog,
+  Routine,
+  WorkoutDay,
+  Exercise,
+  DeloadState,
+  RecommendationResult,
+  GymEquipmentProfile
+} from '../types';
 import { estimateAutoregulated1RM } from '../utils/formulas';
+import { quantizeEquipmentWeight } from '../utils/weightQuantization';
 import { inferBiomechanicalProfile } from './biomechanicsEngine';
 
 export interface DeloadRecommendation {
@@ -195,5 +209,161 @@ export function generateDeloadRoutine(baseRoutine: Routine): Routine {
         targetRepsMax: ex.targetRepsMax,
       }))
     }))
+  };
+}
+
+// ==================== SISTEMA AUTÓNOMO DE DESCARGA (AUTO-DELOAD) ====================
+
+/**
+ * Sincroniza de forma autónoma el estado de Descarga (Deload):
+ * - Si hay una descarga activa cuyo plazo de 7 días venció, la cierra automáticamente.
+ * - Si no hay descarga activa (ni rechazo reciente del usuario bajo su propio riesgo),
+ *   evalúa la fatiga sistémica y ACTIVA AUTOMÁTICAMENTE una semana de descarga cuando
+ *   los marcadores fisiológicos lo indican para maximizar ganancias y evitar lesiones.
+ */
+export function syncAutonomousDeload(
+  history: SavedSession[],
+  completedDays: CompletedDayLog[],
+  now: Date = new Date()
+): DeloadState | null {
+  const existing = getDeloadState();
+
+  // 1. Si hay una descarga activa, verificar si ya venció
+  if (existing && existing.active) {
+    if (now.getTime() >= new Date(existing.expiresAt).getTime()) {
+      clearDeloadState();
+      return null;
+    }
+    return existing;
+  }
+
+  // 2. Si el usuario rechazó la descarga bajo su propio riesgo, respetar su cooldown
+  if (existing && !existing.active && existing.dismissedUntil) {
+    if (now.getTime() < new Date(existing.dismissedUntil).getTime()) {
+      return existing;
+    }
+  }
+
+  // 3. Evaluación autónoma de fatiga sistémica (ignorando sesiones previas de deload)
+  const nonDeloadHistory = history.filter(s => !s.isDeload);
+  const evalResult = evaluateSystemicFatigue(nonDeloadHistory, completedDays);
+
+  if (evalResult.needsDeload) {
+    const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const isCritical = evalResult.severity === 'CRITICAL';
+    const newState: DeloadState = {
+      active: true,
+      mode: 'AUTO',
+      startedAt: now.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+      reason: evalResult.reason,
+      severity: isCritical ? 'CRITICAL' : 'RECOMMENDED',
+      volumeReductionPercent: evalResult.prescription.setReductionPercent || 50,
+      loadFactor: isCritical ? 0.85 : 0.90,
+      targetRIR: evalResult.prescription.targetRIR || (isCritical ? 4 : 3),
+    };
+    saveDeloadState(newState);
+    return newState;
+  }
+
+  return existing;
+}
+
+/**
+ * Permite al usuario rechazar la descarga autónoma bajo su propio riesgo.
+ * Fija un cooldown (5 días por defecto) para que la app no vuelva a forzarla inmediatamente.
+ */
+export function dismissAutonomousDeload(cooldownDays: number = 5, now: Date = new Date()): DeloadState {
+  const existing = getDeloadState();
+  const dismissedUntil = new Date(now.getTime() + cooldownDays * 24 * 60 * 60 * 1000).toISOString();
+  const updated: DeloadState = {
+    active: false,
+    mode: existing?.mode || 'AUTO',
+    startedAt: existing?.startedAt || now.toISOString(),
+    expiresAt: existing?.expiresAt || now.toISOString(),
+    reason: existing?.reason || 'Descarga rechazada por el usuario bajo su propio riesgo.',
+    severity: existing?.severity || 'RECOMMENDED',
+    volumeReductionPercent: existing?.volumeReductionPercent || 50,
+    loadFactor: existing?.loadFactor || 0.85,
+    targetRIR: existing?.targetRIR || 3,
+    dismissedUntil,
+  };
+  saveDeloadState(updated);
+  return updated;
+}
+
+/**
+ * Permite reactivar o iniciar manualmente una semana de descarga.
+ */
+export function activateDeloadCycle(
+  days: number = 7,
+  reason: string = 'Semana de descarga activada para disipar fatiga del SNC, proteger articulaciones y potenciar la supercompensación.',
+  now: Date = new Date()
+): DeloadState {
+  const expiresAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000).toISOString();
+  const state: DeloadState = {
+    active: true,
+    mode: 'MANUAL',
+    startedAt: now.toISOString(),
+    expiresAt,
+    reason,
+    severity: 'RECOMMENDED',
+    volumeReductionPercent: 50,
+    loadFactor: 0.85,
+    targetRIR: 3,
+  };
+  saveDeloadState(state);
+  return state;
+}
+
+export function getRemainingDeloadDays(deload: DeloadState, now: Date = new Date()): number {
+  const ms = new Date(deload.expiresAt).getTime() - now.getTime();
+  return Math.max(1, Math.ceil(ms / (24 * 60 * 60 * 1000)));
+}
+
+/**
+ * Aplica los recortes de volumen y RIR de la descarga autónoma sobre un día de entrenamiento,
+ * conservando el mismo day.id y todos los ejercicios para mantener la coordinación neuromuscular.
+ */
+export function applyDeloadToWorkoutDay(day: WorkoutDay, deload: DeloadState): WorkoutDay {
+  const keepRatio = Math.max(0.4, 1 - (deload.volumeReductionPercent || 50) / 100);
+  return {
+    ...day,
+    exercises: (day.exercises || []).map(ex => {
+      const baseSets = ex.targetSets || 3;
+      const deloadSets = Math.max(1, Math.min(2, Math.round(baseSets * keepRatio)));
+      return {
+        ...ex,
+        targetSets: deloadSets,
+        targetRIR: Math.max(3, deload.targetRIR || 3),
+        restSeconds: Math.min(ex.restSeconds || 120, 120),
+      };
+    }),
+  };
+}
+
+/**
+ * Ajusta la recomendación de carga de un ejercicio durante una semana de descarga autónoma,
+ * cuantizando el peso al equipamiento real y explicando claramente el motivo al usuario.
+ */
+export function applyDeloadToRecommendation(
+  rec: RecommendationResult,
+  ex: Exercise,
+  deload: DeloadState,
+  equipment?: GymEquipmentProfile
+): RecommendationResult {
+  const factor = deload.loadFactor || 0.85;
+  const pctDrop = Math.round((1 - factor) * 100);
+  const adjustedWeight =
+    rec.recommendedWeightKg > 0 && ex.category !== 'corporal'
+      ? quantizeEquipmentWeight(rec.recommendedWeightKg * factor, ex.category, equipment, 'down')
+      : rec.recommendedWeightKg;
+
+  return {
+    ...rec,
+    type: 'DELOAD_SUGGESTION',
+    recommendedWeightKg: adjustedWeight,
+    recommendedRIR: Math.max(3, deload.targetRIR || 3),
+    reasoning: `🛡️ Semana de Descarga Autónoma activa (-${pctDrop}% carga, -${deload.volumeReductionPercent}% series, RIR ${deload.targetRIR}). Reducimos peso temporalmente para disipar fatiga acumulada y volver más fuerte. Tus récords previos están protegidos.`,
   };
 }

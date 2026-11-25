@@ -38,9 +38,9 @@ export function analyzeExerciseStagnation(
     allSessions = allSessionsParam || [];
   }
 
-  // Filtrar y ordenar cronológicamente
+  // Filtrar y ordenar cronológicamente (excluyendo sesiones de descarga autónoma para no generar falsos estancamientos)
   const exerciseSessions = allSessions
-    .filter(s => s.exerciseId === exerciseId && s.sets && s.sets.length > 0)
+    .filter(s => s.exerciseId === exerciseId && s.sets && s.sets.length > 0 && !s.isDeload && !s.sets.every(st => st.isDeload))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const catalogEntry = EXERCISE_CATALOG.find(e => e.id === exerciseId) ||

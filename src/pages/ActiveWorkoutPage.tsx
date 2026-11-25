@@ -30,7 +30,8 @@ import {
   GymEquipmentProfile,
   StagnationAnalysisResult,
   SupersetLinkInfo,
-  SupersetType
+  SupersetType,
+  DeloadState
 } from '../types';
 import {
   saveWorkoutSession,
@@ -55,6 +56,13 @@ import {
   setExerciseGoalPreference
 } from '../storage/storage';
 import { calculateNextSession } from '../engine/overloadAlgorithm';
+import {
+  syncAutonomousDeload,
+  dismissAutonomousDeload,
+  applyDeloadToWorkoutDay,
+  applyDeloadToRecommendation,
+  getRemainingDeloadDays
+} from '../engine/deloadDetector';
 import { getMusclesInDay, getSmartWorkoutRecommendation } from '../engine/smartScheduleEngine';
 import { prescribeExerciseParameters } from '../engine/trainerEngine';
 import { analyzeExerciseStagnation } from '../engine/stagnationEngine';
@@ -183,6 +191,10 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   // Home Equivalent Workout Mode State
   const [homeModalOpen, setHomeModalOpen] = useState<boolean>(false);
   const [originalGymDayBeforeHome, setOriginalGymDayBeforeHome] = useState<WorkoutDay | null>(null);
+  // Autonomous Deload State
+  const [activeDeload, setActiveDeload] = useState<DeloadState | null>(() =>
+    syncAutonomousDeload(getAllWorkoutLogs(), getCompletedDaysLogs())
+  );
 
   // Technique / Video Demo Modal State
   const [techniqueExercise, setTechniqueExercise] = useState<Exercise | null>(null);
@@ -472,18 +484,36 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
     }
   };
 
-  const loadExerciseContexts = (day: WorkoutDay) => {
+  const loadExerciseContexts = (
+    day: WorkoutDay,
+    deloadOverride?: DeloadState | null,
+    forceOverwriteInputs: boolean = false
+  ) => {
+    const effectiveDeload = deloadOverride !== undefined ? deloadOverride : activeDeload;
+    const isDeloadOn = Boolean(effectiveDeload?.active);
     const allLogs = getAllWorkoutLogs();
     const newPrevLogs: Record<string, SetLog[]> = {};
     const newRecs: Record<string, RecommendationResult> = {};
     const newInputs: Record<string, { weight: string; reps: string; rir: string }> = {};
     const newStagnation: Record<string, StagnationAnalysisResult> = {};
+    const newDeloadTargets: Record<string, number> = {};
 
-    day.exercises.forEach((ex) => {
+    const effectiveDay = isDeloadOn && effectiveDeload
+      ? applyDeloadToWorkoutDay(day, effectiveDeload)
+      : day;
+
+    effectiveDay.exercises.forEach((ex) => {
+      if (isDeloadOn && ex.targetSets) {
+        newDeloadTargets[ex.id] = ex.targetSets;
+      }
+
       const prev = getLastSessionLogs(ex.id);
       if (prev && prev.length > 0) {
         newPrevLogs[ex.id] = prev;
-        const rec = calculateNextSession(ex, prev, equipment);
+        let rec = calculateNextSession(ex, prev, equipment);
+        if (isDeloadOn && effectiveDeload) {
+          rec = applyDeloadToRecommendation(rec, ex, effectiveDeload, equipment);
+        }
         newRecs[ex.id] = rec;
         newInputs[ex.id] = {
           weight: rec.recommendedWeightKg.toString(),
@@ -493,9 +523,12 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       } else {
         const effectiveGoal = ex.goal || getExerciseGoalPreference(ex.id) || 'hipertrofia';
         const prescription = prescribeExerciseParameters(ex.name, ex.category, ex.primaryMuscle, effectiveGoal === 'auto' ? 'hipertrofia' : effectiveGoal);
-        const inferredPred = inferWeightFromUserHistory(ex, allLogs, completedSets, day.exercises);
+        const inferredPred = inferWeightFromUserHistory(ex, allLogs, completedSets, effectiveDay.exercises);
         if (inferredPred) {
-          const inferredRec = buildInferredRecommendationResult(inferredPred);
+          let inferredRec = buildInferredRecommendationResult(inferredPred);
+          if (isDeloadOn && effectiveDeload) {
+            inferredRec = applyDeloadToRecommendation(inferredRec, ex, effectiveDeload, equipment);
+          }
           newRecs[ex.id] = inferredRec;
           newInputs[ex.id] = {
             weight: inferredRec.recommendedWeightKg.toString(),
@@ -506,7 +539,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
           newInputs[ex.id] = {
             weight: ex.category === 'corporal' ? '0' : '',
             reps: prescription.targetRepsMin.toString(),
-            rir: prescription.targetRIR.toString(),
+            rir: isDeloadOn && effectiveDeload ? effectiveDeload.targetRIR.toString() : prescription.targetRIR.toString(),
           };
         }
       }
@@ -518,8 +551,32 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
 
     setPreviousLogs(newPrevLogs);
     setRecommendations(newRecs);
-    setInputs((prev) => ({ ...newInputs, ...prev }));
+    if (forceOverwriteInputs) {
+      setInputs(newInputs);
+    } else {
+      setInputs((prev) => ({ ...newInputs, ...prev }));
+    }
     setStagnationData(newStagnation);
+    if (isDeloadOn) {
+      setCustomTargetSets((prev) => ({ ...newDeloadTargets, ...prev }));
+    } else if (forceOverwriteInputs) {
+      setCustomTargetSets({});
+    }
+  };
+
+  const handleRejectDeloadInWorkout = () => {
+    const ok = window.confirm(
+      '¿Seguro que querés rechazar la Semana de Descarga bajo tu propio riesgo?\n\nSe restaurarán tus pesos completos y todas las series normales para hoy.'
+    );
+    if (!ok) return;
+    const dismissed = dismissAutonomousDeload(5);
+    setActiveDeload(dismissed);
+    if (workoutDay) {
+      // Restaurar el día original desde la rutina si corresponde
+      const originalDay = availableDays.find((d) => d.id === workoutDay.id) || workoutDay;
+      setWorkoutDay(originalDay);
+      loadExerciseContexts(originalDay, dismissed, true);
+    }
   };
 
   const handleInputChange = (exerciseId: string, field: 'weight' | 'reps' | 'rir', val: string) => {
@@ -670,7 +727,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
         timestamp: new Date().toISOString(),
       });
       // PERSISTENCIA PERMANENTE ATÓMICA: Cada serie completada se guarda de inmediato en el historial maestro
-      saveWorkoutSession(exercise.id, updated, undefined, workoutDay.id);
+      saveWorkoutSession(exercise.id, updated, undefined, workoutDay.id, Boolean(activeDeload?.active));
     }
 
     // Actualizar en tiempo real las cargas deducidas por IA en ejercicios posteriores sin historial propio
@@ -885,7 +942,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       });
       // Sincronización inmediata con almacenamiento permanente
       if (updated.length > 0) {
-        saveWorkoutSession(exerciseId, updated, undefined, workoutDay.id);
+        saveWorkoutSession(exerciseId, updated, undefined, workoutDay.id, Boolean(activeDeload?.active));
       } else {
         removeExerciseSessionToday(exerciseId, workoutDay.id);
       }
@@ -940,7 +997,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       });
       // Sincronización inmediata con almacenamiento permanente
       if (updated.length > 0) {
-        saveWorkoutSession(exerciseId, updated, undefined, workoutDay.id);
+        saveWorkoutSession(exerciseId, updated, undefined, workoutDay.id, Boolean(activeDeload?.active));
       } else {
         removeExerciseSessionToday(exerciseId, workoutDay.id);
       }
@@ -1171,7 +1228,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
         totalEffectiveSum += s.effectiveReps || 0;
         totalRirSum += s.rirLogged;
       });
-      saveWorkoutSession(exId, sets, undefined, workoutDay.id);
+      saveWorkoutSession(exId, sets, undefined, workoutDay.id, Boolean(activeDeload?.active));
       
       // Calibración final del perfil de fatiga adaptativo
       const exObj = workoutDay.exercises.find((e) => e.id === exId);
@@ -1410,6 +1467,32 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
           )}
         </div>
       </div>
+
+      {/* 1b. Autonomous Deload Active Banner (with user override at own risk) */}
+      {activeDeload?.active && (
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-950/70 via-zinc-900 to-rose-950/30 border border-sky-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/40">
+                🛡️ Semana de Descarga Autónoma ({getRemainingDeloadDays(activeDeload)}d restantes)
+              </span>
+              <span className="text-[11px] font-mono font-bold text-sky-200">
+                Pesos al {Math.round(activeDeload.loadFactor * 100)}% • -{activeDeload.volumeReductionPercent}% series • RIR {activeDeload.targetRIR}
+              </span>
+            </div>
+            <p className="text-xs text-zinc-300 leading-relaxed">
+              Redujimos temporalmente tus cargas y volumen para disipar fatiga acumulada, prevenir lesiones y volver más fuerte. <strong className="text-sky-300">Tus récords previos están blindados.</strong>
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleRejectDeloadInWorkout}
+            className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-rose-950/70 border border-zinc-700 hover:border-rose-500/40 text-zinc-300 hover:text-rose-300 text-[11px] font-bold transition shrink-0 self-start sm:self-center"
+          >
+            Rechazar descarga (bajo mi riesgo)
+          </button>
+        </div>
+      )}
 
       {/* 2. Quick Jump Carousel & Focus Mode Switcher */}
       <div className="space-y-2">

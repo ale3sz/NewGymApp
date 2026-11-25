@@ -162,6 +162,7 @@ export interface SetLog {
   estimated1RM?: number;
   effectiveReps?: number;
   isWarmup?: boolean;             // Si es serie de calentamiento / aproximación (no cuenta como serie efectiva ni sesga progresión)
+  isDeload?: boolean;             // Si pertenece a una semana/sesión de descarga autónoma (blindada para no sesgar progresión)
   actualRestSeconds?: number;     // Segundos reales de descanso tomados antes de esta serie
   prescribedRestSeconds?: number; // Segundos óptimos prescritos por el sistema
   restExtensionRatio?: number;    // actual / prescribed (>1.0 indica fatiga aguda acumulada)
@@ -311,6 +312,19 @@ export interface StagnationIntervention {
   title: string;
   description: string;
   actionLabel?: string;
+}
+
+export interface DeloadState {
+  active: boolean;
+  mode: 'AUTO' | 'MANUAL';
+  startedAt: string;
+  expiresAt: string;
+  reason: string;
+  severity: 'RECOMMENDED' | 'CRITICAL';
+  volumeReductionPercent: number;
+  loadFactor: number;
+  targetRIR: number;
+  dismissedUntil?: string;
 }
 
 export interface SessionPerformanceSnapshot {

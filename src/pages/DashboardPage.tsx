@@ -22,9 +22,15 @@ import {
   XCircle,
   Home
 } from 'lucide-react';
-import { Routine, CompletedDayLog, ScheduleRecommendation, AppTab, WorkoutDay } from '../types';
+import { Routine, CompletedDayLog, ScheduleRecommendation, AppTab, WorkoutDay, DeloadState } from '../types';
 import { getCurrentWeekDays } from '../engine/smartScheduleEngine';
-import { evaluateSystemicFatigue } from '../engine/deloadDetector';
+import {
+  evaluateSystemicFatigue,
+  syncAutonomousDeload,
+  dismissAutonomousDeload,
+  activateDeloadCycle,
+  getRemainingDeloadDays,
+} from '../engine/deloadDetector';
 import { getAllWorkoutLogs, getActiveWorkoutDraft, hasRecentActiveWorkoutDraft } from '../storage/storage';
 import { downloadRoutineAsText } from '../utils/routineExport';
 import { aiCoachImg, getWorkoutDayBadge } from '../constants/brandAssets';
@@ -57,6 +63,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const weekDays = getCurrentWeekDays();
   const allWorkoutLogs = getAllWorkoutLogs();
   const deloadEval = evaluateSystemicFatigue(allWorkoutLogs, completedLogs);
+  const [deloadState, setDeloadState] = useState<DeloadState | null>(() =>
+    syncAutonomousDeload(allWorkoutLogs, completedLogs)
+  );
 
   // Análisis semanal consciente de la fecha de inicio del usuario
   const weeklyAnalysis: WeeklyCycleAnalysis = useMemo(() => {
@@ -213,41 +222,91 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         </div>
       </div>
 
-      {/* Systemic Fatigue Deload Warning if detected */}
-      {deloadEval.needsDeload && (
-        <div className="p-5 rounded-3xl bg-rose-950/40 border border-rose-500/30 flex items-start space-x-4 shadow-lg shadow-rose-950/30">
-          <div className="p-2.5 rounded-2xl bg-rose-500/20 text-rose-400 shrink-0">
+      {/* Autonomous Deload Active Card / Override Notice */}
+      {deloadState?.active ? (
+        <div className="p-5 rounded-3xl bg-gradient-to-br from-sky-950/60 via-zinc-900 to-rose-950/30 border border-sky-500/40 flex flex-col sm:flex-row items-start gap-4 shadow-xl shadow-sky-950/20">
+          <div className="p-2.5 rounded-2xl bg-sky-500/20 text-sky-400 shrink-0">
             <AlertTriangle className="w-6 h-6" />
           </div>
-          <div className="flex-1 space-y-2">
+          <div className="flex-1 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center space-x-2">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/40">
+                  🛡️ Descarga Autónoma Activa
+                </span>
+                <span className="text-[11px] font-mono font-bold text-zinc-300">
+                  Quedan {getRemainingDeloadDays(deloadState)} {getRemainingDeloadDays(deloadState) === 1 ? 'día' : 'días'}
+                </span>
+              </div>
+            </div>
+
             <div>
-              <h4 className="text-sm font-bold text-rose-200">
-                Alerta Científica: Recomendación de Descarga Estratégica (Deload)
+              <h4 className="text-sm sm:text-base font-black text-white">
+                La IA aplicó una Semana de Descarga automática en tus entrenamientos
               </h4>
-              <p className="text-xs text-rose-300/80 mt-1 leading-relaxed">
-                {deloadEval.reason}
+              <p className="text-xs text-zinc-300 mt-1 leading-relaxed">
+                {deloadState.reason} <strong className="text-sky-300">Ya está aplicada</strong> a tus próximas sesiones para disipar fatiga del SNC, evitar lesiones y volver más fuerte. Tus marcas y gráficos están blindados (estas sesiones no bajarán tus pesos base).
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-zinc-950/60 p-3 rounded-2xl border border-rose-500/20">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs bg-zinc-950/70 p-3 rounded-2xl border border-sky-500/20">
               <div>
-                <span className="font-bold text-rose-300 block">Prescripción de Volumen:</span>
-                <span className="text-zinc-300">Reducción del {deloadEval.prescription.setReductionPercent}% de series de trabajo (@ RIR {deloadEval.prescription.targetRIR}).</span>
+                <span className="font-bold text-sky-300 block">Volumen Aplicado:</span>
+                <span className="text-zinc-200">-{deloadState.volumeReductionPercent}% series (1–2 por ej.)</span>
               </div>
               <div>
-                <span className="font-bold text-rose-300 block">Estrategia de Carga:</span>
-                <span className="text-zinc-300">{deloadEval.prescription.intensityStrategy}</span>
+                <span className="font-bold text-sky-300 block">Pesos Reducidos:</span>
+                <span className="text-zinc-200">Al {Math.round(deloadState.loadFactor * 100)}% de tu carga habitual</span>
+              </div>
+              <div>
+                <span className="font-bold text-sky-300 block">Esfuerzo Objetivo:</span>
+                <span className="text-zinc-200">RIR {deloadState.targetRIR} (lejos del fallo)</span>
               </div>
             </div>
 
-            <div className="pt-1">
-              <span className="text-[11px] text-amber-300 font-semibold block">
-                Recomendación Biomecánica: {deloadEval.prescription.axialReliefAction}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+              <span className="text-[11px] text-amber-300/90 font-medium">
+                {deloadEval.prescription.axialReliefAction}
               </span>
+              <button
+                type="button"
+                onClick={() => {
+                  const ok = window.confirm(
+                    '¿Seguro que querés rechazar la semana de descarga bajo tu propio riesgo?\n\nVolverás a entrenar con tus cargas y series completas hoy. Tené en cuenta que entrenar con fatiga acumulada eleva el riesgo de estancamiento o lesión.'
+                  );
+                  if (ok) {
+                    setDeloadState(dismissAutonomousDeload(5));
+                  }
+                }}
+                className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-rose-950/60 border border-zinc-700 hover:border-rose-500/40 text-zinc-300 hover:text-rose-300 text-[11px] font-bold transition shrink-0"
+              >
+                Rechazar descarga (bajo mi propio riesgo)
+              </button>
             </div>
           </div>
         </div>
-      )}
+      ) : deloadEval.needsDeload ? (
+        <div className="p-4 rounded-3xl bg-amber-950/25 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start space-x-3">
+            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <span className="text-xs font-bold text-amber-200 block">
+                Descarga rechazada bajo tu propio riesgo (fatiga sistémica alta: {deloadEval.fatigueScore}/100)
+              </span>
+              <p className="text-[11px] text-amber-200/75">
+                Entrenás con pesos y series normales por tu decisión. Si sentís pesadez articular o caída de fuerza, podés reactivar la descarga cuando quieras.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setDeloadState(activateDeloadCycle(7, deloadEval.reason))}
+            className="px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-300 text-xs font-extrabold transition shrink-0 self-start sm:self-auto"
+          >
+            Reactivar Descarga
+          </button>
+        </div>
+      ) : null}
 
       {/* Weekly Calendar Tracker (Consciente del Inicio del Usuario) */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-4">
