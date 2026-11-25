@@ -4169,6 +4169,329 @@ export const EXERCISE_MEDIA_MAP: Record<string, ExerciseMediaGuide> = {
     "instructionsEs": [
       "Sujeta la banda a un punto de anclaje resistente a la altura de la cintura. Ponte de pie perpendicular al punto de anclaje con los pies separados a la altura de los hombros. Agarra la agarradera de la banda con ambas manos y aléjate del punto de anclaje para generar tensión en la banda. Lleva las manos hacia el pecho, manteniendo los codos flexionados y cerca del cuerpo. Activa el core y mantén una postura estable. Extiende los brazos rectos frente a ti, empujando la banda alejándola del cuerpo. Mantén la posición extendida durante unos segundos, enfocándote en mantener la tensión en el core. Lleva lentamente las manos de vuelta al pecho, resistiendo el tirón de la banda. Repite el número de repeticiones deseado."
     ]
+  },
+  "flexiones_clasicas": {
+    "internalId": "flexiones_clasicas",
+    "datasetId": "0662",
+    "matchedName": "push-up",
+    "targetMuscle": "pectorals",
+    "secondaryMuscles": [
+      "triceps",
+      "deltoids",
+      "core"
+    ],
+    "equipment": "body weight",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/0662-I4hDWkc.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/0662-I4hDWkc.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0662-I4hDWkc.gif",
+    "instructionsEs": [
+      "Comienza en una posición de plancha alta con las manos un poco más separadas que la anchura de los hombros y los pies juntos. Activa el core y baja el cuerpo hacia el suelo flexionando los codos, manteniendo el cuerpo en línea recta. Haz una pausa cuando el pecho esté justo por encima del suelo y luego empújate de vuelta a la posición inicial estirando los brazos. Repite el número de repeticiones deseado."
+    ]
+  },
+  "flexiones_declinadas": {
+    "internalId": "flexiones_declinadas",
+    "datasetId": "0279",
+    "matchedName": "decline push-up",
+    "targetMuscle": "pectorals",
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "equipment": "body weight",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/0279-i5cEhka.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/0279-i5cEhka.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0279-i5cEhka.gif",
+    "instructionsEs": [
+      "Coloca las manos en el suelo un poco más separadas que el ancho de los hombros, con los pies elevados sobre una superficie estable. Mantén el cuerpo en línea recta de la cabeza a los pies, activando los músculos del core. Baja el pecho hacia el suelo flexionando los codos, manteniéndolos cerca del cuerpo. Empuja con las palmas para extender los brazos y regresar a la posición inicial. Repite el número de repeticiones deseado."
+    ]
+  },
+  "flexiones_arqueras": {
+    "internalId": "flexiones_arqueras",
+    "datasetId": "3294",
+    "matchedName": "archer push up",
+    "targetMuscle": "pectorals",
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders",
+      "core"
+    ],
+    "equipment": "body weight",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/3294-A9qxk2F.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/3294-A9qxk2F.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3294-A9qxk2F.gif",
+    "instructionsEs": [
+      "Comienza en posición de flexión de brazos con las manos un poco más separadas que el ancho de los hombros. Extiende un brazo hacia el lado, paralelo al suelo. Baja el cuerpo flexionando los codos, manteniendo la espalda recta y el core activado. Empuja hacia arriba para volver a la posición inicial. Repite del otro lado, extendiendo el brazo opuesto hacia el lado. Continúa alternando lados durante el número de repeticiones deseado."
+    ]
+  },
+  "pike_pushups": {
+    "internalId": "pike_pushups",
+    "datasetId": "0471",
+    "matchedName": "handstand push-up",
+    "targetMuscle": "triceps",
+    "secondaryMuscles": [
+      "shoulders",
+      "chest",
+      "core"
+    ],
+    "equipment": "body weight",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/0471-rQxwMxO.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/0471-rQxwMxO.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0471-rQxwMxO.gif",
+    "instructionsEs": [
+      "Busca una pared y colócate de espaldas a ella, de pie a unos pasos de distancia. Coloca las manos en el suelo separadas a la altura de los hombros y lanza los pies hacia la pared, llegando a una posición de pino. Dobla los codos y baja la cabeza hacia el suelo, manteniendo el cuerpo en línea recta. Empuja con las manos y extiende los brazos para volver a la posición inicial. Repite el número de repeticiones deseado."
+    ]
+  },
+  "elevaciones_laterales_casa": {
+    "internalId": "elevaciones_laterales_casa",
+    "datasetId": "0334",
+    "matchedName": "dumbbell lateral raise",
+    "targetMuscle": "delts",
+    "secondaryMuscles": [
+      "traps"
+    ],
+    "equipment": "dumbbell",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/0334-DsgkuIt.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/0334-DsgkuIt.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0334-DsgkuIt.gif",
+    "instructionsEs": [
+      "Ponte de pie con los pies separados a la altura de los hombros y sostén una mancuerna en cada mano, con las palmas hacia el cuerpo. Mantén la espalda recta y activa el core. Levanta los brazos hacia los lados hasta que queden paralelos al suelo, manteniendo una ligera flexión en los codos. Haz una pausa por un momento en la parte superior, luego baja lentamente los brazos de vuelta a la posición inicial. Repite el número de repeticiones deseado."
+    ]
+  },
+  "pajaros_casa_botellas": {
+    "internalId": "pajaros_casa_botellas",
+    "datasetId": "0378",
+    "matchedName": "dumbbell rear fly",
+    "targetMuscle": "delts",
+    "secondaryMuscles": [
+      "trapezius",
+      "rhomboids"
+    ],
+    "equipment": "dumbbell",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/0378-8DiFDVA.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/0378-8DiFDVA.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0378-8DiFDVA.gif",
+    "instructionsEs": [
+      "Ponte de pie con los pies separados a la altura de los hombros y sostén una mancuerna en cada mano. Flexiona ligeramente las rodillas e inclínate hacia adelante desde las caderas, manteniendo la espalda recta. Extiende los brazos rectos hacia el suelo, con las palmas mirándose entre sí. Manteniendo una ligera flexión en los codos, levanta los brazos hacia los lados y aprieta los omóplatos entre sí. Haz una pausa por un momento en la parte superior, luego baja lentamente los brazos de vuelta a la posición inicial. Repite el número de repeticiones deseado."
+    ]
+  },
+  "remo_invertido_casa": {
+    "internalId": "remo_invertido_casa",
+    "datasetId": "0499",
+    "matchedName": "inverted row",
+    "targetMuscle": "upper back",
+    "secondaryMuscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/0499-bZGHsAZ.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/0499-bZGHsAZ.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0499-bZGHsAZ.gif",
+    "instructionsEs": [
+      "Coloca una barra a la altura de la cintura o usa un entrenador de suspensión. Ponte de pie frente a la barra o al entrenador de suspensión, con los pies separados a la altura de los hombros. Agarra la barra o las asas con agarre prono, ligeramente más ancho que la altura de los hombros. Inclínate hacia atrás, manteniendo el cuerpo recto y los talones en el suelo. Tira del pecho hacia la barra o las asas, apretando los omóplatos entre sí. Haz una pausa breve en la parte más alta, luego baja lentamente de vuelta a la posición inicial. Repite el número de repeticiones deseado."
+    ]
+  },
+  "pulldown_toalla_casa": {
+    "internalId": "pulldown_toalla_casa",
+    "datasetId": "3167",
+    "matchedName": "bodyweight squatting row (with towel)",
+    "targetMuscle": "upper back",
+    "secondaryMuscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "equipment": "body weight",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/3167-BReCuOn.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/3167-BReCuOn.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3167-BReCuOn.gif",
+    "instructionsEs": [
+      "Ponte de pie con los pies separados a la altura de los hombros, sujetando una toalla frente a ti con las palmas hacia abajo. Flexiona las rodillas y baja el cuerpo hacia una posición de sentadilla, manteniendo la espalda recta y el pecho elevado. Mientras bajas a la sentadilla, tira simultáneamente de la toalla hacia el pecho, juntando los omóplatos. Haz una pausa breve en la parte más baja de la sentadilla, luego vuelve lentamente a la posición inicial mientras extiendes los brazos. Repite el número de repeticiones deseado."
+    ]
+  },
+  "curl_biceps_mochila": {
+    "internalId": "curl_biceps_mochila",
+    "datasetId": "0294",
+    "matchedName": "dumbbell biceps curl",
+    "targetMuscle": "biceps",
+    "secondaryMuscles": [
+      "forearms"
+    ],
+    "equipment": "dumbbell",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/0294-NbVPDMW.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/0294-NbVPDMW.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0294-NbVPDMW.gif",
+    "instructionsEs": [
+      "Ponte de pie con una mancuerna en cada mano, con las palmas hacia adelante y los brazos completamente extendidos. Manteniendo los brazos superiores fijos, exhala y levanta el peso mientras contraes los bíceps. Continúa levantando las pesas hasta que los bíceps estén completamente contraídos y las mancuernas estén a la altura de los hombros. Mantén la posición contraída durante una breve pausa mientras aprietas los bíceps. Inhala y comienza a bajar lentamente las mancuernas de vuelta a la posición inicial. Repite el número de repeticiones deseado."
+    ]
+  },
+  "curl_martillo_mochila": {
+    "internalId": "curl_martillo_mochila",
+    "datasetId": "0313",
+    "matchedName": "dumbbell hammer curl",
+    "targetMuscle": "biceps",
+    "secondaryMuscles": [
+      "forearms"
+    ],
+    "equipment": "dumbbell",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/0313-slDvUAU.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/0313-slDvUAU.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0313-slDvUAU.gif",
+    "instructionsEs": [
+      "Ponte de pie con una mancuerna en cada mano, con las palmas mirando hacia el torso. Mantén los codos cerca del torso y gira las palmas de las manos hasta que queden mirando hacia adelante. Esta será tu posición inicial. Ahora, manteniendo los brazos superiores quietos, exhala y flexiona los brazos contrayendo los bíceps. Continúa levantando las pesas hasta que los bíceps estén completamente contraídos y las mancuernas estén a la altura de los hombros. Mantén la posición contraída durante una breve pausa mientras aprietas los bíceps. Luego, inhala y comienza a bajar lentamente las mancuernas de vuelta a la posición inicial. Repite el número de repeticiones recomendado."
+    ]
+  },
+  "flexiones_diamante": {
+    "internalId": "flexiones_diamante",
+    "datasetId": "0283",
+    "matchedName": "diamond push-up",
+    "targetMuscle": "triceps",
+    "secondaryMuscles": [
+      "chest",
+      "shoulders"
+    ],
+    "equipment": "body weight",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/0283-soIB2rj.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/0283-soIB2rj.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0283-soIB2rj.gif",
+    "instructionsEs": [
+      "Comienza en posición de plancha alta con las manos juntas, formando una figura de diamante con los pulgares y los índices. Mantén el cuerpo en línea recta de la cabeza a los pies, activando el core y los glúteos. Baja el pecho hacia la figura de diamante formada por tus manos, manteniendo los codos cerca del cuerpo. Haz una pausa por un momento en la parte inferior, luego empuja tu cuerpo de vuelta a la posición inicial. Repite el número de repeticiones deseado."
+    ]
+  },
+  "extension_triceps_suelo_casa": {
+    "internalId": "extension_triceps_suelo_casa",
+    "datasetId": "1771",
+    "matchedName": "bodyweight kneeling triceps extension",
+    "targetMuscle": "triceps",
+    "secondaryMuscles": [
+      "shoulders",
+      "chest"
+    ],
+    "equipment": "body weight",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/1771-s0HKO2I.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/1771-s0HKO2I.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1771-s0HKO2I.gif",
+    "instructionsEs": [
+      "Ponte de rodillas en el suelo con las rodillas separadas a la altura de las caderas. Coloca las manos en el suelo frente a ti, separadas a la altura de los hombros, con los dedos apuntando hacia adelante. Extiende las piernas rectas detrás de ti, equilibrándote sobre las puntas de los pies y las manos, formando una línea recta desde la cabeza hasta los talones. Flexiona los codos y baja la parte superior del cuerpo hacia el suelo, manteniendo los codos cerca del cuerpo. Haz una pausa breve en la posición más baja, luego empuja con las manos para extender los brazos y volver a la posición inicial. Repite el número de repeticiones deseado."
+    ]
+  },
+  "sentadilla_peso_corporal": {
+    "internalId": "sentadilla_peso_corporal",
+    "datasetId": "3119",
+    "matchedName": "potty squat",
+    "targetMuscle": "abs",
+    "secondaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "equipment": "body weight",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/3119-75Bgtjy.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/3119-75Bgtjy.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3119-75Bgtjy.gif",
+    "instructionsEs": [
+      "Ponte de pie con los pies separados a la altura de los hombros, los dedos de los pies ligeramente hacia afuera. Baja el cuerpo flexionando las rodillas y empujando las caderas hacia atrás como si te sentaras en una silla. Mantén el pecho hacia arriba y la espalda recta durante todo el movimiento. Baja hasta que los muslos queden paralelos al suelo o hasta donde puedas llegar cómodamente. Haz una pausa por un momento en la parte inferior, luego empuja con los talones para regresar a la posición inicial. Repite el número de repeticiones deseado."
+    ]
+  },
+  "sentadilla_sissy_casa": {
+    "internalId": "sentadilla_sissy_casa",
+    "datasetId": "1489",
+    "matchedName": "sissy squat",
+    "targetMuscle": "quads",
+    "secondaryMuscles": [
+      "calves",
+      "glutes"
+    ],
+    "equipment": "body weight",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/1489-xdYPUtE.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/1489-xdYPUtE.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1489-xdYPUtE.gif",
+    "instructionsEs": [
+      "Ponte de pie con los pies separados a la altura de los hombros y los dedos de los pies ligeramente hacia afuera. Sujétate de un objeto estable para mantener el equilibrio si es necesario. Baja lentamente el cuerpo doblando las rodillas e inclinándote hacia atrás, manteniendo el torso erguido. Continúa bajando hasta que los muslos queden paralelos al suelo o tan lejos como puedas llegar cómodamente. Haz una pausa breve y luego empuja con los talones para volver a la posición inicial. Repite el número de repeticiones deseado."
+    ]
+  },
+  "rdl_unilateral_corporal": {
+    "internalId": "rdl_unilateral_corporal",
+    "datasetId": "1757",
+    "matchedName": "dumbbell single leg deadlift",
+    "targetMuscle": "glutes",
+    "secondaryMuscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "dumbbell",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/1757-gKozT8X.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/1757-gKozT8X.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1757-gKozT8X.gif",
+    "instructionsEs": [
+      "Ponte de pie con los pies separados a la altura de las caderas, sujetando una mancuerna con la mano derecha. Traslada tu peso a la pierna izquierda y levanta el pie derecho ligeramente del suelo. Manteniendo la espalda recta, inclínate hacia adelante desde las caderas y baja la mancuerna hacia el suelo. Al mismo tiempo, extiende la pierna derecha recta hacia atrás, manteniendo una ligera flexión en la rodilla izquierda. Baja la mancuerna hasta que tu torso y tu pierna derecha queden paralelos al suelo. Haz una pausa por un momento, luego activa los glúteos y los isquiotibiales para volver a la posición inicial. Repite el número de repeticiones deseado, luego cambia de lado."
+    ]
+  },
+  "gemelos_escalon_corporal": {
+    "internalId": "gemelos_escalon_corporal",
+    "datasetId": "1490",
+    "matchedName": "standing calf raise (on a staircase)",
+    "targetMuscle": "calves",
+    "secondaryMuscles": [
+      "ankles",
+      "feet"
+    ],
+    "equipment": "body weight",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/1490-6HmFgmx.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/1490-6HmFgmx.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1490-6HmFgmx.gif",
+    "instructionsEs": [
+      "Ponte de pie en el borde de un escalón o una plataforma firme, con los talones colgando y la punta de los pies sobre el escalón. Sujétate de una baranda o pared para mantener el equilibrio si es necesario. Levanta lentamente los talones lo más alto posible, elevando el peso de tu cuerpo sobre la punta de los pies. Haz una pausa breve en la parte alta y luego baja lentamente los talones de vuelta a la posición inicial. Repite el número de repeticiones deseado."
+    ]
+  },
+  "press_frances_barra_ez": {
+    "internalId": "press_frances_barra_ez",
+    "datasetId": "0060",
+    "matchedName": "barbell lying triceps extension skull crusher",
+    "targetMuscle": "triceps",
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "equipment": "barbell",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/0060-h8LFzo9.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/0060-h8LFzo9.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0060-h8LFzo9.gif",
+    "instructionsEs": [
+      "Túmbate boca arriba en un banco con los pies planos sobre el suelo y la cabeza en el extremo del banco. Sujeta una barra con un agarre pronado, manos separadas a la altura de los hombros, y extiende los brazos rectos por encima del pecho. Manteniendo los brazos superiores fijos, baja lentamente la barra hacia la frente flexionando los codos. Haz una pausa breve cuando la barra esté justo encima de la frente y luego extiende los brazos de vuelta a la posición inicial. Repite el número de repeticiones deseado."
+    ]
+  },
+  "elevaciones_laterales_poleas": {
+    "internalId": "elevaciones_laterales_poleas",
+    "datasetId": "0178",
+    "matchedName": "cable lateral raise",
+    "targetMuscle": "delts",
+    "secondaryMuscles": [
+      "traps",
+      "triceps"
+    ],
+    "equipment": "cable",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/0178-goJ6ezq.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/0178-goJ6ezq.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0178-goJ6ezq.gif",
+    "instructionsEs": [
+      "Ponte de pie con los pies separados a la altura de los hombros y sujeta las agarraderas del cable con un agarre prono. Mantén los brazos rectos y el core activado. Levanta los brazos hacia los lados hasta que queden paralelos al suelo. Haz una pausa por un momento en la parte superior, luego baja lentamente los brazos de vuelta a la posición inicial. Repite el número de repeticiones deseado."
+    ]
+  },
+  "sentadilla_bulgara_mancuernas": {
+    "internalId": "sentadilla_bulgara_mancuernas",
+    "datasetId": "0410",
+    "matchedName": "dumbbell single leg split squat",
+    "targetMuscle": "quads",
+    "secondaryMuscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell",
+    "previewUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/0410-qx4fgX7.jpg",
+    "videoUrl": "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/videos/0410-qx4fgX7.gif",
+    "rawVideoUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0410-qx4fgX7.gif",
+    "instructionsEs": [
+      "Ponte de pie con los pies separados a la altura de los hombros, sujetando una mancuerna en cada mano. Da un paso hacia adelante con un pie y coloca los pies de modo que el pie delantero quede plano en el suelo y el pie trasero quede elevado sobre un banco o escalón. Baja el cuerpo flexionando la rodilla y la cadera delanteras, manteniendo la rodilla trasera ligeramente flexionada y el talón trasero levantado del suelo. Continúa bajando hasta que el muslo delantero quede paralelo al suelo, luego empuja con el talón delantero para volver a la posición inicial. Repite el número de repeticiones deseado y luego cambia de pierna y repite."
+    ]
   }
 };
 
