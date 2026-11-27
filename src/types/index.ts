@@ -258,6 +258,7 @@ export type AppTab =
   | 'routines' 
   | 'active-workout' 
   | 'progress' 
+  | 'physique'
   | 'ai-wizard' 
   | 'equipment' 
   | 'guide';
@@ -384,3 +385,153 @@ export interface FatiguePredictionResult {
   recoveryPercent: number;
   basisExplanation: string;
 }
+
+// ==================== SISTEMA DE RANGOS DE FUERZA & SIMETRÍA ====================
+
+export type RankTierId =
+  | 'unranked'
+  | 'iron'
+  | 'bronze'
+  | 'silver'
+  | 'gold'
+  | 'ruby'
+  | 'emerald'
+  | 'diamond'
+  | 'champion'
+  | 'symmetric';
+
+export type RankDivision = 'I' | 'II' | 'III' | null;
+
+export interface RankTierVisualSpec {
+  id: RankTierId;
+  label: string;
+  shortLabel: string;
+  colorHex: string;
+  glowHex: string;
+  bgClass: string;
+  textClass: string;
+  borderClass: string;
+  minScore: number; // 0 a 1000
+}
+
+export interface ExerciseRankEvaluation {
+  exerciseId: string;
+  exerciseName: string;
+  muscle: MuscleGroup;
+  tier: RankTierId;
+  division: RankDivision;
+  fullLabel: string;        // ej: "Oro II" o "Simétrico"
+  score: number;            // 0 - 1000
+  peak1RMKg: number;
+  relativeStrengthRatio: number; // e1RM equivalente ancla / peso corporal
+  progressToNextPct: number; // 0 - 100%
+  nextRankLabel: string | null;
+  kgToNextRank: number | null;
+  unitLabel: string;
+}
+
+export interface MuscleRankEvaluation {
+  muscle: MuscleGroup;
+  muscleLabel: string;
+  tier: RankTierId;
+  division: RankDivision;
+  fullLabel: string;
+  score: number;            // 0 - 1000
+  bestExerciseId?: string;
+  bestExerciseName?: string;
+  peak1RMKg: number;
+  progressToNextPct: number;
+  nextRankLabel: string | null;
+  kgToNextRank: number | null;
+  weeklySetsCompleted: number;
+  weeklySetsTarget: number;
+  hoursSinceLastTrained: number | null;
+  isSynergistOnly?: boolean;
+}
+
+export interface SymmetryGlobalReport {
+  overallTier: RankTierId;
+  overallDivision: RankDivision;
+  overallLabel: string;
+  overallScore: number;     // 0 - 1000
+  symmetryIndex: number;    // 0 - 100%
+  symmetryVerdict: string;
+  muscleRanks: Record<MuscleGroup, MuscleRankEvaluation>;
+  exerciseRanks: Record<string, ExerciseRankEvaluation>;
+  dominantMuscles: MuscleRankEvaluation[];
+  laggingMuscles: MuscleRankEvaluation[];
+  unrankedMuscles: MuscleGroup[];
+}
+
+// ==================== RÉCORDS PERSONALES (PRs) EN VIVO ====================
+
+export type PRType = 'E1RM_PR' | 'WEIGHT_PR' | 'REPS_AT_WEIGHT_PR' | 'RANK_UP';
+
+export interface PersonalRecordEvent {
+  id: string;
+  type: PRType;
+  exerciseId: string;
+  exerciseName: string;
+  muscle: MuscleGroup;
+  headline: string;          // ej: "Nuevo Récord de Fuerza (1RM)"
+  detailLabel: string;       // ej: "105 kg (+3.5 kg vs récord previo)"
+  previousBestLabel?: string;
+  newRankTier?: RankTierId;
+  newRankLabel?: string;
+}
+
+// ==================== EVOLUCIÓN CORPORAL, MEDIDAS, FOTOS & ESCANEO IA ====================
+
+export type AthleteSex = 'masculino' | 'femenino';
+
+export interface AthleteBodyProfile {
+  sex: AthleteSex;
+  bodyweightKg: number;
+  heightCm: number;
+  updatedAt: string;
+}
+
+export interface BodyMeasurementEntry {
+  id: string;
+  date: string;
+  dateKey: string;
+  bodyweightKg: number;
+  bodyFatPct?: number;
+  shouldersCm?: number;
+  chestCm?: number;
+  waistCm?: number;
+  hipsCm?: number;
+  armCm?: number;
+  thighCm?: number;
+  calfCm?: number;
+  neckCm?: number;
+  notes?: string;
+}
+
+export type PhotoPoseType = 'front_relaxed' | 'front_double_biceps' | 'back_lat_spread' | 'side_profile';
+
+export interface ProgressPhotoEntry {
+  id: string;
+  date: string;
+  dateKey: string;
+  pose: PhotoPoseType;
+  imageDataUrl: string;
+  bodyweightKg?: number;
+  bodyFatPct?: number;
+  notes?: string;
+}
+
+export interface AIBodyScanReport {
+  id: string;
+  date: string;
+  source: 'gemini-vision' | 'anthropometric';
+  symmetryScore: number; // 0 - 100
+  estimatedBodyFatRange: string;
+  physiqueArchetype: string;
+  goldenRatioScore?: number; // Ratio Hombro/Cintura o Cintura/Cadera
+  strongMuscles: MuscleGroup[];
+  laggingMuscles: MuscleGroup[];
+  visualObservations: string[];
+  actionablePlan: string;
+}
+

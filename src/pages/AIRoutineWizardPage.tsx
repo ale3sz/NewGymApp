@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   ArrowRight,
@@ -27,7 +27,12 @@ import {
   modifyAIRoutine,
   GeneratedAIRoutineResult
 } from '../engine/aiRoutineGenerator';
-import { getRoutines, saveRoutines, setActiveRoutineId } from '../storage/storage';
+import {
+  getRoutines,
+  saveRoutines,
+  setActiveRoutineId,
+  consumePendingWizardWeakPoints,
+} from '../storage/storage';
 import { AppTab, MuscleGroup } from '../types';
 import { aiCoachImg } from '../constants/brandAssets';
 
@@ -65,6 +70,20 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
   const [customPrompt, setCustomPrompt] = useState<string>('');
   const [isModifying, setIsModifying] = useState<boolean>(false);
   const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>({});
+  const [scanPrefilledNotice, setScanPrefilledNotice] = useState<boolean>(false);
+
+  useEffect(() => {
+    const pending = consumePendingWizardWeakPoints();
+    if (pending && pending.weakMuscles && pending.weakMuscles.length > 0) {
+      if (pending.sex) {
+        setBiologicalProfile(pending.sex);
+      }
+      setWeakPointMuscles(pending.weakMuscles.slice(0, 2));
+      setGoal('hipertrofia');
+      setStep(4);
+      setScanPrefilledNotice(true);
+    }
+  }, []);
 
   // Quick Archetype Presets for 1-click setup
   const applyArchetypePreset = (presetId: string) => {
@@ -635,6 +654,13 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
       {/* Step 4: Muscle Focus, Volume Distribution & Limitations */}
       {step === 4 && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl space-y-6">
+          {scanPrefilledNotice && (
+            <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/35 text-xs text-emerald-200 flex items-center justify-between gap-2">
+              <span>
+                <strong>¡Puntos débiles importados desde Simetría / Scan IA!</strong> Revisa tu estrategia abajo y pulsa Generar Rutina.
+              </span>
+            </div>
+          )}
           <div className="space-y-1">
             <h2 className="text-lg font-bold text-white">Paso 4: Estrategia de Volumen, Prioridad & Cuidado Articular</h2>
             <p className="text-xs text-zinc-400">

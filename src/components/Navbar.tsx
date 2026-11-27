@@ -15,7 +15,8 @@ import {
   HardDrive,
   Settings,
   ArrowLeft,
-  X
+  X,
+  Camera
 } from 'lucide-react';
 import { AppTab } from '../types';
 import { exportBackupData, importBackupData, resetAllData } from '../storage/storage';
@@ -120,7 +121,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'dashboard' as AppTab, label: 'Inicio', icon: Flame },
     { id: 'active-workout' as AppTab, label: 'Entrenar', icon: Play, badge: activeWorkoutDayName },
     { id: 'routines' as AppTab, label: 'Rutinas', icon: Dumbbell },
-    { id: 'progress' as AppTab, label: 'Progreso', icon: TrendingUp },
+    { id: 'progress' as AppTab, label: 'Simetría & Progreso', icon: TrendingUp },
+    { id: 'physique' as AppTab, label: 'Físico & Scan', icon: Camera },
     { id: 'ai-wizard' as AppTab, label: 'IA Coach', icon: Sparkles, highlight: true },
     { id: 'equipment' as AppTab, label: 'Equipamiento', icon: Sliders },
     { id: 'guide' as AppTab, label: 'Ciencia', icon: BookOpen },
@@ -267,6 +269,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                     Herramientas y Ciencia
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onSelectTab('physique');
+                    }}
+                    className={`w-full flex items-center space-x-2.5 px-3 py-2.5 text-xs font-semibold transition text-left ${
+                      currentTab === 'physique'
+                        ? 'bg-red-500/15 text-red-400'
+                        : 'text-zinc-200 hover:bg-zinc-900'
+                    }`}
+                  >
+                    <Camera className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>Evolución Corporal & AI Scan</span>
+                  </button>
                   <button
                     type="button"
                     onClick={() => {

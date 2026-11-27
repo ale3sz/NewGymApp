@@ -23,9 +23,12 @@ import {
   Home,
   ChevronDown,
   ChevronUp,
-  X
+  X,
+  Trophy,
+  Camera
 } from 'lucide-react';
 import { Routine, CompletedDayLog, ScheduleRecommendation, AppTab, WorkoutDay, DeloadState } from '../types';
+import { computeSymmetryGlobalReport, RANK_TIER_SPECS } from '../engine/symmetryRankEngine';
 import { getCurrentWeekDays } from '../engine/smartScheduleEngine';
 import {
   evaluateSystemicFatigue,
@@ -83,6 +86,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const weeklyAnalysis: WeeklyCycleAnalysis = useMemo(() => {
     return analyzeWeeklyTrainingState(activeRoutine, completedLogs);
   }, [activeRoutine, completedLogs]);
+
+  const symmetryOverview = useMemo(
+    () => computeSymmetryGlobalReport(allWorkoutLogs),
+    [allWorkoutLogs]
+  );
+  const overallRankSpec = RANK_TIER_SPECS[symmetryOverview.overallTier];
 
   // Calculate streak (consecutive days or active weeks)
   const totalWorkouts = completedLogs.length;
@@ -191,6 +200,55 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       )}
 
       {/* 2. Barra Compacta de Estado: Sesiones + Monitor Fisiológico desplegable */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center space-x-3.5">
+          <div
+            className={`w-12 h-12 rounded-2xl border flex flex-col items-center justify-center shrink-0 ${overallRankSpec.bgClass} ${overallRankSpec.borderClass}`}
+          >
+            <Trophy className="w-5 h-5" style={{ color: overallRankSpec.colorHex }} />
+            <span
+              className="text-[9px] font-black uppercase mt-0.5"
+              style={{ color: overallRankSpec.colorHex }}
+            >
+              {overallRankSpec.shortLabel}
+            </span>
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-black text-white">
+                Liga: <span style={{ color: overallRankSpec.colorHex }}>{symmetryOverview.overallLabel}</span>
+              </span>
+              <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-full">
+                Simetría {symmetryOverview.symmetryIndex > 0 ? `${symmetryOverview.symmetryIndex}%` : '—'}
+              </span>
+            </div>
+            <p className="text-xs text-zinc-400 mt-0.5 line-clamp-1">
+              {symmetryOverview.symmetryVerdict}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => onNavigate('progress')}
+            className="px-3.5 py-2 rounded-xl bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 text-xs font-bold text-zinc-200 flex items-center space-x-1.5 transition"
+          >
+            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Mapa Corporal</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('physique')}
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-red-600/20 to-rose-600/20 hover:from-red-600/30 hover:to-rose-600/30 border border-red-500/40 text-xs font-black text-red-200 flex items-center space-x-1.5 transition"
+          >
+            <Camera className="w-3.5 h-3.5 text-red-400" />
+            <span>AI Body Scan & Fotos</span>
+          </button>
+        </div>
+      </div>
+
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl">
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center space-x-3 sm:space-x-4">

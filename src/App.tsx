@@ -20,6 +20,7 @@ import { ActiveWorkoutPage } from './pages/ActiveWorkoutPage';
 // Code-splitting diferido de páginas no críticas al inicio
 const RoutinesPage = React.lazy(() => import('./pages/RoutinesPage').then(m => ({ default: m.RoutinesPage })));
 const ProgressPage = React.lazy(() => import('./pages/ProgressPage').then(m => ({ default: m.ProgressPage })));
+const BodyEvolutionPage = React.lazy(() => import('./pages/BodyEvolutionPage').then(m => ({ default: m.BodyEvolutionPage })));
 const AIRoutineWizardPage = React.lazy(() => import('./pages/AIRoutineWizardPage').then(m => ({ default: m.AIRoutineWizardPage })));
 const EquipmentPage = React.lazy(() => import('./pages/EquipmentPage').then(m => ({ default: m.EquipmentPage })));
 
@@ -32,7 +33,7 @@ export const App: React.FC = () => {
 
     // 2. Hash explícito en la URL
     const hash = window.location.hash.replace('#', '') as AppTab;
-    const validTabs: AppTab[] = ['dashboard', 'routines', 'active-workout', 'progress', 'ai-wizard', 'equipment'];
+    const validTabs: AppTab[] = ['dashboard', 'routines', 'active-workout', 'progress', 'physique', 'ai-wizard', 'equipment'];
     if (validTabs.includes(hash)) {
       return hash;
     }
@@ -78,7 +79,7 @@ export const App: React.FC = () => {
     refreshData();
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '') as AppTab;
-      const validTabs: AppTab[] = ['dashboard', 'routines', 'active-workout', 'progress', 'ai-wizard', 'equipment'];
+      const validTabs: AppTab[] = ['dashboard', 'routines', 'active-workout', 'progress', 'physique', 'ai-wizard', 'equipment'];
       if (validTabs.includes(hash)) {
         setCurrentTab(hash);
       }
@@ -224,6 +225,12 @@ export const App: React.FC = () => {
 
           {currentTab === 'progress' && (
             <ProgressPage
+              onNavigate={handleSelectTab}
+            />
+          )}
+
+          {currentTab === 'physique' && (
+            <BodyEvolutionPage
               onNavigate={handleSelectTab}
             />
           )}

@@ -17,14 +17,20 @@ import {
   Microscope,
   Dna,
   Info,
-  Target
+  Target,
+  Camera
 } from 'lucide-react';
 import { useMuscleStats } from '../hooks/useMuscleStats';
 import {
   getAllWorkoutLogs,
   getCompletedDaysLogs,
   getRoutines,
+  getAthleteProfile,
+  saveAthleteProfile,
+  setPendingWizardWeakPoints,
 } from '../storage/storage';
+import { computeSymmetryGlobalReport, RANK_TIER_SPECS } from '../engine/symmetryRankEngine';
+import { InteractiveBodyMap } from '../components/InteractiveBodyMap';
 import { EXERCISE_CATALOG } from '../data/exerciseCatalog';
 import { analyzeExerciseStagnation } from '../engine/stagnationEngine';
 import { inferBiomechanicalProfile } from '../engine/biomechanicsEngine';
@@ -39,7 +45,7 @@ import {
   getAnatomicalActivation,
   evaluateRegionalMuscleBalance,
 } from '../engine/anatomicalEngine';
-import { AppTab, MuscleGroup, AnatomicalSubMuscle, MuscleDetailMode } from '../types';
+import { AppTab, MuscleGroup, AnatomicalSubMuscle, MuscleDetailMode, AthleteBodyProfile } from '../types';
 
 interface ProgressPageProps {
   onNavigate: (tab: AppTab) => void;
@@ -289,6 +295,11 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
   const completedDays = useMemo(() => getCompletedDaysLogs(), []);
   const rawLogs = useMemo(() => getAllWorkoutLogs(), []);
   const allRoutines = useMemo(() => getRoutines(), []);
+  const [athleteProfile, setAthleteProfile] = useState<AthleteBodyProfile>(() => getAthleteProfile());
+  const symmetryReport = useMemo(
+    () => computeSymmetryGlobalReport(rawLogs, athleteProfile),
+    [rawLogs, athleteProfile]
+  );
   const { parentStats: muscleOverviewStats, subMuscleStats: subMuscleOverviewStats, weeklyDeficits } = useMuscleStats(rawLogs);
 
   const resolveExerciseInfo = (exerciseId: string) => {
@@ -817,13 +828,25 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
     <div className="space-y-4 sm:space-y-6 pb-20">
       {/* Header & Compact 3-Column KPIs (también en móvil) */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl space-y-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-            Progreso & Análisis
-          </h1>
-          <p className="text-xs text-zinc-400 mt-0.5 hidden sm:block">
-            Curva global de rendimiento, análisis músculo por músculo, radar de mesetas y predictor biomecánico IA.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              Simetría, Rangos & Progreso
+            </h1>
+            <p className="text-xs text-zinc-400 mt-0.5 hidden sm:block">
+              Mapa anatómico de rangos de fuerza relativa, balance muscular, radar de mesetas y predictor biomecánico IA.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('physique')}
+            className="inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-red-600/20 to-rose-600/20 hover:from-red-600/30 hover:to-rose-600/30 border border-red-500/40 text-red-200 text-xs font-black transition self-start sm:self-auto shrink-0"
+          >
+            <Camera className="w-4 h-4 text-red-400" />
+            <span>AI Body Scan, Peso & Fotos</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -886,9 +909,28 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* ==================== TAB 1: RESUMEN (DÉFICITS + GRÁFICO GENERAL) ==================== */}
+      {/* ==================== TAB 1: RESUMEN (MAPA CORPORAL + RANGOS + DÉFICITS + GRÁFICO GENERAL) ==================== */}
       {activeSection === 'overview' && (
         <>
+          <InteractiveBodyMap
+            report={symmetryReport}
+            profile={athleteProfile}
+            selectedMuscle={selectedMuscle}
+            onSelectMuscle={(muscle) => {
+              setSelectedMuscle(muscle);
+            }}
+            onUpdateProfile={(updates) => {
+              const saved = saveAthleteProfile(updates);
+              setAthleteProfile(saved);
+            }}
+            onNavigateToWizardWithWeakPoints={(weakMuscles) => {
+              setPendingWizardWeakPoints({
+                sex: athleteProfile.sex,
+                weakMuscles,
+              });
+              onNavigate('ai-wizard');
+            }}
+          />
       {/* ==================== NUEVO: OBJETIVO SEMANAL & DÉFICITS ACCIONABLES ==================== */}
       {weeklyDeficits && weeklyDeficits.length > 0 && (
         <div className="bg-gradient-to-br from-red-950/40 via-zinc-900 to-zinc-900 border border-red-500/30 rounded-3xl p-5 sm:p-6 shadow-xl">
@@ -1335,15 +1377,25 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
               Ejercicios Registrados en {MUSCLE_LIST.find((m) => m.id === selectedMuscle)?.label}
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {selectedMuscleData.loggedExercises.map((ex) => (
+              {selectedMuscleData.loggedExercises.map((ex) => {
+                const exRank = symmetryReport.exerciseRanks[ex.id];
+                const rankSpec = exRank ? RANK_TIER_SPECS[exRank.tier] : null;
+                return (
                 <div
                   key={ex.id}
                   onClick={() => setSelectedExerciseId(ex.id)}
                   className="p-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 hover:border-emerald-500/40 cursor-pointer transition flex items-center justify-between"
                 >
                   <div>
-                    <div className="flex items-center space-x-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       <span className="text-xs font-bold text-white">{ex.name}</span>
+                      {exRank && rankSpec && exRank.tier !== 'unranked' && (
+                        <span
+                          className={`text-[9px] px-1.5 py-0.5 rounded font-black border ${rankSpec.bgClass} ${rankSpec.textClass} ${rankSpec.borderClass}`}
+                        >
+                          {exRank.fullLabel}
+                        </span>
+                      )}
                       {ex.isSecondary && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold">
                           Sinergista
@@ -1361,7 +1413,8 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
                     <div className="text-[10px] text-zinc-500 font-mono">1RM Pico</div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

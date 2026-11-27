@@ -7,7 +7,12 @@ import {
   GymEquipmentProfile,
   CatalogExercise,
   UserFatigueProfile,
-  DeloadState
+  DeloadState,
+  AthleteBodyProfile,
+  BodyMeasurementEntry,
+  ProgressPhotoEntry,
+  AIBodyScanReport,
+  MuscleGroup
 } from '../types';
 import { INITIAL_PRESET_ROUTINES, MI_RUTINA_PPL_OPTIMIZADA } from '../data/routines';
 import { DEFAULT_EQUIPMENT } from '../constants/equipment';
@@ -356,11 +361,15 @@ export interface FullBackupPayload {
   equipment: GymEquipmentProfile;
   customCatalog: CatalogExercise[];
   exerciseWeightSteps?: Record<string, number>;
+  athleteProfile?: AthleteBodyProfile;
+  bodyMeasurements?: BodyMeasurementEntry[];
+  progressPhotos?: ProgressPhotoEntry[];
+  aiBodyScans?: AIBodyScanReport[];
 }
 
 export function exportBackupData(): string {
   const payload: FullBackupPayload = {
-    version: '2.0.0',
+    version: '2.1.0',
     schemaVersion: CURRENT_SCHEMA_VERSION,
     timestamp: new Date().toISOString(),
     routines: getRoutines(),
@@ -370,6 +379,10 @@ export function exportBackupData(): string {
     equipment: getEquipmentProfile(),
     customCatalog: getCustomCatalog(),
     exerciseWeightSteps: getAllExerciseCustomWeightSteps(),
+    athleteProfile: getAthleteProfile(),
+    bodyMeasurements: getBodyMeasurements(),
+    progressPhotos: getProgressPhotos(),
+    aiBodyScans: getAIBodyScans(),
   };
   return JSON.stringify(payload, null, 2);
 }
@@ -384,6 +397,10 @@ export function importBackupData(jsonString: string): boolean {
     if (data.equipment) saveEquipmentProfile(data.equipment);
     if (data.customCatalog) safeSetItem(CUSTOM_CATALOG_KEY, JSON.stringify(data.customCatalog));
     if (data.exerciseWeightSteps) safeSetItem(EXERCISE_STEP_PREFERENCES_KEY, JSON.stringify(data.exerciseWeightSteps));
+    if (data.athleteProfile) saveAthleteProfile(data.athleteProfile);
+    if (data.bodyMeasurements) safeSetItem(BODY_MEASUREMENTS_KEY, JSON.stringify(data.bodyMeasurements));
+    if (data.progressPhotos) safeSetItem(PROGRESS_PHOTOS_KEY, JSON.stringify(data.progressPhotos));
+    if (data.aiBodyScans) safeSetItem(AI_BODY_SCANS_KEY, JSON.stringify(data.aiBodyScans));
     createAutoBackupSnapshot();
     return true;
   } catch (err) {
@@ -582,6 +599,10 @@ export function resetAllData(): void {
       window.localStorage.removeItem(ACTIVE_ROUTINE_KEY);
       window.localStorage.removeItem(EQUIPMENT_KEY);
       window.localStorage.removeItem(CUSTOM_CATALOG_KEY);
+      window.localStorage.removeItem(ATHLETE_PROFILE_KEY);
+      window.localStorage.removeItem(BODY_MEASUREMENTS_KEY);
+      window.localStorage.removeItem(PROGRESS_PHOTOS_KEY);
+      window.localStorage.removeItem(AI_BODY_SCANS_KEY);
       window.localStorage.removeItem('gymscience_active_session_draft');
     }
   } catch (e) {
@@ -810,5 +831,209 @@ export function clearDeloadState(): void {
   }
   delete memoryFallback[DELOAD_STATE_KEY];
 }
+
+// ==================== PERFIL ANTROPOMÉTRICO, MEDIDAS, FOTOS & SCAN IA ====================
+
+export const ATHLETE_PROFILE_KEY = 'gymscience_athlete_profile';
+export const BODY_MEASUREMENTS_KEY = 'gymscience_body_measurements';
+export const PROGRESS_PHOTOS_KEY = 'gymscience_progress_photos';
+export const AI_BODY_SCANS_KEY = 'gymscience_ai_body_scans';
+const GEMINI_API_KEY_STORAGE = 'gymscience_local_gemini_api_key';
+const PENDING_WIZARD_WEAK_POINTS_KEY = 'gymscience_pending_wizard_weak_points';
+
+export const DEFAULT_ATHLETE_PROFILE: AthleteBodyProfile = {
+  sex: 'masculino',
+  bodyweightKg: 75,
+  heightCm: 175,
+  updatedAt: new Date().toISOString(),
+};
+
+export function getAthleteProfile(): AthleteBodyProfile {
+  const raw = safeGetItem(ATHLETE_PROFILE_KEY);
+  if (!raw) return DEFAULT_ATHLETE_PROFILE;
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      sex: parsed.sex === 'femenino' ? 'femenino' : 'masculino',
+      bodyweightKg: Number(parsed.bodyweightKg) > 20 ? Number(parsed.bodyweightKg) : 75,
+      heightCm: Number(parsed.heightCm) > 100 ? Number(parsed.heightCm) : 175,
+      updatedAt: parsed.updatedAt || new Date().toISOString(),
+    };
+  } catch {
+    return DEFAULT_ATHLETE_PROFILE;
+  }
+}
+
+export function saveAthleteProfile(profile: Partial<AthleteBodyProfile>): AthleteBodyProfile {
+  const current = getAthleteProfile();
+  const next: AthleteBodyProfile = {
+    ...current,
+    ...profile,
+    updatedAt: new Date().toISOString(),
+  };
+  safeSetItem(ATHLETE_PROFILE_KEY, JSON.stringify(next));
+  return next;
+}
+
+export function getBodyMeasurements(): BodyMeasurementEntry[] {
+  const raw = safeGetItem(BODY_MEASUREMENTS_KEY);
+  if (!raw) return [];
+  try {
+    const parsed: BodyMeasurementEntry[] = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.sort((a, b) => (a.dateKey || a.date).localeCompare(b.dateKey || b.date))
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveBodyMeasurement(
+  entry: Omit<BodyMeasurementEntry, 'id' | 'date' | 'dateKey'> & { customDate?: string }
+): BodyMeasurementEntry[] {
+  const existing = getBodyMeasurements();
+  const dateObj = entry.customDate ? new Date(entry.customDate) : new Date();
+  const dateStr = dateObj.toISOString();
+  const dateKey = formatLocalDateKey(dateObj);
+
+  const newItem: BodyMeasurementEntry = {
+    ...entry,
+    id: `meas_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    date: dateStr,
+    dateKey,
+  };
+
+  const filtered = existing.filter((m) => m.dateKey !== dateKey);
+  filtered.push(newItem);
+  filtered.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+
+  safeSetItem(BODY_MEASUREMENTS_KEY, JSON.stringify(filtered));
+  if (entry.bodyweightKg > 20) {
+    saveAthleteProfile({ bodyweightKg: entry.bodyweightKg });
+  }
+  createAutoBackupSnapshot();
+  return filtered;
+}
+
+export function deleteBodyMeasurement(id: string): BodyMeasurementEntry[] {
+  const updated = getBodyMeasurements().filter((m) => m.id !== id);
+  safeSetItem(BODY_MEASUREMENTS_KEY, JSON.stringify(updated));
+  return updated;
+}
+
+export function getProgressPhotos(): ProgressPhotoEntry[] {
+  const raw = safeGetItem(PROGRESS_PHOTOS_KEY);
+  if (!raw) return [];
+  try {
+    const parsed: ProgressPhotoEntry[] = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.sort((a, b) => b.date.localeCompare(a.date))
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveProgressPhoto(
+  entry: Omit<ProgressPhotoEntry, 'id' | 'date' | 'dateKey'> & { customDate?: string }
+): { ok: boolean; photos: ProgressPhotoEntry[]; error?: string } {
+  try {
+    const existing = getProgressPhotos();
+    const dateObj = entry.customDate ? new Date(entry.customDate) : new Date();
+    const newPhoto: ProgressPhotoEntry = {
+      ...entry,
+      id: `photo_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      date: dateObj.toISOString(),
+      dateKey: formatLocalDateKey(dateObj),
+    };
+    // Mantener un máximo razonable (ej. 30 fotos comprimidas) para cuidar cuota de localStorage
+    const updated = [newPhoto, ...existing].slice(0, 30);
+    safeSetItem(PROGRESS_PHOTOS_KEY, JSON.stringify(updated));
+    return { ok: true, photos: updated };
+  } catch (err) {
+    return {
+      ok: false,
+      photos: getProgressPhotos(),
+      error: 'Almacenamiento lleno. Elimina alguna foto antigua para liberar espacio.',
+    };
+  }
+}
+
+export function deleteProgressPhoto(id: string): ProgressPhotoEntry[] {
+  const updated = getProgressPhotos().filter((p) => p.id !== id);
+  safeSetItem(PROGRESS_PHOTOS_KEY, JSON.stringify(updated));
+  return updated;
+}
+
+export function getAIBodyScans(): AIBodyScanReport[] {
+  const raw = safeGetItem(AI_BODY_SCANS_KEY);
+  if (!raw) return [];
+  try {
+    const parsed: AIBodyScanReport[] = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.sort((a, b) => b.date.localeCompare(a.date)) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveAIBodyScan(report: Omit<AIBodyScanReport, 'id' | 'date'>): AIBodyScanReport {
+  const existing = getAIBodyScans();
+  const saved: AIBodyScanReport = {
+    ...report,
+    id: `scan_${Date.now()}`,
+    date: new Date().toISOString(),
+  };
+  const updated = [saved, ...existing].slice(0, 20);
+  safeSetItem(AI_BODY_SCANS_KEY, JSON.stringify(updated));
+  return saved;
+}
+
+export function getLocalGeminiApiKey(): string {
+  return safeGetItem(GEMINI_API_KEY_STORAGE) || '';
+}
+
+export function saveLocalGeminiApiKey(key: string): void {
+  if (!key.trim()) {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.removeItem(GEMINI_API_KEY_STORAGE);
+      }
+    } catch {
+      // Ignore
+    }
+    delete memoryFallback[GEMINI_API_KEY_STORAGE];
+    return;
+  }
+  safeSetItem(GEMINI_API_KEY_STORAGE, key.trim());
+}
+
+export function setPendingWizardWeakPoints(payload: {
+  sex?: 'masculino' | 'femenino';
+  weakMuscles: MuscleGroup[];
+}): void {
+  safeSetItem(PENDING_WIZARD_WEAK_POINTS_KEY, JSON.stringify(payload));
+}
+
+export function consumePendingWizardWeakPoints(): {
+  sex?: 'masculino' | 'femenino';
+  weakMuscles: MuscleGroup[];
+} | null {
+  const raw = safeGetItem(PENDING_WIZARD_WEAK_POINTS_KEY);
+  if (!raw) return null;
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.removeItem(PENDING_WIZARD_WEAK_POINTS_KEY);
+    }
+  } catch {
+    // Ignore
+  }
+  delete memoryFallback[PENDING_WIZARD_WEAK_POINTS_KEY];
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 
 

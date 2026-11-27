@@ -29,7 +29,8 @@ import {
   StagnationAnalysisResult,
   SupersetLinkInfo,
   SupersetType,
-  DeloadState
+  DeloadState,
+  PersonalRecordEvent
 } from '../types';
 import {
   saveWorkoutSession,
@@ -78,6 +79,9 @@ import {
   inferWeightFromUserHistory,
   buildInferredRecommendationResult
 } from '../engine/strengthTransferEngine';
+import { formatLocalDateKey } from '../utils/dates';
+import { evaluateLiveSetPR, evaluateSessionPRSummary } from '../engine/prDetector';
+import { RANK_TIER_SPECS } from '../engine/symmetryRankEngine';
 import { RestTimer } from '../components/RestTimer';
 import { ExerciseSubstituteModal } from '../components/ExerciseSubstituteModal';
 import { ActiveExerciseCard } from '../components/ActiveExerciseCard';
@@ -180,6 +184,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   const [timerTriggerKey, setTimerTriggerKey] = useState<number>(0);
   const [lastSetTimestamps, setLastSetTimestamps] = useState<Record<string, number>>({});
   const [acuteFeedback, setAcuteFeedback] = useState<string | null>(null);
+  const [livePrNotice, setLivePrNotice] = useState<PersonalRecordEvent | null>(null);
 
   // Substitute Modal State
   const [substituteModalOpen, setSubstituteModalOpen] = useState<boolean>(false);
@@ -706,6 +711,23 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
 
     if (!isWarmup) {
       setLastSetTimestamps((prev) => ({ ...prev, [exercise.id]: now }));
+      try {
+        const detectedPR = evaluateLiveSetPR(
+          exercise,
+          newSet,
+          curSets,
+          getAllWorkoutLogs()
+        );
+        if (detectedPR) {
+          setLivePrNotice(detectedPR);
+          confetti({ particleCount: 40, spread: 55, origin: { y: 0.7 } });
+          setTimeout(() => {
+            setLivePrNotice((cur) => (cur?.id === detectedPR.id ? null : cur));
+          }, 6500);
+        }
+      } catch (e) {
+        // Ignore PR eval failure
+      }
     }
 
     const updated = [...curSets, newSet];
@@ -1265,6 +1287,13 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       // Ignore
     }
 
+    const sessionPRs = evaluateSessionPRSummary(
+      completedSets,
+      getAllWorkoutLogs(),
+      formatLocalDateKey(new Date()),
+      workoutDay.exercises
+    );
+
     setCompletionSummary({
       routineName: routine?.name || 'Mi Rutina',
       dayName: workoutDay.name,
@@ -1273,6 +1302,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       totalEffectiveReps: totalEffectiveSum,
       avgRir: totalSetsSum > 0 ? totalRirSum / totalSetsSum : 2,
       primaryMuscles,
+      prs: sessionPRs,
     });
     setShowCompletionModal(true);
   };
@@ -1328,6 +1358,29 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
       )}
 
       {/* Acute Fatigue Feedback Notification */}
+      {livePrNotice && (
+        <div className="bg-gradient-to-r from-amber-500/20 via-zinc-900 to-zinc-950 border border-amber-400/50 rounded-2xl p-3.5 flex items-center justify-between text-xs text-amber-100 animate-in fade-in slide-in-from-top-2 duration-200 shadow-xl gap-2">
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+            <div className="min-w-0">
+              <div className="font-black text-white truncate">
+                {livePrNotice.headline} — {livePrNotice.exerciseName}
+              </div>
+              <div className="text-[11px] font-mono text-amber-300 truncate">
+                {livePrNotice.detailLabel}
+              </div>
+            </div>
+          </div>
+          {livePrNotice.newRankTier && livePrNotice.newRankLabel && (
+            <span
+              className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black border shrink-0 ${RANK_TIER_SPECS[livePrNotice.newRankTier].bgClass} ${RANK_TIER_SPECS[livePrNotice.newRankTier].textClass} ${RANK_TIER_SPECS[livePrNotice.newRankTier].borderClass}`}
+            >
+              {livePrNotice.newRankLabel}
+            </span>
+          )}
+        </div>
+      )}
+
       {acuteFeedback && (
         <div className="bg-amber-500/15 border border-amber-500/40 rounded-2xl p-3.5 flex items-start sm:items-center justify-between text-xs text-amber-200 animate-in fade-in slide-in-from-top-2 duration-200 shadow-lg gap-2">
           <div className="flex items-start sm:items-center space-x-2.5 font-medium min-w-0">
