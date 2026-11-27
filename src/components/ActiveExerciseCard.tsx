@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   TrendingUp,
   AlertTriangle,
@@ -15,7 +15,8 @@ import {
   Edit3,
   Check,
   X,
-  Zap
+  Zap,
+  MoreVertical
 } from 'lucide-react';
 import {
   Exercise,
@@ -112,6 +113,19 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
   const [showWarmupRamp, setShowWarmupRamp] = useState<boolean>(false);
   const [isEditingNote, setIsEditingNote] = useState<boolean>(false);
   const [noteDraft, setNoteDraft] = useState<string>(setupNote);
+  const [actionsMenuOpen, setActionsMenuOpen] = useState<boolean>(false);
+  const actionsMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!actionsMenuOpen) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (actionsMenuRef.current && !actionsMenuRef.current.contains(e.target as Node)) {
+        setActionsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [actionsMenuOpen]);
 
   // Estado del objetivo del ejercicio: Fuerza (3-6 reps) vs Hipertrofia (8-12 reps)
   const [currentGoal, setCurrentGoal] = useState<'fuerza' | 'hipertrofia' | 'auto'>(() => {
@@ -396,132 +410,169 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
                   )}
               </div>
 
-              {/* Memoria Persistente de Configuración de Máquina (Asiento / Pin / Polea) */}
-              <div className="mt-2">
-                {!isEditingNote ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNoteDraft(setupNote);
-                      setIsEditingNote(true);
-                    }}
-                    className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-xl text-[11px] border transition-all ${
-                      setupNote
-                        ? 'bg-zinc-950/90 text-amber-300 border-amber-500/30 hover:border-amber-400'
-                        : 'bg-zinc-950/50 text-zinc-400 border-zinc-800 hover:text-zinc-200 hover:border-zinc-700'
-                    }`}
-                    title="Guardar posición de asiento, altura de polea o agarre para este ejercicio"
-                  >
-                    <Pin className="w-3 h-3 text-amber-400 shrink-0" />
-                    <span className="truncate max-w-[260px] sm:max-w-md font-medium">
-                      {setupNote ? `Setup: ${setupNote}` : '+ Guardar posición de asiento / pin / agarre'}
-                    </span>
-                    <Edit3 className="w-2.5 h-2.5 opacity-60 ml-1 shrink-0" />
-                  </button>
-                ) : (
-                  <div className="flex items-center space-x-1.5 max-w-md mt-1">
-                    <input
-                      type="text"
-                      value={noteDraft}
-                      onChange={(e) => setNoteDraft(e.target.value)}
-                      placeholder="Ej: Asiento 4, Rodillo 2, Agarre neutro..."
-                      autoFocus
-                      className="flex-1 bg-zinc-950 border border-amber-500/50 rounded-xl px-3 py-1 text-xs text-white focus:outline-none"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          onSaveSetupNote?.(noteDraft);
-                          setIsEditingNote(false);
-                        } else if (e.key === 'Escape') {
-                          setIsEditingNote(false);
-                        }
-                      }}
-                    />
+              {/* Memoria Persistente de Configuración de Máquina (solo visible si ya hay nota o se está editando) */}
+              {(setupNote || isEditingNote) && (
+                <div className="mt-2">
+                  {!isEditingNote ? (
                     <button
                       type="button"
                       onClick={() => {
-                        onSaveSetupNote?.(noteDraft);
-                        setIsEditingNote(false);
+                        setNoteDraft(setupNote);
+                        setIsEditingNote(true);
                       }}
-                      className="p-1.5 rounded-xl bg-emerald-500 text-black hover:bg-emerald-400 transition"
-                      title="Guardar nota"
+                      className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-xl text-[11px] border transition-all bg-zinc-950/90 text-amber-300 border-amber-500/30 hover:border-amber-400"
+                      title="Editar posición de asiento, altura de polea o agarre"
                     >
-                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <Pin className="w-3 h-3 text-amber-400 shrink-0" />
+                      <span className="truncate max-w-[240px] sm:max-w-md font-medium">
+                        Setup: {setupNote}
+                      </span>
+                      <Edit3 className="w-2.5 h-2.5 opacity-60 ml-1 shrink-0" />
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditingNote(false)}
-                      className="p-1.5 rounded-xl bg-zinc-800 text-zinc-300 hover:text-white transition"
-                      title="Cancelar"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <div className="flex items-center space-x-1.5 max-w-md mt-1">
+                      <input
+                        type="text"
+                        value={noteDraft}
+                        onChange={(e) => setNoteDraft(e.target.value)}
+                        placeholder="Ej: Asiento 4, Rodillo 2, Agarre neutro..."
+                        autoFocus
+                        className="flex-1 bg-zinc-950 border border-amber-500/50 rounded-xl px-3 py-1 text-xs text-white focus:outline-none"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            onSaveSetupNote?.(noteDraft);
+                            setIsEditingNote(false);
+                          } else if (e.key === 'Escape') {
+                            setIsEditingNote(false);
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onSaveSetupNote?.(noteDraft);
+                          setIsEditingNote(false);
+                        }}
+                        className="p-1.5 rounded-xl bg-emerald-500 text-black hover:bg-emerald-400 transition"
+                        title="Guardar nota"
+                      >
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingNote(false)}
+                        className="p-1.5 rounded-xl bg-zinc-800 text-zinc-300 hover:text-white transition"
+                        title="Cancelar"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Actions: Técnica, Biserie & Sustituir */}
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0 self-start sm:self-auto">
-            {onOpenSuperset && (
-              <button
-                type="button"
-                onClick={onOpenSuperset}
-                aria-label="Configurar biserie o triserie para este ejercicio"
-                className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl active:scale-95 border text-xs font-bold transition-all touch-manipulation min-h-[40px] ${
-                  supersetLinkInfo
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 hover:bg-amber-500/30 shadow-md shadow-amber-500/10'
-                    : 'bg-zinc-800 hover:bg-zinc-700/80 border-zinc-700 text-zinc-300 hover:text-white'
-                }`}
-                title="Configurar Biserie o Triserie con otro ejercicio"
-              >
-                <Zap className={`w-3.5 h-3.5 ${supersetLinkInfo ? 'text-amber-400 fill-current' : 'text-amber-400'}`} />
-                <span>
-                  {supersetLinkInfo
-                    ? supersetLinkInfo.type === 'triserie'
-                      ? 'Triserie'
-                      : 'Biserie'
-                    : 'Biserie'}
-                </span>
-              </button>
-            )}
-
+          {/* Actions: Técnica directa + Menú compacto ⋯ (Biserie, Setup, Sustituir, Quitar) */}
+          <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto" ref={actionsMenuRef}>
             {onOpenTechnique && (
               <button
                 type="button"
                 onClick={onOpenTechnique}
                 aria-label="Ver técnica y video del ejercicio"
-                className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 active:scale-95 border border-sky-500/30 text-sky-400 hover:text-sky-300 text-xs font-bold transition-all touch-manipulation min-h-[40px]"
+                className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 active:scale-95 border border-sky-500/30 text-sky-400 hover:text-sky-300 text-xs font-bold transition-all touch-manipulation min-h-[38px]"
                 title="Ver demostración visual y técnica de ejecución"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Ver Técnica</span>
+                <span>Técnica</span>
               </button>
             )}
 
-            <button
-              type="button"
-              onClick={onOpenSubstitute}
-              aria-label="Sustituir por una alternativa biomecánica equivalente"
-              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 border border-zinc-700 text-zinc-300 hover:text-white text-xs font-bold transition-all touch-manipulation min-h-[40px]"
-              title="Sustituir por una alternativa biomecánica equivalente"
-            >
-              <RefreshCw className="w-3.5 h-3.5 text-zinc-400" />
-              <span>Sustituir</span>
-            </button>
-
-            {onRemoveExercise && (
+            <div className="relative">
               <button
                 type="button"
-                onClick={onRemoveExercise}
-                aria-label="Quitar ejercicio de la sesión actual"
-                className="flex items-center space-x-1.5 px-2.5 py-2 rounded-xl bg-zinc-800/80 hover:bg-rose-500/20 active:scale-95 border border-zinc-700 hover:border-rose-500/40 text-zinc-400 hover:text-rose-300 text-xs font-bold transition-all touch-manipulation min-h-[40px]"
-                title="Eliminar este ejercicio de la sesión de hoy"
+                onClick={() => setActionsMenuOpen((prev) => !prev)}
+                aria-label="Más opciones del ejercicio"
+                aria-expanded={actionsMenuOpen}
+                className={`flex items-center space-x-1 px-2.5 py-2 rounded-xl active:scale-95 border text-xs font-bold transition-all touch-manipulation min-h-[38px] ${
+                  actionsMenuOpen
+                    ? 'bg-zinc-700 text-white border-zinc-600'
+                    : supersetLinkInfo
+                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
+                    : 'bg-zinc-800 hover:bg-zinc-700/80 border-zinc-700 text-zinc-300 hover:text-white'
+                }`}
+                title="Biserie, Nota de máquina, Sustituir o Quitar"
               >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Quitar</span>
+                <MoreVertical className="w-4 h-4" />
+                <span className="hidden sm:inline">Opciones</span>
               </button>
-            )}
+
+              {actionsMenuOpen && (
+                <div className="absolute right-0 top-full mt-1.5 w-52 rounded-2xl bg-zinc-950 border border-zinc-800 shadow-2xl shadow-black/90 py-1.5 z-40 animate-in fade-in zoom-in-95 duration-150">
+                  {onOpenSuperset && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActionsMenuOpen(false);
+                        onOpenSuperset();
+                      }}
+                      className="w-full flex items-center space-x-2.5 px-3 py-2.5 text-xs font-semibold text-zinc-200 hover:bg-zinc-900 transition text-left"
+                    >
+                      <Zap className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span>
+                        {supersetLinkInfo
+                          ? `Editar ${supersetLinkInfo.type}`
+                          : 'Vincular Biserie / Triserie'}
+                      </span>
+                    </button>
+                  )}
+
+                  {onSaveSetupNote && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActionsMenuOpen(false);
+                        setNoteDraft(setupNote);
+                        setIsEditingNote(true);
+                      }}
+                      className="w-full flex items-center space-x-2.5 px-3 py-2.5 text-xs font-semibold text-zinc-200 hover:bg-zinc-900 transition text-left"
+                    >
+                      <Pin className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span>{setupNote ? 'Editar nota de máquina' : 'Añadir nota de máquina'}</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActionsMenuOpen(false);
+                      onOpenSubstitute();
+                    }}
+                    className="w-full flex items-center space-x-2.5 px-3 py-2.5 text-xs font-semibold text-zinc-200 hover:bg-zinc-900 transition text-left"
+                  >
+                    <RefreshCw className="w-4 h-4 text-sky-400 shrink-0" />
+                    <span>Sustituir ejercicio</span>
+                  </button>
+
+                  {onRemoveExercise && (
+                    <>
+                      <div className="my-1 border-t border-zinc-800/80" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActionsMenuOpen(false);
+                          onRemoveExercise();
+                        }}
+                        className="w-full flex items-center space-x-2.5 px-3 py-2.5 text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition text-left"
+                      >
+                        <Trash2 className="w-4 h-4 shrink-0" />
+                        <span>Quitar de esta sesión</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -597,8 +648,8 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
                     {recommendation.progressionStrategy.replace(/_/g, ' ')}
                   </span>
                 )}
-                {/* Transparencia IA: 1 línea clara con el motivo de la carga sugerida */}
-                {recommendation?.reasoning && (
+                {/* Transparencia IA: solo en Modo Detallado */}
+                {!isSimplifiedMode && recommendation?.reasoning && (
                   <div className="flex items-center space-x-1.5 text-xs text-zinc-300 font-medium pt-1">
                     <span className="text-red-400 font-bold shrink-0">💡 IA:</span>
                     <span className="truncate">{recommendation.reasoning.split('.')[0] || recommendation.reasoning}</span>
@@ -620,8 +671,8 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
               )}
             </div>
 
-            {/* Botón Táctil de 1 Toque para Pre-Cargar Carga Inmediata (solo antes de iniciar series) */}
-            {workingSets.length === 0 && (
+            {/* Botón Táctil de 1 Toque solo si el stepper NO tiene cargado ya el peso/reps objetivo */}
+            {workingSets.length === 0 && (inputState.weight === '' || weightNum !== targetWeight || repsNum !== targetReps) && (
               <button
                 type="button"
                 onClick={() => {
@@ -634,7 +685,7 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
                     onInputChange('rir', exercise.targetRIR.toString());
                   }
                 }}
-                className="flex items-center justify-center space-x-1.5 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 active:scale-95 text-white font-black text-xs transition-all shadow-md shadow-red-600/20 shrink-0 touch-manipulation"
+                className="flex items-center justify-center space-x-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 active:scale-95 text-white font-black text-xs transition-all shadow-md shadow-red-600/20 shrink-0 touch-manipulation"
                 title="Cargar peso y repeticiones objetivo sugeridos de una en los selectores"
               >
                 <Sparkles className="w-4 h-4 fill-current" />
@@ -1138,8 +1189,8 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
             />
           </div>
 
-          {/* Dynamic Live Prediction based on weight stepper AND user's selected RIR + active rest */}
-          {livePrediction && weightNum > 0 && !isWarmupMode && (
+          {/* Dynamic Live Prediction based on weight stepper AND user's selected RIR + active rest (solo en Modo Detallado) */}
+          {!isSimplifiedMode && livePrediction && weightNum > 0 && !isWarmupMode && (
             <div className="px-3.5 py-2.5 rounded-xl bg-zinc-900/90 border border-red-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs font-mono text-red-300">
               <span className="flex items-center space-x-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-red-400 shrink-0" />
@@ -1159,6 +1210,7 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
           <RirSegmentedPicker
             value={inputState.rir}
             onChange={(val) => onInputChange('rir', val)}
+            compact={isSimplifiedMode}
           />
 
           {/* Biomechanical Live Calculations (Henneman & e1RM preview) */}

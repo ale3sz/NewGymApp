@@ -4,6 +4,7 @@ import { Flame, ShieldCheck, Zap } from 'lucide-react';
 interface RirSegmentedPickerProps {
   value: string;
   onChange: (rir: string) => void;
+  compact?: boolean;
 }
 
 interface RirOption {
@@ -73,14 +74,15 @@ const RIR_TIERS: RirOption[] = [
 export const RirSegmentedPicker: React.FC<RirSegmentedPickerProps> = ({
   value,
   onChange,
+  compact = false,
 }) => {
   const currentRir = parseInt(value, 10);
   const selectedOption = RIR_TIERS.find((opt) => opt.rir === currentRir) || RIR_TIERS[2];
 
   return (
-    <div className="bg-zinc-950/80 rounded-2xl p-3 border border-zinc-800/90 shadow-inner">
+    <div className="bg-zinc-950/80 rounded-2xl p-2.5 sm:p-3 border border-zinc-800/90 shadow-inner">
       {/* Header with selected summary */}
-      <div className="flex items-center justify-between mb-2 gap-1">
+      <div className="flex items-center justify-between mb-1.5 sm:mb-2 gap-1">
         <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
           Intensidad (RIR)
         </span>
@@ -104,7 +106,7 @@ export const RirSegmentedPicker: React.FC<RirSegmentedPickerProps> = ({
               type="button"
               onClick={() => onChange(tier.rir.toString())}
               aria-label={`Seleccionar RIR ${tier.label}: ${tier.sublabel}, RPE ${tier.rpe}`}
-              className={`h-12 rounded-xl flex flex-col items-center justify-center transition-all select-none touch-manipulation border ${
+              className={`h-11 sm:h-12 rounded-xl flex flex-col items-center justify-center transition-all select-none touch-manipulation border ${
                 isSelected
                   ? `${tier.activeColor} ${tier.borderColor} shadow-lg ${tier.bgGlow} scale-[1.03] z-10`
                   : 'bg-zinc-900/90 text-zinc-300 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800 active:scale-95'
@@ -123,34 +125,36 @@ export const RirSegmentedPicker: React.FC<RirSegmentedPickerProps> = ({
         })}
       </div>
 
-      {/* Contextual feedback badge */}
-      <div className="mt-2.5 pt-2 border-t border-zinc-800/60 flex items-center justify-between text-[11px]">
-        {currentRir === 0 ? (
-          <div className="flex items-center space-x-1.5 text-rose-400 font-medium">
-            <Flame className="w-3.5 h-3.5 shrink-0" />
-            <span>Fallo concéntrico total. Descanso completo recomendado (≥ 3 min).</span>
-          </div>
-        ) : currentRir === 1 ? (
-          <div className="flex items-center space-x-1.5 text-orange-400 font-medium">
-            <Zap className="w-3.5 h-3.5 shrink-0" />
-            <span>Máximo reclutamiento de unidades motoras con fatiga central moderada.</span>
-          </div>
-        ) : currentRir === 2 ? (
-          <div className="flex items-center space-x-1.5 text-emerald-400 font-semibold">
-            <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-            <span>Rango óptimo para hipertrofia y adaptación neuromuscular con SFR ideal.</span>
-          </div>
-        ) : currentRir === 3 ? (
-          <div className="flex items-center space-x-1.5 text-red-400 font-medium">
-            <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-            <span>Consolidación técnica y acumulación de volumen de calidad.</span>
-          </div>
-        ) : (
-          <div className="flex items-center space-x-1.5 text-zinc-400">
-            <span>Reps de aproximación o calentamiento preparatorio.</span>
-          </div>
-        )}
-      </div>
+      {/* Contextual feedback badge (oculto en Modo Directo para ahorrar espacio vertical) */}
+      {!compact && (
+        <div className="mt-2.5 pt-2 border-t border-zinc-800/60 flex items-center justify-between text-[11px]">
+          {currentRir === 0 ? (
+            <div className="flex items-center space-x-1.5 text-rose-400 font-medium">
+              <Flame className="w-3.5 h-3.5 shrink-0" />
+              <span>Fallo concéntrico total. Descanso completo recomendado (≥ 3 min).</span>
+            </div>
+          ) : currentRir === 1 ? (
+            <div className="flex items-center space-x-1.5 text-orange-400 font-medium">
+              <Zap className="w-3.5 h-3.5 shrink-0" />
+              <span>Máximo reclutamiento de unidades motoras con fatiga central moderada.</span>
+            </div>
+          ) : currentRir === 2 ? (
+            <div className="flex items-center space-x-1.5 text-emerald-400 font-semibold">
+              <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+              <span>Rango óptimo para hipertrofia y adaptación neuromuscular con SFR ideal.</span>
+            </div>
+          ) : currentRir === 3 ? (
+            <div className="flex items-center space-x-1.5 text-red-400 font-medium">
+              <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+              <span>Consolidación técnica y acumulación de volumen de calidad.</span>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-1.5 text-zinc-400">
+              <span>Reps de aproximación o calentamiento preparatorio.</span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

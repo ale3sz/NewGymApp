@@ -11,8 +11,6 @@ import {
   Layers,
   Save,
   Zap,
-  ChevronLeft,
-  ChevronRight,
   List,
   Eye,
   Trash2,
@@ -1308,7 +1306,7 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
   const currentAcuteSessionFatigue = calculateAcuteSessionFatigue(completedSets);
 
   return (
-    <div className="space-y-6 pb-44 animate-in fade-in duration-300">
+    <div className="space-y-3.5 sm:space-y-5 pb-44 animate-in fade-in duration-300">
       {/* Draft Restored Banner */}
       {draftRestoredNotification && (
         <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-start sm:items-center justify-between text-xs text-red-300 shadow-md gap-2">
@@ -1370,40 +1368,37 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
         </div>
       )}
 
-      {/* 1. Header & Quick Day Switcher */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-start space-x-3.5 min-w-0">
+      {/* 1. Compact Header & Quick Day Switcher */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-4">
+        <div className="flex items-start space-x-3 min-w-0">
           {(() => {
             const badge = getWorkoutDayBadge(workoutDay.name);
             return badge ? (
-              <img src={badge} alt={workoutDay.name} className="w-14 h-14 rounded-2xl object-cover border border-red-500/30 shadow-lg shadow-red-500/10 shrink-0 hidden sm:block" />
+              <img src={badge} alt={workoutDay.name} className="w-12 h-12 rounded-2xl object-cover border border-red-500/30 shadow-lg shadow-red-500/10 shrink-0 hidden sm:block" />
             ) : null;
           })()}
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <span className="text-xs font-mono font-bold text-red-500 uppercase tracking-widest truncate">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[11px] font-mono font-bold text-red-500 uppercase tracking-wider truncate max-w-[200px] sm:max-w-none">
                 {routine.name}
               </span>
-              <span className="text-zinc-600 hidden xs:inline">•</span>
-              <span className="text-xs font-mono text-emerald-400 font-bold">
-                {completedExercisesCount}/{totalExercisesCount} ejercicios completados
-              </span>
+              <span className="text-zinc-600">•</span>
               {remainingExercisesCount > 0 ? (
-                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                  Faltan {remainingExercisesCount} {remainingExercisesCount === 1 ? 'ejercicio' : 'ejercicios'}
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  {completedExercisesCount}/{totalExercisesCount} • Faltan {remainingExercisesCount}
                 </span>
               ) : (
-                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                  ¡Todos los ejercicios completados!
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                  ¡Completado! ({totalExercisesCount}/{totalExercisesCount})
                 </span>
               )}
             </div>
 
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight mt-1 break-words">
+            <h1 className="text-lg sm:text-2xl font-black text-white tracking-tight mt-0.5 break-words leading-tight">
               {workoutDay.name}
             </h1>
 
-            {workoutDay.description && (
+            {!isSimplifiedMode && workoutDay.description && (
               <p className="text-xs text-zinc-400 mt-1 max-w-2xl leading-relaxed">
                 {workoutDay.description}
               </p>
@@ -1411,51 +1406,18 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
           </div>
         </div>
 
-        {/* Change Day Dropdown & Home Mode Button */}
-        <div className="flex flex-wrap items-center gap-2 self-stretch sm:self-start md:self-auto">
-          {!originalGymDayBeforeHome ? (
-            <button
-              type="button"
-              onClick={() => setHomeModalOpen(true)}
-              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-xs font-extrabold transition active:scale-95 shrink-0"
-              title="Reemplazar los ejercicios de hoy por equivalentes en casa"
-            >
-              <Home className="w-3.5 h-3.5" />
-              <span>Entrenar en Casa</span>
-            </button>
-          ) : (
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => setHomeModalOpen(true)}
-                className="flex items-center space-x-1.5 px-3 py-2 rounded-2xl bg-sky-500/20 border border-sky-400/50 text-sky-200 text-xs font-extrabold transition"
-                title="Cambiar equipamiento en casa"
-              >
-                <Home className="w-3.5 h-3.5" />
-                <span>Cambiar equipo</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleRevertToGymMode}
-                className="flex items-center space-x-1 px-3 py-2 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 text-xs font-bold transition"
-                title="Volver a la rutina original de gimnasio"
-              >
-                <Dumbbell className="w-3.5 h-3.5" />
-                <span>Volver a Gym</span>
-              </button>
-            </div>
-          )}
-
+        {/* Change Day Dropdown & Home Mode Button (compact 1-row on mobile) */}
+        <div className="flex items-center gap-2 self-stretch sm:self-start md:self-auto">
           {availableDays && availableDays.length > 1 && (
-            <div className="flex items-center space-x-2.5 bg-zinc-950 px-3 py-2 rounded-2xl border border-zinc-800 flex-1 sm:flex-initial max-w-full">
-              <label className="text-xs text-zinc-400 font-bold whitespace-nowrap shrink-0">Día:</label>
+            <div className="flex items-center space-x-2 bg-zinc-950 px-2.5 py-1.5 rounded-xl border border-zinc-800 flex-1 sm:flex-initial min-w-0">
+              <label className="text-[11px] text-zinc-400 font-bold whitespace-nowrap shrink-0">Día:</label>
               <select
                 value={selectedDayId}
                 onChange={(e) => {
                   setOriginalGymDayBeforeHome(null);
                   handleSelectDay(e.target.value);
                 }}
-                className="bg-transparent text-xs font-black text-zinc-200 focus:outline-none cursor-pointer truncate w-full sm:max-w-xs md:max-w-sm"
+                className="bg-transparent text-xs font-black text-zinc-200 focus:outline-none cursor-pointer truncate w-full sm:max-w-xs"
               >
                 {availableDays.map((d) => (
                   <option key={d.id} value={d.id} className="bg-zinc-900 text-white">
@@ -1463,6 +1425,39 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
                   </option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {!originalGymDayBeforeHome ? (
+            <button
+              type="button"
+              onClick={() => setHomeModalOpen(true)}
+              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-xs font-extrabold transition active:scale-95 shrink-0"
+              title="Reemplazar los ejercicios de hoy por equivalentes en casa"
+            >
+              <Home className="w-3.5 h-3.5" />
+              <span>Casa</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setHomeModalOpen(true)}
+                className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-sky-500/20 border border-sky-400/50 text-sky-200 text-xs font-extrabold transition"
+                title="Cambiar equipamiento en casa"
+              >
+                <Home className="w-3.5 h-3.5" />
+                <span className="hidden xs:inline">Equipo</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleRevertToGymMode}
+                className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 text-xs font-bold transition"
+                title="Volver a la rutina original de gimnasio"
+              >
+                <Dumbbell className="w-3.5 h-3.5" />
+                <span>Gym</span>
+              </button>
             </div>
           )}
         </div>
@@ -1669,40 +1664,8 @@ export const ActiveWorkoutPage: React.FC<ActiveWorkoutPageProps> = ({
                   .map((id) => workoutDay.exercises.find((e) => e.id === id)?.name || id)
               : [];
 
-            const isFirst = index === 0;
-            const isLast = index === workoutDay.exercises.length - 1;
-
             return (
-              <div key={exercise.id || index} className="space-y-4">
-                {/* Navegación rápida entre ejercicios en Modo Foco */}
-                <div className="flex items-center justify-between bg-zinc-950/80 border border-zinc-800/80 rounded-2xl px-4 py-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setActiveExerciseIndex(Math.max(0, index - 1))}
-                    disabled={isFirst}
-                    className="flex items-center space-x-1.5 text-xs font-bold text-zinc-300 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    <span className="hidden sm:inline">Anterior ejercicio</span>
-                    <span className="sm:hidden">Ant.</span>
-                  </button>
-
-                  <div className="text-center font-mono text-xs font-bold text-zinc-400">
-                    <span className="text-white font-black text-sm">#{index + 1}</span> de {workoutDay.exercises.length}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveExerciseIndex(Math.min(workoutDay.exercises.length - 1, index + 1))}
-                    disabled={isLast}
-                    className="flex items-center space-x-1.5 text-xs font-bold text-zinc-300 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition"
-                  >
-                    <span className="hidden sm:inline">Siguiente ejercicio</span>
-                    <span className="sm:hidden">Sig.</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-
+              <div key={exercise.id || index}>
                 <div id={`exercise-card-${index}`}>
                   <ActiveExerciseCard
                     exercise={exercise}

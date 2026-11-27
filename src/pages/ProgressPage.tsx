@@ -320,6 +320,7 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
   );
 
   // View & Chart states
+  const [activeSection, setActiveSection] = useState<'overview' | 'muscles' | 'stagnation' | 'predictor'>('overview');
   const [globalMetric, setGlobalMetric] = useState<'progress' | 'sets'>('progress');
   const [exerciseMetric, setExerciseMetric] = useState<'overload' | 'weight' | 'reps'>('overload');
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup>('pecho');
@@ -813,51 +814,81 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
   );
 
   return (
-    <div className="space-y-6 pb-20">
-      {/* Header & Global KPIs */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl">
-        <h1 className="text-2xl font-black text-white tracking-tight">
-          Progreso, Gráficos por Músculo & Predictor IA
-        </h1>
-        <p className="text-xs text-zinc-400 mt-1">
-          Curva global de rendimiento, análisis individual músculo por músculo y deducción biomecánica de cargas entre ejercicios.
-        </p>
+    <div className="space-y-4 sm:space-y-6 pb-20">
+      {/* Header & Compact 3-Column KPIs (también en móvil) */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl space-y-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            Progreso & Análisis
+          </h1>
+          <p className="text-xs text-zinc-400 mt-0.5 hidden sm:block">
+            Curva global de rendimiento, análisis músculo por músculo, radar de mesetas y predictor biomecánico IA.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
-          <div className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800 flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500">
-              <Calendar className="w-6 h-6" />
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="p-2.5 sm:p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800 flex flex-col sm:flex-row sm:items-center sm:space-x-3">
+            <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500 mb-1.5 sm:mb-0 shrink-0">
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <div className="text-2xl font-black text-white font-mono">{totalWorkouts}</div>
-              <div className="text-xs text-zinc-400 font-medium">Entrenamientos Completados</div>
+            <div className="min-w-0">
+              <div className="text-lg sm:text-2xl font-black text-white font-mono leading-none">{totalWorkouts}</div>
+              <div className="text-[10px] sm:text-xs text-zinc-400 font-medium mt-0.5 truncate">Sesiones</div>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800 flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <Layers className="w-6 h-6" />
+          <div className="p-2.5 sm:p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800 flex flex-col sm:flex-row sm:items-center sm:space-x-3">
+            <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-1.5 sm:mb-0 shrink-0">
+              <Layers className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <div className="text-2xl font-black text-white font-mono">{totalSets}</div>
-              <div className="text-xs text-zinc-400 font-medium">Series Efectivas Totales</div>
+            <div className="min-w-0">
+              <div className="text-lg sm:text-2xl font-black text-white font-mono leading-none">{totalSets}</div>
+              <div className="text-[10px] sm:text-xs text-zinc-400 font-medium mt-0.5 truncate">Series ef.</div>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800 flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-              <Award className="w-6 h-6" />
+          <div className="p-2.5 sm:p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800 flex flex-col sm:flex-row sm:items-center sm:space-x-3">
+            <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-1.5 sm:mb-0 shrink-0">
+              <Award className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <div className="text-2xl font-black text-white font-mono">
-                {Math.round(totalTonnageKg).toLocaleString()} kg
+            <div className="min-w-0">
+              <div className="text-base sm:text-2xl font-black text-white font-mono leading-none truncate">
+                {totalTonnageKg >= 10000
+                  ? `${(totalTonnageKg / 1000).toFixed(1)}t`
+                  : `${Math.round(totalTonnageKg).toLocaleString()} kg`}
               </div>
-              <div className="text-xs text-zinc-400 font-medium">Tonelaje Total Acumulado</div>
+              <div className="text-[10px] sm:text-xs text-zinc-400 font-medium mt-0.5 truncate">Tonelaje</div>
             </div>
           </div>
         </div>
+
+        {/* Segmented Navigation Tabs (elimina el scroll infinito) */}
+        <div className="grid grid-cols-4 gap-1 bg-zinc-950 p-1 rounded-2xl border border-zinc-800">
+          {[
+            { id: 'overview' as const, label: 'Resumen' },
+            { id: 'muscles' as const, label: 'Músculos' },
+            { id: 'stagnation' as const, label: 'Mesetas' },
+            { id: 'predictor' as const, label: 'Predictor IA' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveSection(tab.id)}
+              className={`py-2 px-1.5 sm:px-3 rounded-xl text-[11px] sm:text-xs font-extrabold transition-all truncate ${
+                activeSection === tab.id
+                  ? 'bg-red-600 text-white shadow-md shadow-red-600/20'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
+      {/* ==================== TAB 1: RESUMEN (DÉFICITS + GRÁFICO GENERAL) ==================== */}
+      {activeSection === 'overview' && (
+        <>
       {/* ==================== NUEVO: OBJETIVO SEMANAL & DÉFICITS ACCIONABLES ==================== */}
       {weeklyDeficits && weeklyDeficits.length > 0 && (
         <div className="bg-gradient-to-br from-red-950/40 via-zinc-900 to-zinc-900 border border-red-500/30 rounded-3xl p-5 sm:p-6 shadow-xl">
@@ -1124,9 +1155,12 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
           )}
         </div>
       </div>
+        </>
+      )}
 
       {/* ==================== SECCIÓN 2: ANÁLISIS INDIVIDUAL MÚSCULO POR MÚSCULO ==================== */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl space-y-5">
+      {activeSection === 'muscles' && (
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 sm:p-6 shadow-xl space-y-5">
         <div className="space-y-1">
           <div className="flex items-center space-x-2">
             <Activity className="w-5 h-5 text-emerald-400" />
@@ -1366,9 +1400,11 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
           </div>
         )}
       </div>
+      )}
 
       {/* ==================== SECCIÓN 3: PREDICTOR IA DE CARGAS EQUIVALENTES ==================== */}
-      <div className="bg-zinc-900 border border-sky-500/30 rounded-3xl p-6 shadow-xl space-y-5">
+      {activeSection === 'predictor' && (
+      <div className="bg-zinc-900 border border-sky-500/30 rounded-3xl p-4 sm:p-6 shadow-xl space-y-5">
         <div className="space-y-1">
           <div className="flex items-center space-x-2">
             <Calculator className="w-5 h-5 text-sky-400" />
@@ -1501,9 +1537,12 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
           </div>
         )}
       </div>
+      )}
 
-      {/* ==================== SECCIÓN 4: RADAR DE ESTANCAMIENTO ==================== */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl space-y-4">
+      {/* ==================== SECCIÓN 4 & 5: RADAR DE ESTANCAMIENTO + HISTORIAL POR EJERCICIO ==================== */}
+      {activeSection === 'stagnation' && (
+        <>
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 sm:p-6 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center space-x-2">
             <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
@@ -1819,6 +1858,8 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
             </div>
           )}
         </div>
+      )}
+        </>
       )}
     </div>
   );

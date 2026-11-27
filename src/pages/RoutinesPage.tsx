@@ -13,7 +13,8 @@ import {
   Calendar,
   Sparkles,
   ChevronRight,
-  Download
+  Download,
+  ArrowLeft
 } from 'lucide-react';
 import { Routine, WorkoutDay, Exercise, CatalogExercise, MuscleGroup, AppTab } from '../types';
 import {
@@ -123,6 +124,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
   const handleOpenEditor = (routine: Routine) => {
     setEditingRoutine(routine);
     setSelectedDayId(routine.days?.[0]?.id || '');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleAddDay = () => {
@@ -263,12 +265,15 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
   });
 
   return (
-    <div className="space-y-6 pb-32">
+    <div className="space-y-4 sm:space-y-6 pb-32">
+      {/* Vista de Lista de Rutinas (se oculta al abrir el Editor Dedicado para evitar scroll) */}
+      {!editingRoutine && (
+        <>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight">Gestor de Rutinas</h1>
-          <p className="text-xs text-zinc-400 mt-1">
+          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">Gestor de Rutinas</h1>
+          <p className="text-xs text-zinc-400 mt-0.5">
             Administra tus splits de entrenamiento, audita el volumen semanal o diseña nuevas rutinas.
           </p>
         </div>
@@ -276,7 +281,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onNavigate('ai-wizard')}
-            className="flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-bold text-xs transition"
+            className="flex items-center space-x-1.5 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-bold text-xs transition"
           >
             <Sparkles className="w-4 h-4 text-amber-400" />
             <span>Crear con IA</span>
@@ -284,7 +289,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
 
           <button
             onClick={() => setIsNewRoutineModalOpen(true)}
-            className="flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-xs shadow-lg shadow-red-600/20 transition"
+            className="flex items-center space-x-1.5 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-xs shadow-lg shadow-red-600/20 transition"
           >
             <Plus className="w-4 h-4" />
             <span>Nueva Rutina</span>
@@ -293,7 +298,7 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
       </div>
 
       {/* Routine Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {routines.map((routine) => {
           const isActive = activeId === routine.id;
           return (
@@ -399,16 +404,26 @@ export const RoutinesPage: React.FC<RoutinesPageProps> = ({
           );
         })}
       </div>
+        </>
+      )}
 
-      {/* Routine Detailed Editor Modal / Section */}
+      {/* Routine Detailed Editor (Vista dedicada al tocar Editar) */}
       {editingRoutine && (
-        <div className="bg-zinc-900 border border-red-500/30 rounded-3xl p-6 shadow-2xl space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800">
+        <div className="bg-zinc-900 border border-red-500/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl space-y-5 animate-in fade-in duration-150">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-800">
             <div>
+              <button
+                type="button"
+                onClick={() => setEditingRoutine(null)}
+                className="inline-flex items-center space-x-1.5 text-xs font-bold text-zinc-400 hover:text-white mb-2 transition"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Volver a Mis Rutinas</span>
+              </button>
               <div className="flex items-center space-x-2">
-                <span className="text-xs font-bold text-red-500 uppercase tracking-wider">Editor de Rutina</span>
+                <span className="text-[11px] font-bold text-red-500 uppercase tracking-wider">Editor de Rutina</span>
               </div>
-              <h2 className="text-xl font-extrabold text-white mt-0.5">
+              <h2 className="text-lg sm:text-xl font-extrabold text-white mt-0.5">
                 {editingRoutine.name}
               </h2>
             </div>

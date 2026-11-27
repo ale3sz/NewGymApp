@@ -542,16 +542,6 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
               ))}
             </div>
           </div>
-
-          <div className="flex justify-end pt-4 border-t border-zinc-800">
-            <button
-              onClick={() => setStep(2)}
-              className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition"
-            >
-              <span>Siguiente: Frecuencia & Tiempo</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
         </div>
       )}
 
@@ -607,23 +597,6 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
               ))}
             </div>
           </div>
-
-          <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
-            <button
-              onClick={() => setStep(1)}
-              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl text-zinc-400 hover:text-white text-xs font-semibold"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Atrás</span>
-            </button>
-            <button
-              onClick={() => setStep(3)}
-              className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition"
-            >
-              <span>Siguiente: Equipamiento</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
         </div>
       )}
 
@@ -655,23 +628,6 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
                 <div className="text-xs text-zinc-400 mt-1">{opt.desc}</div>
               </div>
             ))}
-          </div>
-
-          <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
-            <button
-              onClick={() => setStep(2)}
-              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl text-zinc-400 hover:text-white text-xs font-semibold"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Atrás</span>
-            </button>
-            <button
-              onClick={() => setStep(4)}
-              className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs transition"
-            >
-              <span>Siguiente: Distribución & Articulaciones</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
           </div>
         </div>
       )}
@@ -845,25 +801,59 @@ export const AIRoutineWizardPage: React.FC<AIRoutineWizardPageProps> = ({
               })}
             </div>
           </div>
+        </div>
+      )}
 
-          <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
+      {/* Barra de Navegación Fija Inferior para Pasos 1–4 (evita scrollear todo el formulario) */}
+      {step <= 4 && (
+        <div className="sticky bottom-20 lg:bottom-4 z-20 bg-zinc-950/95 backdrop-blur-xl border border-zinc-800 rounded-2xl p-3 shadow-2xl shadow-black/80 flex items-center justify-between gap-3">
+          {step > 1 ? (
             <button
-              onClick={() => setStep(3)}
-              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl text-zinc-400 hover:text-white text-xs font-semibold"
+              type="button"
+              onClick={() => {
+                setStep(step - 1);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white text-xs font-bold transition active:scale-95"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Atrás</span>
             </button>
+          ) : (
+            <span className="text-[11px] font-mono font-bold text-zinc-400 px-2">
+              Paso {step} de 4
+            </span>
+          )}
 
+          {step < 4 ? (
             <button
+              type="button"
+              onClick={() => {
+                setStep(step + 1);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs shadow-lg shadow-amber-500/20 transition active:scale-95"
+            >
+              <span>
+                {step === 1
+                  ? 'Siguiente: Frecuencia'
+                  : step === 2
+                  ? 'Siguiente: Equipamiento'
+                  : 'Siguiente: Distribución'}
+              </span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="flex items-center space-x-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-emerald-400 hover:opacity-95 text-black font-black text-xs shadow-xl shadow-amber-500/25 transition"
+              className="flex items-center space-x-2 px-5 sm:px-7 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-emerald-400 hover:opacity-95 text-black font-black text-xs shadow-xl shadow-amber-500/25 transition active:scale-95"
             >
               <Sparkles className="w-4 h-4 fill-black" />
-              <span>{isGenerating ? 'Calculando Fisiología & Volumen...' : 'Generar Mi Rutina Científica'}</span>
+              <span>{isGenerating ? 'Calculando...' : 'Generar Rutina IA'}</span>
             </button>
-          </div>
+          )}
         </div>
       )}
 

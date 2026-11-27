@@ -6,9 +6,7 @@ import {
   Check,
   Plus,
   Trash2,
-  Save,
-  Cpu,
-  Info
+  Cpu
 } from 'lucide-react';
 import { GymEquipmentProfile } from '../types';
 import { getEquipmentProfile, saveEquipmentProfile } from '../storage/storage';
@@ -18,6 +16,17 @@ export const EquipmentPage: React.FC = () => {
   const [profile, setProfile] = useState<GymEquipmentProfile>(getEquipmentProfile());
   const [newDumbbellWeight, setNewDumbbellWeight] = useState<string>('');
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
+
+  // Auto-guardado instantáneo en cada cambio para evitar volver arriba a apretar Guardar
+  const updateProfile = (updater: (prev: GymEquipmentProfile) => GymEquipmentProfile) => {
+    setProfile((prev) => {
+      const next = updater(prev);
+      saveEquipmentProfile(next);
+      return next;
+    });
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 2000);
+  };
 
   const handleAddDumbbell = () => {
     const val = parseFloat(newDumbbellWeight);
@@ -32,7 +41,7 @@ export const EquipmentPage: React.FC = () => {
     }
 
     const updated = [...profile.availableDumbbellsKg, val].sort((a, b) => a - b);
-    setProfile(prev => ({ ...prev, availableDumbbellsKg: updated }));
+    updateProfile((prev) => ({ ...prev, availableDumbbellsKg: updated }));
     setNewDumbbellWeight('');
   };
 
@@ -42,58 +51,38 @@ export const EquipmentPage: React.FC = () => {
       return;
     }
     const updated = profile.availableDumbbellsKg.filter(val => val !== w);
-    setProfile(prev => ({ ...prev, availableDumbbellsKg: updated }));
-  };
-
-  const handleSave = () => {
-    saveEquipmentProfile(profile);
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 3000);
+    updateProfile((prev) => ({ ...prev, availableDumbbellsKg: updated }));
   };
 
   return (
-    <div className="space-y-6 pb-32 max-w-4xl mx-auto">
+    <div className="space-y-4 sm:space-y-5 pb-32 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center space-x-2 text-red-500 text-xs font-bold uppercase tracking-wider">
             <Sliders className="w-4 h-4" />
             <span>Configuración Biomecánica</span>
           </div>
-          <h1 className="text-2xl font-black text-white mt-1">Perfil de Equipamiento de tu Gimnasio</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-white mt-0.5">Equipamiento de tu Gimnasio</h1>
           <p className="text-xs text-zinc-400 mt-0.5">
-            El algoritmo de sobrecarga progresiva se adapta milimétricamente a los pesos reales de tu gimnasio.
+            Los saltos de carga se adaptan automáticamente a tus mancuernas y discos reales.
           </p>
         </div>
 
-        <button
-          onClick={handleSave}
-          className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-xs shadow-lg shadow-red-600/20 transition self-start sm:self-auto"
+        <div
+          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all self-start sm:self-auto shrink-0 ${
+            savedSuccess
+              ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+              : 'bg-zinc-950 border-zinc-800 text-zinc-400'
+          }`}
         >
-          {savedSuccess ? (
-            <>
-              <Check className="w-4 h-4" />
-              <span>¡Guardado!</span>
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              <span>Guardar Configuración</span>
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* Info Card */}
-      <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800 flex items-start space-x-3 text-xs text-zinc-300">
-        <Info className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-        <p>
-          <strong>¿Por qué es importante?</strong> Si tus mancuernas saltan de 20kg a 24kg (+20%), el algoritmo te indicará añadir repeticiones antes de subir el peso para no lesionarte. Si tienes discos de 1.25kg, te prescribirá saltos graduales de +2.5kg en barra.
-        </p>
+          <Check className={`w-3.5 h-3.5 ${savedSuccess ? 'text-emerald-400' : 'text-zinc-500'}`} />
+          <span>{savedSuccess ? 'Cambios guardados' : 'Auto-guardado activo'}</span>
+        </div>
       </div>
 
       {/* Available Dumbbells */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl space-y-4">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Dumbbell className="w-5 h-5 text-red-500" />
@@ -160,7 +149,7 @@ export const EquipmentPage: React.FC = () => {
           {COMMON_DISC_OPTIONS.map((disc) => (
             <button
               key={disc}
-              onClick={() => setProfile(prev => ({ ...prev, smallestDiscKg: disc }))}
+              onClick={() => updateProfile(prev => ({ ...prev, smallestDiscKg: disc }))}
               className={`p-4 rounded-2xl border text-center transition ${
                 profile.smallestDiscKg === disc
                   ? 'bg-emerald-500/10 border-emerald-500/50 text-white font-bold ring-1 ring-emerald-500/30'
@@ -183,7 +172,7 @@ export const EquipmentPage: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div
-            onClick={() => setProfile(prev => ({ ...prev, hasCableMachine: !prev.hasCableMachine }))}
+            onClick={() => updateProfile(prev => ({ ...prev, hasCableMachine: !prev.hasCableMachine }))}
             className={`p-4 rounded-2xl border cursor-pointer flex items-center justify-between transition ${
               profile.hasCableMachine
                 ? 'bg-purple-500/10 border-purple-500/40 text-white'
@@ -202,7 +191,7 @@ export const EquipmentPage: React.FC = () => {
           </div>
 
           <div
-            onClick={() => setProfile(prev => ({ ...prev, hasSmithMachine: !prev.hasSmithMachine }))}
+            onClick={() => updateProfile(prev => ({ ...prev, hasSmithMachine: !prev.hasSmithMachine }))}
             className={`p-4 rounded-2xl border cursor-pointer flex items-center justify-between transition ${
               profile.hasSmithMachine
                 ? 'bg-purple-500/10 border-purple-500/40 text-white'
